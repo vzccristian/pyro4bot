@@ -1,0 +1,10 @@
+ 18/07/2017  integracion del uri_resolver y actualización de los servicios locales y remotos.
+ versión beta stable
+ 12/07/2017 resolución de problemas de latencia en cam. idea... uso de doble hilo y buffer en el core. Ademas enviear
+				el estado actuadores para sincronizar la cam del robot.
+				
+				
+16/07/2017 nueva clase cliente para conexión. instancia todos los objetos en remoto. Necesita ip y nombre robot.
+15/06/2017 el nodo usa un sistema de uris local sin el uso de server name
+          Sólo si se indica en la configuración registrará el robot en el SN que va por separado. Uso exclusivo de 
+		  robótica colaborativa o nodos distribuidos
