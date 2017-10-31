@@ -1,0 +1,27 @@
+#configuracion del nodo
+{
+   "NODE":{
+      "name":"alphabot1",
+      "path":"/home/pi/pyro4bot/developing/nodeRBB",
+      #"path":"/home/pi/td/developing/nodeRBB",
+      "etc":"<path>/etc",
+      "path_cls":["SERVICES","ROBOT"],
+      #"ethernet":"wlp3s0",
+      #"ethernet":"enp0s25",
+      "ethernet":"eth0",
+      "name_server":true,
+      "port_ns":9090,
+      "port_node":4040,
+      "start_port":5050,
+      "def_frec":0.03,
+      "def_worker":true
+    },
+   "SERVICES":{
+        "camera":{"cls":"picam","path":"<path>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
+        "gpioservice":{"cls":"gpioservice","mode":"GPIO.BCM","frec":0.02,"enable":true}
+   },
+   "ROBOT":{
+        "infrared":{"cls":"infrared_gpio","IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
+        "base":{"cls":"base_gpio","BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
+    }
+}

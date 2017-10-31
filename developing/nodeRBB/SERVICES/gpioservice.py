@@ -6,11 +6,15 @@
 import time
 from nodeRBB.LIBS import control
 import Pyro4
+import RPi.GPIO as GPIO
 
 @Pyro4.expose
 class gpioservice(control.control):
     @control.loadconfig
     def __init__(self,data,**kwargs):
+        
+        GPIO.setmode(self.mode)
+        GPIO.setwarnings(False)
         #this line is the last line in constructor method
         super(gpioservice,self).__init__(self.worker)
 
