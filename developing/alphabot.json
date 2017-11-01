@@ -17,11 +17,11 @@
       "def_worker":true
     },
    "SERVICES":{
-        "camera":{"cls":"picam","path":"<path>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
-        "gpioservice":{"cls":"gpioservice","mode":"GPIO.BCM","frec":0.02,"enable":true}
+        "camera":{"cls":"picam","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
+        "gpioservice":{"cls":"gpioservice","mode":11,"frec":0.02,"enable":true,"worker_run":false}
    },
    "ROBOT":{
-        "infrared":{"cls":"infrared_gpio","IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
-        "base":{"cls":"base_gpio","BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
+        "infrared":{"cls":"gpio_infrared","setup":[12,13,6,20,21,26],"IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
+        "base":{"cls":"gpio_base","BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
     }
 }
