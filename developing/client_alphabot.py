@@ -13,11 +13,13 @@ import numpy as np
 def run_camera(cam):
     while True:
         #c=np.fromstring(cam.image,dtype=np.uint8)
-        c = cv2.imdecode(np.fromstring(cam.image, dtype=np.uint8), -1)
-        c.resize(320,240)
+        c1=np.fromstring(cam.image, dtype=np.uint8)
+        print type(c1)
+        c = cv2.imdecode(c1, -1)
+        print type(c)
         #ret,jpeg=cv2.imencode('jpg',c)
 
-        cv2.imshow('alphabot',c)
+        cv2.imshow('alphabot',c1)
         if cv2.waitKey(1) == 27:
             exit(0)
 

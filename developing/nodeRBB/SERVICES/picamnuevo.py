@@ -41,9 +41,12 @@ class picamnuevo(control.control):
     def worker_read(self):
 
             while self.worker_run:
+                self.buffer[self.lock].seek(0)
                 self.buffer[self.lock].truncate()
-                self.camera.capture_continuous(self.buffer[self.lock], "jpeg",use_video_port=True)
-                self.lock,self.available=self.available,self.lock
+                for foo in self.camera.capture_continuous(self.buffer[self.lock], "jpeg",use_video_port=True):
+                    print len(self.buffer[self.lock].getvalue())
+                    print self.buffer[self.lock].tell()
+                    self.lock,self.available=self.available,self.lock
                 time.sleep(self.frec)
 
     def worker_publ(self):
@@ -59,7 +62,10 @@ class picamnuevo(control.control):
         #print ("cam %s" % (self.available))
         self.buffer[self.available].seek(0)
         #print size(self.buffer[self.available].read())
-        return self.buffer[self.available].read()
+        env=self.buffer[self.available].read()
+        print type(env)
+        print len(env)
+        return env
 
     def subscribe(self,key,uri):
         try:
