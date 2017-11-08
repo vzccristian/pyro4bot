@@ -1,3 +1,4 @@
 #buscar ip raspberry
 sudo nmap -sP 192.168.1.0/24 | awk '/^Nmap/{ip=$NF}/B8:27:EB/{print ip}'
-dmesg | grep FTDI 
+dmesg | grep FTDI
+https://github.com/waveform80/picamera/blob/master/docs/examples/circular_record1.py
