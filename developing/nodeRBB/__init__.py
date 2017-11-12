@@ -1,5 +1,5 @@
 
-from LIBS import Conf,control
+import LIBS
 import SERVICES
 import ROBOT
 import CLIENT

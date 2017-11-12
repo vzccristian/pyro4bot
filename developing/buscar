@@ -2,3 +2,9 @@
 sudo nmap -sP 192.168.1.0/24 | awk '/^Nmap/{ip=$NF}/B8:27:EB/{print ip}'
 dmesg | grep FTDI
 https://github.com/waveform80/picamera/blob/master/docs/examples/circular_record1.py
+
+buscar puerto 22 activo:
+nmap -p 22 --open -sV 158.49.241.0/24
+buscar puerto vnc
+nmap -p 5900 158.49.241.0/24 --open -sV
+d

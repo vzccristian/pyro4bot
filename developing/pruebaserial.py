@@ -1,5 +1,12 @@
-import serial
-ser=serial.Serial('/dev/ttyS0', 115200, timeout=1)
-ser.write('setpt 120,120\r\n')
-while True:
-  print(ser.readline())
+
+
+
+def funcion(l):
+    if type(l) not in (list,tuple): l=(l,)
+    for k in l:
+        print k
+funcion([1,2,4])
+funcion("oo")
+funcion(8)
+funcion(("l",9,7,"paco"))
+funcion(None)

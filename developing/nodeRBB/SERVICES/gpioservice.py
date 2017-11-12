@@ -3,6 +3,9 @@
 #lock().acquire()
 #____________developed by paco andres____________________
 #All datas defined in json configuration are atributes in your code object
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import time
 from nodeRBB.LIBS import control
 import Pyro4
@@ -34,22 +37,19 @@ class gpioservice(control.control):
     def worker(self):
         pass
 #here your methods
-    def status(self):
-      return self.GPIO
-  
+    def status(self, pin=None):
+      if type(l) not in (list,tuple): l=(l,)
+      sal={k:x for k,x in self.GPIO if k in l}
+      return sal
+
     def setup(self,pins,value,proxy):
-       """set pins in service gpio with initial value"""
-       if type(pins)==list:
-           for k in pins:
-               if self.GPIO.has_key(k):
-                   self.GPIO[k][2]=value
-                   self.GPIO[k][3]=proxy
-                   GPIO.setup(k,value)
-       else:
-           if self.GPIO.has_key(pins):
-               self.GPIO[pins][2]=value
-               self.GPIO[pins][3]=proxy
-               GPIO.setup(pins,value)
+       """set list pins in service gpio with initial value"""
+       pins=list(pins)
+       for k in pins:
+           if self.GPIO.has_key(k):
+               self.GPIO[k][2]=value
+               self.GPIO[k][3]=proxy
+               GPIO.setup(k,value)
 
     def get_mode(self):
         """ Return mode bcm 11 or BOARD 10 active"""
@@ -60,4 +60,7 @@ class gpioservice(control.control):
         GPIO.setmode(self.mode)
 
 if __name__ == "__main__":
-    pass
+    import sys
+    import os
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+    print "pp"

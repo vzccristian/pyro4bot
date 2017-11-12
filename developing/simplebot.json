@@ -3,7 +3,7 @@
 {
    "NODE":{
       "name":"simplebot",
-      "path":"/home/paco/Dropbox/td/developing/nodeRBB",
+      "path":"/home/paco/Dropbox/td/pyro4bot/developing/nodeRBB",
       #"path":"/home/pi/td/developing/nodeRBB",
       "etc":"<path>/etc",
       "path_cls":["SERVICES","ROBOT"],
