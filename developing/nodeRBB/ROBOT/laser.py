@@ -1,21 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#lock().acquire()
+# lock().acquire()
 #____________developed by paco andres____________________
-#All datas defined in json configuration are atributes in you code object
+# All datas defined in json configuration are atributes in you code object
 import time
 from nodeRBB.LIBS import control
 import Pyro4
 
+
 @Pyro4.expose
-class laser (control.control):
+class Laser (control.control):
     @control.loadconfig
+    def __init__(self, data, **kwargs):
+        self.send_subscripcion(self.arduino, "LASER")
 
-    def __init__(self,data,**kwargs):
-        self.send_subscripcion(self.arduino,"LASER")
+        # this line is the last line in constructor method
+        super(Laser, self).__init__(self.worker)
 
-        #this line is the last line in constructor method
-        super(laser,self).__init__(self.worker)
     def worker(self):
         while self.worker_run:
             time.sleep(self.frec)
