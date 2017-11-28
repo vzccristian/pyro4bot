@@ -1,0 +1,24 @@
+#configuracion del nodo
+{
+   "NODE":{
+      "name":"botface",
+      "path":"/home/paco/Dropbox/td/developing/node",
+      #"path":"/home/pi/td/developing/node",
+      "etc":"<path>/etc",
+      "path_cls":["services","sensors"],
+      "ethernet":"wlp3s0",
+      #"ethernet":"enp0s25",
+      #"ethernet":"eth0",
+      "port_ns":9090,
+      "port_node":4040,
+      "start_port":6000,
+      "def_frec":0.08,
+      "def_worker":true
+    },
+   "services":{
+        "camera":{"cls":"usbcam","framerate":25,"width":640,"height":480,"frec":0.01,"worker_run":true,"enable":false}
+   },
+   "sensors":{
+        "face":{"cls":"face","-->":[],"frec":0.03, "enable":true}
+    }
+}
