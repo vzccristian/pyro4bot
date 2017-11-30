@@ -172,10 +172,7 @@ class Config:
             exit()
 
     def module_cls(self):
-        list = []
-        for m in self.classes():
-            list.append(self.module(m))
-        return list
+        return [self.module(m) for m in self.classes()]
 
     def module(self, mod_cls):
         """Return directory, module, class  if exist file .py"""
@@ -189,12 +186,10 @@ class Config:
         return list(set(get_field(self.services, "cls") + get_field(self.sensors, "cls")))
 
     def dependency(self):
-        dep_resueltas = [x for x in self.sensors.keys(
-        ) if get_field(self.sensors[x], "-->") == []]
-        condep = [x for x in self.sensors.keys() if get_field(
-            self.sensors[x], "-->") != []]
+        dep_resueltas = [x for x in self.sensors if not get_field(self.sensors[x], "-->")]
+        condep = [x for x in self.sensors if get_field(self.sensors[x], "-->")]
         nivel_dep = 0
-        while condep != [] and nivel_dep < 20:
+        while condep and nivel_dep < 20:
             for i in condep:
                 dep_nec = [x for x in get_field(self.sensors[i], "-->")]
                 # print "dep necesarias para ",i,"--",dep_nec
@@ -212,15 +207,15 @@ class Config:
             return dep_resueltas
 
     def whithout_deps(self):
-        return [x for x in self.sensors.keys() if get_field(self.sensors[x], "-->") == []]
+        return [x for x in self.sensors if not get_field(self.sensors[x], "-->")]
 
     def has_remote(self, k):
         local, remote = self.local_remote(k)
-        return remote != []
+        return bool(remote)
 
     def has_local(self, k):
         local, remote = self.local_remote(k)
-        return local != []
+        return bool(local)
 
     def local_remote(self, k):
         local = [x for x in self.sensors[k]["-->"]
@@ -230,16 +225,16 @@ class Config:
         return local, remote
 
     def with_deps(self):
-        return [x for x in self.sensors.keys() if get_field(self.sensors[x], "-->") != []]
+        return [x for x in self.sensors if get_field(self.sensors[x], "-->")]
 
     def with_local_deps(self):
-        deps = [x for x in self.sensors.keys() if get_field(
-            self.sensors[x], "-->") != [] and self.has_local(x)]
+        deps = [x for x in self.sensors if get_field(
+            self.sensors[x], "-->") and self.has_local(x)]
         return deps
 
     def with_remote_deps(self):
         deps = [x for x in self.sensors.keys() if get_field(
-            self.sensors[x], "-->") != [] and self.has_remote(x)]
+            self.sensors[x], "-->") and self.has_remote(x)]
         # print deps
         return deps
 
