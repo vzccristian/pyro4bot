@@ -126,35 +126,41 @@ class Config:
                           ".URI_resolv"] = self.add_uri_conf()
 
     def check_semantic(self):
-        if not self.conf["NODE"].has_key("def_frec"):
+        if "def_frec" not in self.conf["NODE"]:
             self.conf["NODE"]["def_frec"] = 0.05
-        if not self.conf["NODE"].has_key("ip"):
+
+        if "ip" not in self.conf["NODE"]:
             self.conf["NODE"]["ip"] = utils.get_ip_address(
                 self.conf["NODE"]["ethernet"])
             # print self.conf["NODE"]["ethernet"]
             # print utils.get_ip_address(self.conf["NODE"]["ethernet"])
-        if not self.conf["NODE"].has_key("name"):
+
+        if "name" not in self.conf["NODE"]:
             self.conf["NODE"]["name"] = "node"
+
         for k, v in self.sensors.items() + self.services.items():
-            if not v.has_key("worker_run"):
+            if "worker_run" not in v:
                 v["worker_run"] = True
-            if not v.has_key("mode"):
+            if "mode" not in v:
                 v["mode"] = "public"
-            if not v.has_key("frec"):
+            if "frec" not in v:
                 v["frec"] = self.conf["NODE"]["def_frec"]
-            if v["cls"].find(".") < 0:
+            if "." not in v["cls"]:
                 v["cls"] = v["cls"] + "." + v["cls"]
+
         error = False
         for m in self.classes():
-            if self.module(m) == None:
-                print "Module ", m, "dont find"
+            if not self.module(m):
+                print "Could not find module ", m
                 error = True
+
         newservices = {}
         for n in self.services:
-            if n.find(".") == -1:
+            if "." not in n:
                 newservices[self.node["name"] + "." + n] = self.services[n]
             else:
                 newservices[n] = self.services[n]
+
         newrobot = {}
         for n in self.sensors:
             if self.sensors[n].has_key("-->"):
@@ -166,6 +172,7 @@ class Config:
                 newrobot[self.node["name"] + "." + n] = self.sensors[n]
             else:
                 newrobot[n] = self.sensors[n]
+
         self.services = newservices
         self.sensors = newrobot
         if error:
