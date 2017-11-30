@@ -12,19 +12,7 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
-
-def import_class(list_class):
-    try:
-        list_class.append(("services", "uriresolver",
-                           "uriresolver"))  # mejor cambiar
-        print "____________IMPORTING CLASS_______________________"
-        for c in sorted(list_class):
-            print "CLASS %s: from %s import %s" % (c[2], c[0], c[1])
-            exec("from %s import %s" % (c[0], c[1]), globals())
-    except:
-        print "ERROR IMPORTING CLASS:", c[0] + "/" + c[1] + "." + c[2]
-        traceback.print_exc()
-        exit(0)
+import importer
 
 
 def remote__object(d):
@@ -52,7 +40,7 @@ class NODERB (object):
         self.filename = filename
         self.N_conf = config.Config(filename=filename, json=json)
         self.load_node(self, PROCESS={}, **self.N_conf.node)
-        import_class(self.N_conf.module_cls())
+        importer.import_class(self.N_conf.module_cls())
         self.URI_resolv = self.load_uri_resolver()
         self.URI = Pyro4.Proxy(self.URI_resolv)
         self.load_robot()
