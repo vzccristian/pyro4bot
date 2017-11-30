@@ -3,7 +3,7 @@
 #____________developed by paco andres____________________
 
 import threading
-from nodeproxy import clientNODERB
+from nodeproxy import ClientNODERB
 import time
 import Pyro4
 import cv2
@@ -54,9 +54,9 @@ def run_camera(cam):
             # Read the length of the image as a 32-bit unsigned int. If the
             # length is zero, quit the loop
             image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+
             if not image_len:
                 print "No image len"
-                break
             print image_len
             image_stream.write(connection.read(image_len))
             # Rewind the stream, open it as an image with PIL and do some
@@ -75,7 +75,7 @@ def run_camera(cam):
         connection.close()
         client_socket.close()
 
-bot=clientNODERB("learnbot1") #nombre del bot en la name no el fichero json
+bot=ClientNODERB("learnbot1") #nombre del bot en la name no el fichero json
 print "Bot adquirido."
 cam=threading.Thread(target=run_camera,args=(bot.camera,))
 cam.setDaemon(True)
