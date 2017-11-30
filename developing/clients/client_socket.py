@@ -57,8 +57,10 @@ def run_camera(cam):
 
             if not image_len:
                 print "No image len"
-            print image_len
-            image_stream.write(connection.read(image_len))
+            print "image_len",image_len
+            con_read = connection.read(image_len)
+            print "readed"
+            image_stream.write(con_read)
             # Rewind the stream, open it as an image with PIL and do some
             # processing on it
             image_stream.seek(0)

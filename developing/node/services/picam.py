@@ -61,14 +61,16 @@ class picam(control.Control):
                 try:
                     for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
                         self.acceptConnections()
+                        streamPosition=self.buffer.tell()
                         for c in self.clients:
                             if (c.connection is not 0):
-                                c.connection.write(struct.pack('<L', self.buffer.tell()))
+                                c.connection.write(struct.pack('<L', streamPosition))
                                 c.connection.flush()
                         self.buffer.seek(0)
+                        readBuffer=self.buffer.read()
                         for c in self.clients:
                             if (c.connection is not 0):
-                                c.connection.write(self.buffer.read())
+                                c.connection.write(readBuffer)
                         self.buffer.seek(0)
                         self.buffer.truncate()
                 finally:
@@ -98,7 +100,7 @@ class picam(control.Control):
 
 
     def acceptConnections(self):
-        print "Aceptando conexiones desde picamera"
+        # print "Aceptando conexiones desde picamera"
         for c in self.clients:
             c.acceptConnection()
 
@@ -125,25 +127,29 @@ class ClientSocket():
         """Check if a port is available, and if it is, assign it, otherwise continue testing the next one."""
         result = 0
         while (result is 0):
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(('127.0.0.1', self.port))
-            if result is 0:
-                self.port += 1
-            else:
-                self.serverSocket.bind(('0.0.0.0', self.port))
-                self.serverSocket.listen(0)
-                time.sleep(1)
+            try:
+                print self.port
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                result = sock.connect_ex(('127.0.0.1', self.port))
+                print result
+                if result is 0:
+                    self.port += 1
+                else:
+                    self.serverSocket.bind(('0.0.0.0', self.port))
+                    self.serverSocket.listen(0)
+                    time.sleep(1)
+            except Exception as e:
+                utils.format_exception(e)
 
     def acceptConnection(self):
         """ Accept conections from servers to clients"""
         if self.connection is 0:
-            print "ServerSocket sin aceptar",self.port
             self.waitingForConnection=True
             self.connection=self.serverSocket.accept()[0].makefile("rb"+str(self.port))
-            print "Aceptado",self
             return 0
         else:
-             print "ServerSocket aceptado previamente", self.port
+             # print "ServerSocket aceptado previamente", self.port
+             pass
         return 1
 
     def getClient(self):
