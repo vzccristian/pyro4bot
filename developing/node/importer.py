@@ -27,21 +27,23 @@ for f in os.listdir(SERVICES_DIR):
 
 
 def get_class(name):
-    """Given the name(s) of a class, returns its class(es)"""
+    """Given the name of a class, returns its class, or None if not found"""
     # TODO If module not found, pull it from the repository?
-    try:
-        if isinstance(name, str):
-            return _classes[name]
-        else:
-            return [_classes[x] for x in name]
-    except KeyError:
-        exit(0)
+    return _classes.get(name, None)
 
 
 def import_class(name):
     """Given the name of a class, adds its class to the list of globals"""
     if isinstance(name, str):
-        globals[name] = get_class(name)
+        cls = get_class(name)
+        if cls:
+            globals[name] = cls
+        else:
+            print('Failed to import', name)
     else:
-        for x, cls in zip(name, get_class(name)):
-            globals[x] = cls
+        for x in name:
+            cls = get_class(x)
+            if cls:
+                globals[x] = cls
+            else:
+                print('Failed to import', x)
