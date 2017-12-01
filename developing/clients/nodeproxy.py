@@ -35,7 +35,7 @@ class ClientNODERB(object):
 
             else:
                 self.node = Pyro4.Proxy("PYRONAME:" + self.name)
-            self.proxys = self.node.get_URIS()
+            self.proxys = self.node.get_uris()
             return self.proxys
         except:
             print("ERROR: conection")
