@@ -19,7 +19,7 @@ import struct
 import time
 import random
 import threading
-
+from pprint import pprint
 
 @Pyro4.expose
 class picam(control.Control):
@@ -52,40 +52,46 @@ class picam(control.Control):
         self.clients = list()
         self.initPort = 9000
 
-        # TODO: Interface de red automatica
+        # Cleaner
+        self.cleaner=threading.Thread(target=self.removeClosedConnections, args=())
+        self.cleaner.setDaemon(True)
+        self.cleaner.start()
+
         self.ip = utils.get_ip_address(self.ethernet)
+
         super(picam, self).__init__((self.worker_read,))
         #super(picam, self).__init__()
 
     def worker_read(self):
-        print self.ethernet,self.path
-        while True:
-            while (len(self.clients) > 0):  # Si hay clientes a la espera...
+        """ Main worker"""
+        while self.worker_run:
+            for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
+                while (len(self.clients) is 0):  # Si hay clientes a la espera...
+                    time.sleep(1)
                 try:
-                    for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
-                        self.acceptConnections()
-                        streamPosition = self.buffer.tell()
-                        for c in self.clients:
-                            if (c.connection is not 0):
-                                c.connection.write(
-                                    struct.pack('<L', streamPosition))
-                                c.connection.flush()
-                        self.buffer.seek(0)
-                        readBuffer = self.buffer.read()
-                        for c in self.clients:
-                            if (c.connection is not 0):
-                                c.connection.write(readBuffer)
-                        self.buffer.seek(0)
-                        self.buffer.truncate()
-                except Exception as e:
-                    if (e.find("Broken") is -1):
-                        print "Pipe cerrado"
-                finally:
+                    self.acceptConnections()
+                    streamPosition = self.buffer.tell()
                     for c in self.clients:
-                        if (c.connection is not 0):
-                            c.connection.write(struct.pack('<L', 0))
-                            c.connection.close()
-                            c.serverSocket.close()
+                        if c.closed is False:
+                            try:
+                                if (c.connection is not 0):
+                                    c.connection.write(struct.pack('<L', streamPosition))
+                                    c.connection.flush()
+                            except Exception as e:
+                                self.setAsClosed(c)
+                    self.buffer.seek(0)
+                    readBuffer = self.buffer.read()
+                    for c in self.clients:
+                        if c.closed is False:
+                            try:
+                                if (c.connection is not 0):
+                                    c.connection.write(readBuffer)
+                            except Exception as e:
+                                self.setAsClosed(c)
+                    self.buffer.seek(0)
+                    self.buffer.truncate()
+                except Exception as e:
+                    utils.format_exception(e)
 
     def worker_publ(self):
         while self.worker_run:
@@ -98,17 +104,38 @@ class picam(control.Control):
 
     @property
     def image(self):
+        """Return IP and PORT to socket conection """
         newClient = ClientSocket(self.initPort + 1)
         self.clients.append(newClient)
         self.initPort = newClient.port
         while not (newClient.waitingForConnection):
-            time.sleep(1)
+            time.sleep(3)
         return self.ip,newClient.port
 
     def acceptConnections(self):
-        # print "Aceptando conexiones desde picamera"
+        """Accept connections from clients"""
+        #print "Aceptando conexiones desde picamera"
         for c in self.clients:
             c.acceptConnection()
+
+    def setAsClosed(self,client,exception="None"):
+        """Set client as closed"""
+        client.setClosed()
+        if (exception is not None):
+            utils.format_exception(e)
+        client.connection.write(struct.pack('<L', 0))
+        client.connection.close()
+        client.serverSocket.close()
+
+    def removeClosedConnections(self,sec=20):
+        """Cleaner. Remove clients marked as closed every sec seconds."""
+        while self.worker_run:
+            time.sleep(sec)
+            print "Antes:",self.clients
+            self.clients = [c for c in self.clients if not c.closed]
+            # self.clients=filter(lambda c: c.closed is False, self.clients)
+            print "Despues:",self.clients
+            print self.clients
 
     def subscribe(self, key, uri):
         try:
@@ -121,11 +148,11 @@ class picam(control.Control):
 
 class ClientSocket():
     """Class for Clients of PiCamera"""
-
     def __init__(self, port=9000,):
         self.port = port
         self.serverSocket = socket.socket()
         self.connection = 0
+        self.closed = False
         self.waitingForConnection = False
         self.newPort()
 
@@ -150,8 +177,7 @@ class ClientSocket():
         """ Accept conections from servers to clients"""
         if self.connection is 0:
             self.waitingForConnection = True
-            self.connection = self.serverSocket.accept(
-            )[0].makefile("rb" + str(self.port))
+            self.connection = self.serverSocket.accept()[0].makefile("rb" + str(self.port))
             return 0
         else:
             # print "ServerSocket aceptado previamente", self.port
@@ -159,7 +185,12 @@ class ClientSocket():
         return 1
 
     def getClient(self):
+        """ Return client information"""
         return self.port, self.serverSocket, self.connection
+
+    def setClosed(self):
+        """ Set client as closed """
+        self.closed=True
 
 
 if __name__ == "__main__":
