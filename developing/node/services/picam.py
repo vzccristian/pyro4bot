@@ -53,11 +53,12 @@ class picam(control.Control):
         self.initPort = 9000
 
         # TODO: Interface de red automatica
-        self.ip = utils.get_ip_address("wlan0")
+        self.ip = utils.get_ip_address(self.ethernet)
         super(picam, self).__init__((self.worker_read,))
         #super(picam, self).__init__()
 
     def worker_read(self):
+        print self.ethernet,self.path
         while True:
             while (len(self.clients) > 0):  # Si hay clientes a la espera...
                 try:

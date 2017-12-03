@@ -17,7 +17,7 @@
       "def_worker":true
     },
    "services":{
-        "camera":{"cls":"picam","path":"<path>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
+        "camera":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
         "arduino":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.02,"enable":true}
    },
    "sensors":{
