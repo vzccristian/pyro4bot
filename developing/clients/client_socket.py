@@ -16,33 +16,10 @@ import struct
 import time
 
 
-def track(image):
-    print "tracking"
-    blur = cv2.GaussianBlur(image, (5, 5), 0)
-    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([40, 70, 70])
-    upper_green = np.array([80, 200, 200])
-    lower_pink = np.array([147, 95, 150])
-    upper_pink = np.array([227, 255, 255])
-    mask = cv2.inRange(hsv, lower_pink, upper_pink)
-    bmask = cv2.GaussianBlur(mask, (5, 5), 0)
-    moments = cv2.moments(bmask)
-    m00 = moments['m00']
-    centroid_x, centroid_y = None, None
-    if m00 != 0:
-        centroid_x = int(moments['m10'] / m00)
-        centroid_y = int(moments['m01'] / m00)
-    ctr = (-1, -1)
-    if centroid_x != None and centroid_y != None:
-        ctr = (centroid_x, centroid_y)
-        cv2.circle(image, ctr, 10, (255, 0, 0))
-    return ctr, image
-
-
 def run_camera(cam):
-    # Creacion socket en server
-    ip,port = cam.image
-    print "Client port: " + str(port)
+    print "Connecting to Server. Waiting for IP and PORT"
+    ip, port = cam.image
+    print "Client: "+ip+":" + str(port)
     client_socket = socket.socket()
     try:
         client_socket.connect((ip, port))
@@ -78,14 +55,13 @@ def run_camera(cam):
         finally:
             connection.close()
     except:
-        print "Error al conectar a "+ip+":"+str(port)
+        print "Error al conectar a " + ip + ":" + str(port)
     finally:
         print ("Exit")
         client_socket.close()
 
-
+print "Running client..."
 bot = ClientNODERB("learnbot1")  # nombre del bot en la name no el fichero json
-print "Bot adquirido."
 cam = threading.Thread(target=run_camera, args=(bot.camera,))
 cam.setDaemon(True)
 cam.start()
