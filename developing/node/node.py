@@ -105,6 +105,7 @@ class NODERB (object):
             return None
 
     def create_server_node(self):
+        uri = 0
         Pyro4.config.HOST = self.ip
         try:
                 # si hay nameserver registar todos los proxys y el SERVER
