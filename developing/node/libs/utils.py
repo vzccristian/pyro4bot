@@ -9,11 +9,16 @@ import sys
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
-        ni.ifaddresses(ifname)
         ip = ni.ifaddresses(ifname)[2][0]['addr']
     except:
-        raise
-        ip = "127.0.0.1"
+        try:
+            interface_list = ni.interfaces()
+            for x in interface_list:
+                if (x.find("lo") < 0):
+                    return ni.ifaddresses(x)[2][0]['addr']
+            ip="127.0.0.1"
+        except:
+            raise
     return ip
 
 
