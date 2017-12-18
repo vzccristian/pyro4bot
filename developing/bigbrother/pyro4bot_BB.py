@@ -8,7 +8,6 @@ import time
 
 INTERFACE = "wlan0"
 
-
 def printThread(color="green"):
     return ((colored("[" + threading.current_thread().getName() + "]", color)))
 
@@ -19,6 +18,7 @@ class bigbrother (object):
             INTERFACE = ethernet
         self.ns = ""  # Thread
         self.nameServerWorking = False
+        self.ready = False
         self.nameserver = ""
         self.start()
 
@@ -27,18 +27,30 @@ class bigbrother (object):
         try:
             # Working
             ns = Pyro4.locateNS()
+            print "NameServer already working"
         except:
             self.nameServerWorking = True
             self.ns = threading.Thread(target=self.createNameServer, args=())
             self.ns.start()
 
 
+
     def createNameServer(self):
+        global INTERFACE
         print printThread(), "--> Creating new name server on:", colored(INTERFACE, "magenta")
+        ip="localhost"
+        while (ip is "localhost"):
+            ip=utils.get_ip_address(ifname=INTERFACE)
+            if str(ip) is "localhost":
+                print "Error al seleccionar interfaz. "
+                INTERFACE = raw_input("\n"+colored("Introducir interfaz de red a utilizar: ","yellow"))
         try:
-            self.nameserver=nm.startNSloop(host=utils.get_ip_address(INTERFACE))
+            self.nameserver=nm.startNSloop(host=ip)
         except:
-            raise
+            print "Error al crear el nameserver"
+
+        #  TODO
+        print self.ready, "working"
 
     def test(self):
         print "test"
@@ -64,14 +76,15 @@ if __name__ == "__main__":
 
     while (bb.nameServerWorking):
         time.sleep(1)
-        command = raw_input("\n"+colored("Comando a la espera: ","yellow"))
-        try:
-            realCommand=bb.execute(command)
-            if (realCommand is not "Error"):
-                realCommand()
-        except:
-            raise
-            print (colored("Comando erroneo","red"))
+        if (bb.ready):
+            command = raw_input("\n"+colored("Comando a la espera: ","yellow"))
+            try:
+                realCommand=bb.execute(command)
+                if (realCommand is not "Error"):
+                    realCommand()
+            except:
+                raise
+                print (colored("Comando erroneo","red"))
 
     if (bb.nameServerWorking):
         bb.ns.join()

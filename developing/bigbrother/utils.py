@@ -11,8 +11,8 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
         ni.ifaddresses(ifname)
         ip = ni.ifaddresses(ifname)[2][0]['addr']
     except:
-        raise
-        ip = "127.0.0.1"
+        # raise
+        ip = "localhost"
     return ip
 
 
