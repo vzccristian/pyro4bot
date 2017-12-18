@@ -7,6 +7,17 @@ import time
 from node.libs import control
 import Pyro4
 
+"""
+JSON_DOCUMENTATION
+{SENSOR_NAME} : laser
+{c} cls : laser
+{d} --> : ["arduino"]
+{m} LASER : [0,0,0]
+{m} frec : 0.02
+{m} worker_run : true
+{m} enable : true
+END_JSON_DOCUMENTATION
+"""
 
 @Pyro4.expose
 class laser (control.Control):

@@ -7,6 +7,17 @@ import time
 from node.libs import control
 import Pyro4
 
+"""
+JSON_DOCUMENTATION
+{SENSOR_NAME} : infrared
+{c} cls : infrared
+{m} IR : [0,0,0,0]
+{d} --> : ["arduino"]
+{m} enable : true
+{m} worker_run : true
+{m} frec : 0.02
+END_JSON_DOCUMENTATION
+"""
 
 @Pyro4.expose
 class infrared (control.Control):
