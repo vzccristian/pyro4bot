@@ -20,6 +20,20 @@ import time
 import random
 import threading
 
+"""
+JSON_DOCUMENTATION
+{SENSOR_NAME} : camera
+{c} cls : picam
+{c} path : <path>
+{c} ethernet : <ethernet>
+{m} framerate : 25
+{m} width : 640
+{m} height : 480
+{m} frec : 0.02
+{m} worker_run : true
+{m} enable : true
+END_JSON_DOCUMENTATION
+"""
 
 @Pyro4.expose
 class picam(control.Control):

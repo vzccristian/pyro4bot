@@ -6,6 +6,17 @@ import time
 from node.libs import control, utils
 import Pyro4
 
+"""
+JSON_DOCUMENTATION
+{SENSOR_NAME} : pantilt
+{c} cls : pantilt
+{m} PT : [0,0]
+{d} --> : ["arduino"]
+{m} enable : true
+{m} worker_run : true
+{m} frec : 0.03
+END_JSON_DOCUMENTATION
+"""
 
 @Pyro4.expose
 class pantilt(control.Control):

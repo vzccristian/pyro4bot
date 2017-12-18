@@ -9,6 +9,16 @@ import serial
 import simplejson as json
 import Pyro4
 
+"""
+JSON_DOCUMENTATION
+{SENSOR_NAME} : arduino
+{c} cls : usbserial
+{c} comPort : /dev/ttyS0
+{c} comPortBaud : 115200
+{m} frec : 0.02
+{m} enable : true
+END_JSON_DOCUMENTATION
+"""
 
 @Pyro4.expose
 class usbserial(control.Control):
