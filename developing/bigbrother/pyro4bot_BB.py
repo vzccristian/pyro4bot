@@ -1,16 +1,13 @@
 import Pyro4
 import Pyro4.naming as nm
 import utils
+from utils import printThread as printT
 import sys
 import threading
-from termcolor import colored
 import time
+from termcolor import colored
 
 INTERFACE = "wlan0"
-
-def printThread(color="green"):
-    return ((colored("[" + threading.current_thread().getName() + "]", color)))
-
 
 class bigbrother (object):
     def __init__(self, ethernet="wlan0"):
@@ -23,7 +20,7 @@ class bigbrother (object):
         self.start()
 
     def start(self):
-        print printThread(color="red"), "--> Checking name_server"
+        print printT(color="yellow"), "--> Checking name_server"
         try:
             # Working
             ns = Pyro4.locateNS()
@@ -33,11 +30,9 @@ class bigbrother (object):
             self.ns = threading.Thread(target=self.createNameServer, args=())
             self.ns.start()
 
-
-
     def createNameServer(self):
         global INTERFACE
-        print printThread(), "--> Creating new name server on:", colored(INTERFACE, "magenta")
+        print printT(), "--> Creating new name server on:", colored(INTERFACE, "magenta")
         ip="localhost"
         while (ip is "localhost"):
             ip=utils.get_ip_address(ifname=INTERFACE)
@@ -45,21 +40,18 @@ class bigbrother (object):
                 print "Error al seleccionar interfaz. "
                 INTERFACE = raw_input("\n"+colored("Introducir interfaz de red a utilizar: ","yellow"))
         try:
+            print printT(),"ready ---> true"
+            self.ready = True
             self.nameserver=nm.startNSloop(host=ip)
         except:
             print "Error al crear el nameserver"
-
-        #  TODO
-        print self.ready, "working"
 
     def test(self):
         print "test"
 
     def list(self):
         print "List Nameserver"
-        # TODO
         # self.nameserver.nm.NameServer.list()
-
 
     def execute(self,command):
         return {
@@ -89,4 +81,4 @@ if __name__ == "__main__":
     if (bb.nameServerWorking):
         bb.ns.join()
 
-    print printThread(color="red"), "Saliendo..."
+    print printT(color="red"), "Saliendo..."

@@ -4,7 +4,8 @@ import struct
 import Pyro4
 import Pyro4.naming as nm
 import netifaces as ni
-
+from termcolor import colored
+import threading
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
@@ -29,3 +30,6 @@ def get_uri(name, ip, port):
 
 def get_uri_name(uri):
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
+
+def printThread(color="green"):
+    return ((colored("[" + threading.current_thread().getName() + "]", color)))
