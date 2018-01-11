@@ -1,5 +1,3 @@
-#configuracion del nodo
-#test master 1234
 {
    "NODE":{
       "name":"simplebot",
