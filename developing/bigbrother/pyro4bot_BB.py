@@ -2,25 +2,44 @@ import Pyro4
 import Pyro4.naming as nm
 import utils
 from utils import printThread as printT
-import sys
-import threading
-import time
+import sys, threading, time, sched
 from termcolor import colored
-import signal
-import subprocess
-import sys
+import signal, subprocess
 
 INTERFACE = "wlan1"
 
-class bigbrother (object):
+
+class scheduler(object):
+    def __init__(self,object):
+        self.scheduler = sched.scheduler(time.time, time.sleep) #Scheduler
+        self.robots = None
+        self.sensors = None
+        print object
+        print object.ns
+        self.scheduler.enter(5, 1, self.update, (object,)) # Scheduler
+        self.tScheduler=threading.Thread(target=self.scheduler.run, args=())
+        self.tScheduler.setDaemon(1)
+        self.tScheduler.start()
+
+    def update(self,object):
+        #TODO
+        print printT(), object.ns.list()
+        lista = (list(x for x in object.ns.list()))
+        print "lista:",lista
+
+
+
+        self.scheduler.enter(3, 1, self.update, (object,))
+
+class bigbrother(object):
     def __init__(self, ethernet="wlan1"):
         if (ethernet is not "wlan1"):
             INTERFACE = ethernet
-        self.ns = None  # NS
-        self.nsThread = None  # Thread
-        self.nameServerWorking = False
-        self.ready = False
-        self.nameserver = ""
+        self.ns = None  # Nameserver location
+        self.nameServerWorking = False  # Flags
+        self.ready = False  # Flags
+        self.nameserver = None  # Name server for Thread-1
+        self.nsThread = None  # Thread for NSLoop
         self.start()
 
     def start(self):
@@ -37,6 +56,8 @@ class bigbrother (object):
                 target=self.createNameServer, args=())
             self.nsThread.start()  # Thread-1 started
             self.ns = Pyro4.locateNS()  # Getting NS on main thread
+
+    """Thread-1 loop for nameserver"""
 
     def createNameServer(self):
         # Thread-1
@@ -55,6 +76,7 @@ class bigbrother (object):
         except:
             print "Error al crear el nameserver"
 
+    """Get URI list"""
     def list(self):
         try:
             print "------------------ NAME-SERVER LIST ------------------"
@@ -63,14 +85,17 @@ class bigbrother (object):
             print "Error name-server"
             raise
 
+    # TODO
     def listprefix(self, _prefix):
         entries = self.ns.list(prefix=_prefix)
         return entries
 
+    # TODO
     def listregex(self, _regex):
         entries = self.ns.list(regex=_regex)
         return entries
 
+    """Get URI for a determinate pyro4object"""
     def lookup(self, name):
         try:
             uri = self.ns.lookup(name)
@@ -78,7 +103,10 @@ class bigbrother (object):
             return uri
         except Pyro4.errors.NamingError:
             print name + " no encontrado."
+            name = None
 
+
+    """Remove a determinate pyro4object"""
     def remove(self, name):
         try:
             print "Removed " + name + " : " + colored(self.ns.lookup(name), "red")
@@ -86,6 +114,7 @@ class bigbrother (object):
         except Pyro4.errors.NamingError:
             print name + " no encontrado."
 
+    """Close nameServer"""
     def exit(self):
         print colored("\nSaliendo...", "red")
         self.nameServerWorking = False
@@ -93,16 +122,18 @@ class bigbrother (object):
             ["sh", "./killer.sh"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         closer.wait()
 
+    """Ctrl+z and Ctrl+c handler"""
     def handler(self, signum, frame):
         self.exit()
 
+    """Return method for string"""
     def execute(self, command):
         return {
             'list': self.list,
             'remove': self.remove,
             'lookup': self.lookup,
             'exit': self.exit,
-        }.get(command, "Error")
+        }.get(command, None)
 
 
 if __name__ == "__main__":
@@ -110,6 +141,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         INTERFACE = sys.argv[1]
     bb = bigbrother(ethernet=INTERFACE)
+    sch = scheduler(bb)
 
     signal.signal(signal.SIGTSTP, bb.handler)  # ctrl+z
     signal.signal(signal.SIGINT, bb.handler)  # ctrl+c
@@ -122,18 +154,18 @@ if __name__ == "__main__":
             command = raw_input(
                 "\n" + colored("Comando a la espera: ", "yellow"))
             try:
-                command = command.split()
+                command=command.split()
                 realCommand = bb.execute(command[0])
-                if (realCommand is not "Error"):
+                if (realCommand is not None):
                     if (len(command) is 1):
                         realCommand()
                     elif (len(command) is 2):
                         uri = realCommand(command[1])
-                        proxy = Pyro4.Proxy(uri)
-                        # proxy.method()
-                        print uri
-                        print proxy
-                        proxy.get_uris()
+                        if (uri is not None):
+                            proxy = Pyro4.Proxy(uri)
+                            # proxy.method()
+                            print "URI:", uri, " PROXY: ", proxy
+                            print(proxy.get_uris())
                 else:
                     print "Comando no encontrado."
             except:
