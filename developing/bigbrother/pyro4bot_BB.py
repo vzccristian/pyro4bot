@@ -5,36 +5,56 @@ from utils import printThread as printT
 import sys, threading, time, sched
 from termcolor import colored
 import signal, subprocess
+import rpc_server
 
 INTERFACE = "wlan1"
+PASSWORD = "PyRobot"
+PORT = 17000
 
 
-class scheduler(object):
-    def __init__(self,object):
-        self.scheduler = sched.scheduler(time.time, time.sleep) #Scheduler
-        self.robots = None
-        self.sensors = None
-        print object
-        print object.ns
-        self.scheduler.enter(5, 1, self.update, (object,)) # Scheduler
-        self.tScheduler=threading.Thread(target=self.scheduler.run, args=())
-        self.tScheduler.setDaemon(1)
-        self.tScheduler.start()
-
-    def update(self,object):
-        #TODO
-        print printT(), object.ns.list()
-        lista = (list(x for x in object.ns.list()))
-        print "lista:",lista
-
-
-
-        self.scheduler.enter(3, 1, self.update, (object,))
-
+""" Class for NS gestion """
 class bigbrother(object):
-    def __init__(self, ethernet="wlan1"):
-        if (ethernet is not "wlan1"):
-            INTERFACE = ethernet
+    def __init__(self,ns_proxy):
+        self.bigBrother = sched.scheduler(time.time, time.sleep) #bigBrother
+        self.bigBrother.enter(5, 1, self.update, (ns_proxy,)) # bigBrother
+        self.thread_bigBrother=threading.Thread(target=self.bigBrother.run, args=())
+        self.thread_bigBrother.setDaemon(1)
+        self.thread_bigBrother.start()
+
+        self.thread_rpc_server=threading.Thread(target=self.createRPCServer, args=())
+        self.thread_rpc_server.setDaemon(1)
+        self.thread_rpc_server.start()
+
+        self.proxy = ns_proxy # NS PROXY
+        self.robots = {}
+        self.sensors = {}
+
+    """ TODO """
+    def update(self,ns_proxy):
+        self.robots = self.proxy.ns.list()
+        # print printT(), self.robots
+        for key, value in self.robots.iteritems():
+            print "-----> ",key,value
+            if (key.find("NameServer") < 0):
+                proxy = Pyro4.Proxy(value)
+                print(proxy.get_uris())
+                time.sleep(1)
+        self.bigBrother.enter(20, 1, self.update, (self.proxy,))
+
+    """Create RPC server"""
+    def createRPCServer(self):
+        rcp = rpc_server.RPCHandler()
+        rcp.register_function(self.getAll)
+        rpc_server.rpc_server(rcp, ('localhost', PORT), authkey=bytes(PASSWORD))
+
+    """Funtion example"""
+    def getAll(self):
+        return self.robots
+
+
+
+class nameServer(object):
+    def __init__(self):
         self.ns = None  # Nameserver location
         self.nameServerWorking = False  # Flags
         self.ready = False  # Flags
@@ -46,7 +66,6 @@ class bigbrother(object):
         # Main thread
         print printT(color="yellow"), "--> Checking name_server"
         try:
-            # Working
             ns = Pyro4.locateNS()
             print "NameServer already working"
         except:
@@ -138,24 +157,27 @@ class bigbrother(object):
 
 if __name__ == "__main__":
     threading.current_thread().setName("Main")
-    if len(sys.argv) > 1:
+    if len(sys.argv) is 2:
         INTERFACE = sys.argv[1]
-    bb = bigbrother(ethernet=INTERFACE)
-    sch = scheduler(bb)
+    elif len(sys.argv) is 3:
+        PASSWORD = sys.argv[1]
 
-    signal.signal(signal.SIGTSTP, bb.handler)  # ctrl+z
-    signal.signal(signal.SIGINT, bb.handler)  # ctrl+c
+    ns_Object = nameServer()
+    bb = bigbrother(ns_Object)
+
+    signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
+    signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
 
     # Main thread
-    while (bb.nameServerWorking):
+    while (ns_Object.nameServerWorking):
         time.sleep(1)
-        if (bb.ready):
-            print colored("----------------------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------------------", "green")
+        if (ns_Object.ready):
+            print colored("\n----------------------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------------------", "green")
             command = raw_input(
                 "\n" + colored("Comando a la espera: ", "yellow"))
             try:
                 command=command.split()
-                realCommand = bb.execute(command[0])
+                realCommand = ns_Object.execute(command[0])
                 if (realCommand is not None):
                     if (len(command) is 1):
                         realCommand()
