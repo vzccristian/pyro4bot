@@ -39,11 +39,27 @@ class bigbrother(object):
     """Create RPC server"""
     def createRPCServer(self):
         rcp = rpc_server.RPCHandler()
+        # Interface methods
         rcp.register_function(self.list)
+        rcp.register_function(self.lookup)
+        rcp.register_function(self.ping)
         rcp.register_function(self.register)
-        rcp.register_function(self.proxy)
         rcp.register_function(self.remove)
+        rcp.register_function(self.set_metadata)
+        rcp.register_function(self.proxy)
         rpc_server.rpc_server(rcp, ('localhost', PORT), authkey=bytes(PASSWORD))
+
+    #TODO: Add decorator for all interface methods?
+    
+    def list(self):
+        return self.pyro4ns.list()
+
+    def lookup(self,name,return_metadata=False):
+        _return_metadata = return_metadata
+        return self.pyro4ns.lookup(name,return_metadata=_return_metadata)
+
+    def ping(self):
+        return self.pyro4ns.ping()
 
     def register(self,name, uri, safe=False, metadata=None):
         _safe = safe
@@ -56,17 +72,16 @@ class bigbrother(object):
         _regex = regex
         self.pyro4ns.remove(name=_name,prefix=_prefix,regex=_regex)
 
+    def set_metadata(self,name, metadata):
+        return self.pyro4ns.set_metadata(name,metadata)
+
+    """Pyro4 proxy"""
     def proxy(self,name):
         try:
             # print (self.pyro4ns.lookup(name))
             return Pyro4.Proxy(self.pyro4ns.lookup(name))
         except:
             return None
-
-    """Funtion example"""
-    def list(self):
-        return self.pyro4ns.list()
-
 
 class nameServer(object):
     def __init__(self):
