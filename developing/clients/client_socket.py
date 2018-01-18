@@ -61,10 +61,15 @@ def run_camera(cam):
         client_socket.close()
 
 print "Running client..."
-bot = ClientNODERB("learnbot1")  # nombre del bot en la name no el fichero json
+bot = ClientNODERB("alphabot@192.168.0.166")  # nombre del bot en la name no el fichero json
 cam = threading.Thread(target=run_camera, args=(bot.camera,))
 cam.setDaemon(True)
 cam.start()
-
+time.sleep(2)
+bot.l298n.backward(40)
+time.sleep(2)
+bot.l298n.left()
+time.sleep(2)
+bot.l298n.stop()
 while True:
     time.sleep(0.05)

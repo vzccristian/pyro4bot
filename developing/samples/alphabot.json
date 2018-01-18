@@ -6,8 +6,8 @@
       #"path":"/home/pi/td/developing/node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      #"ethernet":"wlan0",
-      "ethernet":"eth0",
+      "ethernet":"wlan0",
+      #"ethernet":"eth0",
       "name_server":true,
       "port_ns":9090,
       "port_node":4040,
@@ -16,11 +16,12 @@
       "def_worker":true
     },
    "services":{
-        "camera":{"cls":"picamnuevo","framerate":25,"width":320,"height":240,"frec":0.02,"worker_run":true,"enable":true},
-        "gpioservice":{"cls":"gpioservice","mode":11,"frec":0.02,"enable":true,"worker_run":false}
+        "camera":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":320,"height":240,"frec":0.02,"worker_run":true,"enable":true},
+        "gpioservice":{"cls":"gpioservice","gpio_mode":"BCM","frec":0.02,"enable":true,"worker_run":false,"mode":"local"},
+        "i2cservice":{"cls":"i2cservice","-->":["gpioservice"],"frec":0.02,"enable":true,"worker_run":false,"mode":"local"}
    },
    "sensors":{
-        "infrared":{"cls":"gpio_infrared","setup":[16,19],"IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
-        "base":{"cls":"gpio_base","setup":[12,13,6,20,21,26],"BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
+        "l298n":{"cls":"l298n","ENA":13,"IN1":19,"IN2":26,"IN3":16,"IN4":20,"ENB":12,"BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true},
+        "leds":{"cls":"scrollleds","address":60,"-->":["i2cservice"],"frec":0.03, "enable":false,"worker_run":true}
     }
 }

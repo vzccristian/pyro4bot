@@ -124,6 +124,9 @@ class uriresolver(control.Control):
             print("ERROR:name server not find")
             raise
 
+    def list_uris_dict(self):
+        return self.URIS
+    
     def list_uris(self, node=False):
         if node:
             return [self.URIS[x] for x in self.URIS]

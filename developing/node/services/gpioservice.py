@@ -3,72 +3,196 @@
 # lock().acquire()
 #____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
-import sys
-import os
-sys.path.insert(0, os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../..")))
+# import sys
+# import os
+# sys.path.insert(0, os.path.abspath(
+#     os.path.join(os.path.dirname(__file__), "../..")))
 import time
-from node.libs import control
+from node.libs import control, gpiodef
 import Pyro4
 import RPi.GPIO as GPIO
-modes = {-1: "Unset", 11: "BCM", 10: "BOARD"}
-# BCM is a dict for control pyros working with gpio port:[use,pinboard,IN/OUT,Proxy]
-BCM = {1: ["id_sc", 28, None, None], 2: ["sda", 3, None, None], 3: ["scl", 5, None, None], 4: ["gpclk", 7, None, None],
-       5: ["--", 29, None, None], 6: ["--", 31, None, None], 7: ["CE1", 26, None, None], 8: ["CE0", 25, None, None],
-       9: ["MISO", 21, None, None], 10: ["MOSI", 19, None, None], 11: ["sclk", 23, None, None], 12: ["pwm0", 32, None, None],
-       13: ["PWM1", 33, None, None], 14: ["TXD", 8, None, None], 15: ["RXD", 10, None, None], 16: ["--", 36, None, None],
-       17: ["--", 11, None, None], 18: ["PWM0", 12, None, None], 19: ["MISO", 35, None, None], 20: ["MOSI", 38, None, None],
-       21: ["SCLK", 40, None, None], 22: ["--", 15, None, None], 23: ["--", 16, None, None], 24: ["--", 18, None, None],
-       25: ["--", 22, None, None], 26: ["--", 37, None, None]}
-BOARD = {k: [k, "--", None, None] for k in range(1, 40)}
+
+
+def get_function(pin):
+    """ return gpio_function trapping errors"""
+    try:
+        return GPIO.gpio_function(pin)
+    except:
+        return -2
 
 
 @Pyro4.expose
 class gpioservice(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        GPIO.setmode(self.mode)
+        self.gpio_mode = gpiodef.modes.get(self.gpio_mode, GPIO.BCM)
+        GPIO.setmode(self.gpio_mode)
         GPIO.setwarnings(False)
-        if self.mode == 11:
-            self.GPIO = BCM
-        else:
-            self.GPIO = BOARD
-
+        self.create_gpio()
         # this line is the last line in constructor method
         super(gpioservice, self).__init__(self.worker)
 
     def worker(self):
         pass
-# here your methods
 
-    def status(self, pin=None):
-        if type(l) not in (list, tuple):
-            l = (l,)
-        sal = {k: x for k, x in self.GPIO if k in l}
-        return sal
+    def create_gpio(self):
+        """ create a new dict for gpi in mode bcm or board. use gpiodef.gpioport definition
+            set empty pwm and event_detect this funcionality no is implemented yet"""
+        self.pwm = {}
+        self.event_detect= {}
+        if self.gpio_mode == GPIO.BCM:
+            self.gpio = {x[1]: [k, x[0], get_function(x[1]), None]
+                         for k, x in gpiodef.gpioport.items() if x[1] != None}
+        else:
+            self.gpio = {k: [k, x[0], get_function(k), None]
+                         for k, x in gpiodef.gpioport.items() if x[2] != None}
+
+    def status(self, pins=None, _str=False):
+        if pins is None:
+            pins = self.gpio.keys()
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        if _str:
+            return {k: [x[0], x[1], gpiodef.status[x[2]], x[3]] for (k, x) in self.gpio.items() if k in pins}
+        else:
+            return {k: x for (k, x) in self.gpio.items() if k in pins}
 
     def setup(self, pins, value, proxy):
-        """set list pins in service gpio with initial value"""
-        pins = list(pins)
+        """ set a pin list in service gpio with initial value.
+        there are a relationship between proxy id and  pin number
+        """
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        notavailable=[x for x in pins if x in self.gpio and self.gpio[x][3] is not  None]
+        if len(notavailable)!=0:
+            print ("GPIO pins in use:",notavailable)
+            return False
         for k in pins:
-            if self.GPIO.has_key(k):
-                self.GPIO[k][2] = value
-                self.GPIO[k][3] = proxy
-                GPIO.setup(k, value)
+            if k in self.gpio:
+                self.gpio[k][2] = value
+                self.gpio[k][3] = proxy
+                if value in (GPIO.IN,GPIO.OUT):
+                    GPIO.setup(k, value)
 
-    def get_mode(self):
-        """ Return mode bcm 11 or BOARD 10 active"""
-        return modes[GPIO.getmode()]
+    def i2c_setup(self,proxy):
+        if self.gpio_mode == GPIO.BCM:
+            return self.setup((2,3),GPIO.I2C,proxy)
+        else:
+            return self.setup((3,5),GPIO.I2C,proxy)
 
-    def set_mode(self, m=11):
-        """ Set mode 11 BCM 10 BOARD """
-        self.mode = m
-        GPIO.setmode(self.mode)
+    def spi_setup(self,proxy):
+        if self.gpio_mode == GPIO.BCM:
+            return self.setup((7,8,9,10,11),GPIO.SPI,proxy)
+        else:
+            return self.setup((19,21,23,24,26),GPIO.SPI,proxy)
+
+    def get_mode(self, _str=False):
+        """ Return mode bcm 11 or BOARD 10 active if _str return mode for human readable"""
+        if _str:
+            return modes[GPIO.getmode()]
+        else:
+            return GPIO.getmode()
+
+    def input(self, pin):
+        """ read a pin value """
+        if pin in self.gpio:
+            return GPIO.input(pin)
+        else:
+            return None
+
+    def output(self, pin, value):
+        """ send valid value (True or False ) to gpio pin"""
+        try:
+            if pin in self.gpio and self.gpio[pin][2] == GPIO.OUT:
+                GPIO.output(pin, value)
+        except:
+            print("Error gpioservice output")
+
+    def pwm_init(self, pin, frec, proxy):
+        """ create a new pwm object if max_pwm is no exceded"""
+        if len(self.pwm) > gpiodef.max_pwm:
+            print "error1"
+            return False
+        if pin in self.gpio and self.gpio[pin][3] is None:
+            GPIO.setup(pin,GPIO.OUT)
+            self.pwm[pin]=GPIO.PWM(pin,frec)
+            self.gpio[pin][2]=10
+            self.gpio[pin][3]=proxy
+        else:
+            print "error 2"
+            return False
+
+    def pwm_start(self, pins, dc=50):
+        """ init a pwm objects with ids=pins. dc is pulse width between 0 and 100"""
+        dc= 100 if dc>100 else dc
+        dc= 0 if dc<0 else dc
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        for pin in pins:
+            if pin in self.pwm:
+                self.pwm[pin].start(dc)
+
+    def pwm_stop(self, pins):
+        """ stop same pwms objects"""
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        for pin in pins:
+            if pin in self.pwm:
+                self.pwm[pin].stop()
+
+    def pwm_changefrequency(self, pins, freq):
+        """to change the frequency where freq is the new frequency in Hz"""
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        for pin in pins:
+            if pin in self.pwm:
+                self.pwm[pin].ChangeFrequency(freq)
+
+    def pwm_changedutycycle(self, pins, dc=50):
+        """ to change pulse width dc is a value between 0 and 100"""
+        dc= 100 if dc>100 else dc
+        dc= 0 if dc<0 else dc
+        if type(pins) not in (list, tuple):
+            pins = (pins,)
+        for pin in pins:
+            if pin in self.pwm:
+                self.pwm[pin].ChangeDutyCycle(dc)
+
+    def pwm_remove(self, pin):
+        """ del a pwm object """
+        if pin in self.pwm:
+            del(self.pwm[pin])
+            self.gpio[pin][2]=get_function(pin)
+
+    def __del__(self):
+        print "borrando"
+        GPIO.cleanup()
+
+
+
 
 
 if __name__ == "__main__":
-    import sys
-    import os
-    sys.path.insert(0, os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../..")))
-    print "pp"
+    pass
+    # import sys
+    # import os
+    # sys.path.insert(0, os.path.abspath(
+    #     os.path.join(os.path.dirname(__file__), "../..")))
+    # di = {"cls": "gpioservice", "mode": "BCM",
+    #       "frec": 0.02, "enable": True, "worker_run": False}
+    # pru = gpioservice([], **di)
+    #
+    # print pru.status(range(1,13),_str=True)
+    # pru.pwm_init(12,200,"servo")
+    # pru.pwm_init(18,5,"LUZ")
+    # pru.pwm_start((12,18),7.5)
+    # pru.pwm_changedutycycle(12,1.5)
+    # time.sleep(1)
+    # print pru.status((12,18),_str=True)
+    # pru.pwm_changedutycycle(12,18.5)
+    # time.sleep(1)
+    # pru.pwm_changedutycycle(12,7.5)
+    # time.sleep(1)
+    # print pru.status(_str=True)
+    # pru.pwm_stop((12,18))
+    # #GPIO.cleanup()
