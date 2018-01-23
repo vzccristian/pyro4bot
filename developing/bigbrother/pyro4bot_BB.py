@@ -34,7 +34,17 @@ class bigbrother(object):
     """ TODO """
     def update(self,pyro4ns):
         self.robots = {x: self.pyro4ns.list()[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
-        self.bigBrother.enter(20, 1, self.update, (self.pyro4ns ,))
+        print self.robots
+        for key, value in self.robots.iteritems():
+            robot_uris = self.proxy(key).get_uris()
+            # TODO: Devolver clases en lugar de URIs
+            print robot_uris
+            # for u in robot_uris:
+            #     if type(self.sensors.get(key)) is not list:
+            #         self.sensors[key] = list.append(value)
+            #     else:
+            #         self.sensors[key] = self.sensors.get(key).append(value)
+        self.bigBrother.enter(10, 1, self.update, (self.pyro4ns ,))
 
     """Create RPC server"""
     def createRPCServer(self):
@@ -47,10 +57,11 @@ class bigbrother(object):
         rcp.register_function(self.remove)
         rcp.register_function(self.set_metadata)
         rcp.register_function(self.proxy)
+        rcp.register_function(self.request)
         rpc_server.rpc_server(rcp, ('localhost', PORT), authkey=bytes(PASSWORD))
 
     #TODO: Add decorator for all interface methods?
-    
+
     def list(self):
         return self.pyro4ns.list()
 
@@ -77,6 +88,13 @@ class bigbrother(object):
 
     """Pyro4 proxy"""
     def proxy(self,name):
+        try:
+            # print (self.pyro4ns.lookup(name))
+            return Pyro4.Proxy(self.pyro4ns.lookup(name))
+        except:
+            return None
+
+    def request(self,name):
         try:
             # print (self.pyro4ns.lookup(name))
             return Pyro4.Proxy(self.pyro4ns.lookup(name))

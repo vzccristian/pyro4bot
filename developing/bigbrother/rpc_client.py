@@ -19,6 +19,8 @@ if __name__ == "__main__":
     print "Client"
     c = Client(('localhost', 17000), authkey=b'PyRobot')
     proxy = RPCProxy(c)
+    proxy.request("*.camera")
+
     print "Lista:",(proxy.list())
     time.sleep(1)
     bot = proxy.proxy("learnbot1")

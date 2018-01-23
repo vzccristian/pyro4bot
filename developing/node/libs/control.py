@@ -13,9 +13,9 @@ def load_config(in_function):
         except:
             pass
         _self.__dict__.update(kwargs)
-        if _self.__dict__.has_key("UriResolver"):
-            _self.__dict__["UriResolver"] = Pyro4.Proxy(
-                _self.__dict__["UriResolver"])
+        if _self.__dict__.has_key("uriresolver"):
+            _self.__dict__["uriresolver"] = Pyro4.Proxy(
+                _self.__dict__["uriresolver"])
         if _self.__dict__.has_key("nr_remote"):
             print _self.__dict__["nr_remote"]
         if _self.__dict__.has_key("_local"):
