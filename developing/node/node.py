@@ -250,7 +250,7 @@ class NODERB (object):
     @Pyro4.expose
     def get_uris(self):
         pet = [self.PROCESS[x][0] for x in self.PROCESS]
-        print self.URI.list_uris()
+        # print self.URI.list_uris()
         return self.URI.list_uris()
 
     @Pyro4.expose

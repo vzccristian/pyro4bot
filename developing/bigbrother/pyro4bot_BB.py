@@ -34,16 +34,23 @@ class bigbrother(object):
     """ TODO """
     def update(self,pyro4ns):
         self.robots = {x: self.pyro4ns.list()[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
-        print self.robots
         for key, value in self.robots.iteritems():
             robot_uris = self.proxy(key).get_uris()
-            # TODO: Devolver clases en lugar de URIs
-            print robot_uris
-            # for u in robot_uris:
-            #     if type(self.sensors.get(key)) is not list:
-            #         self.sensors[key] = list.append(value)
-            #     else:
-            #         self.sensors[key] = self.sensors.get(key).append(value)
+
+            for u in robot_uris:
+                currentSensor = u.split(".")[1].split("@")[0]
+                if type(self.sensors.get(currentSensor)) is not list:
+                    self.sensors[currentSensor] = []
+                    self.sensors.get(currentSensor).append(u)
+                else:
+                    if not (u in self.sensors.get(currentSensor)):
+                        self.sensors.get(currentSensor).append(u)
+
+        print "ROBOTS:",self.robots
+        print "SENSORS:",self.sensors
+
+        #TODO: Guardar clases?
+
         self.bigBrother.enter(10, 1, self.update, (self.pyro4ns ,))
 
     """Create RPC server"""
