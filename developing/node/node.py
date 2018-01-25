@@ -12,6 +12,9 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
+import pdb
+
+PROXY_AND_NS_PASSWORD = "PyRobot"
 
 def import_class(list_class):
     try:
@@ -32,6 +35,7 @@ def remote__object(d):
     uriprint = "error"
     try:
         daemon = Pyro4.Daemon(host=ip, port=ports)
+        daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD) #TODO
         uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
         uriprint = uri.asString()
         daemon.requestLoop()
@@ -45,7 +49,7 @@ def remote__object(d):
 
 
 class NODERB (object):
-    # revisar la carga posterion de parametros json
+    # revisar la carga posterior de parametros json
     def __init__(self, filename="", json=None):
         if json is None:
             json = {}
@@ -55,6 +59,7 @@ class NODERB (object):
         import_class(self.N_conf.module_cls())
         self.URI_resolv = self.load_uri_resolver()
         self.URI = Pyro4.Proxy(self.URI_resolv)
+        self.URI._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD) #TODO
         self.load_robot()
         self.create_server_node()
 
@@ -71,6 +76,7 @@ class NODERB (object):
     def load_uri_resolver(self):
         name = self.name + ".URI_resolv"
         loader = self.N_conf.node[name]
+
         while not utils.free_port(self.port_node + 1):
             self.port_node += 10
         loader["pyro4id"] = "PYRO:" + name + "@" + \
@@ -82,7 +88,9 @@ class NODERB (object):
         self.PROCESS[name][1].start()
         self.PROCESS[name].append(self.PROCESS[name][1].pid)
         self.URI = Pyro4.Proxy(loader["pyro4id"])
+        self.URI._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
         conect = False
+
         while not conect:
             try:
                 conect = self.URI.echo() == "hello"
@@ -93,6 +101,7 @@ class NODERB (object):
             self.PROCESS[name].append("OK")
             print "___________STARTING RESOLVER URIs___________________"
             print("URI %s" % (colored(loader["pyro4id"], 'green')))
+
             if self.URI.get_ns():
                 print("NAME SERVER LOCATED. %s" %
                       (colored(" Resolving remote URIs ", 'green')))

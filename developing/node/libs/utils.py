@@ -21,6 +21,19 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
             raise
     return ip
 
+def get_gateway_address(ifname="lo"):
+    ip = None
+    try:
+        gateway_list = ni.gateways()
+        for gw in gateway_list[2]:
+            if gw[1] is ifname:
+                ip = gw[0]
+                break
+    except:
+            raise
+    print ip
+    return ip
+
 
 def free_port(port, ip="127.0.0.1"):
     lo = "127.0.0.1"

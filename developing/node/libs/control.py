@@ -77,6 +77,9 @@ class Control(object):
     def stop(self):
         self.worker_run = False
 
+    def test(self):
+        print "test"
+
     def echo(self, msg="hello"):
         return msg
 

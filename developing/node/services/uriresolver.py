@@ -1,3 +1,6 @@
+
+
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
@@ -8,6 +11,7 @@ from node.libs import control, utils
 import Pyro4
 from termcolor import colored
 
+PASSWORD = "PyRobot"
 
 @Pyro4.expose
 class uriresolver(control.Control):
@@ -16,15 +20,25 @@ class uriresolver(control.Control):
         Pyro4.config.HOST = self.ip
         self.URIS = {}
         # print self.pyro4id
+        self.ns = None
         self.get_ns()
         super(uriresolver, self).__init__()
 
     def get_ns(self):
         try:
-            self.ns = Pyro4.locateNS()  # hay que pasar el port y no funciona
+            # self.ns = Pyro4.locateNS()  # hay que pasar el port y no funciona
+            if self.ns is None:
+                print "Obteniendo... Proxy de BigBrother en self.ns"
+                self.ns = Pyro4.Proxy("PYRO:bigbrother@192.168.10.1:6060")
+                self.ns._pyroHmacKey = bytes(PASSWORD)
         except:
-            self.ns = False
-        return self.ns
+            print "Error al conectar a BigBrother"
+            return False
+        return self.ns.ready()
+
+    def ready(self):
+        print "ready en uriresolver"
+        return self.ns.ready()
 
     def new_uri(self, name, mode="public"):
         if mode == "local":
@@ -110,10 +124,15 @@ class uriresolver(control.Control):
             return remoteuri
 
     def register_robot(self, uri):
+        print "register_robot"
+        #./print(self.basename,self.URIS[self.basename])
+        # self.ns.register(self.basename, self.URIS[self.basename])
         try:
             if self.ns != False:
+
                 # print "___________REGISTERING PYRO4BOT ON NAME SERVER_________________"
                 self.URIS[self.basename] = uri
+
                 self.ns.register(self.basename, self.URIS[self.basename])
                 print("REGISTERING NAME SERVER URI: %s" %
                       (colored(self.URIS[self.basename], 'green')))
