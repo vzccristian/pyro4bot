@@ -14,7 +14,8 @@ import Pyro4.naming as nm
 from termcolor import colored
 import pdb
 
-PROXY_AND_NS_PASSWORD = "PyRobot"
+BIGBROTHER_PASSWORD = "PyRobot"
+PROXY_PASSWORD = "default"
 
 def import_class(list_class):
     try:
@@ -34,8 +35,9 @@ def remote__object(d):
     (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
     uriprint = "error"
     try:
-        daemon = Pyro4.Daemon(host=ip, port=ports)
-        daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD) #TODO
+        Pyro4.config.SERIALIZERS_ACCEPTED = set(['pickle', 'json', 'marshal', 'serpent'])
+        daemon = Pyro4.Daemon(host=ip, port=ports) # Daemon proxy for NODE
+        daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
         uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
         uriprint = uri.asString()
         daemon.requestLoop()
@@ -58,25 +60,23 @@ class NODERB (object):
         self.load_node(self, PROCESS={}, **self.N_conf.node)
         import_class(self.N_conf.module_cls())
         self.URI_resolv = self.load_uri_resolver()
-        self.URI = Pyro4.Proxy(self.URI_resolv)
-        self.URI._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD) #TODO
         self.load_robot()
         self.create_server_node()
 
     @control.load_node
     def load_node(self, data, **kwargs):
+        global PROXY_PASSWORD
+        PROXY_PASSWORD = self.name
         print("NOTIFIER:Starting System PyRobot on Ethernet device %s IP: %s" %
               (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow')))
         print("NOTIFIER:Node config loaded for filename:%s" %
               (colored(self.filename, 'yellow')))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
-        Pyro4.config.SERIALIZERS_ACCEPTED = set(['pickle', 'json', 'marshal', 'serpent'])
 
     def load_uri_resolver(self):
         name = self.name + ".URI_resolv"
         loader = self.N_conf.node[name]
-
         while not utils.free_port(self.port_node + 1):
             self.port_node += 10
         loader["pyro4id"] = "PYRO:" + name + "@" + \
@@ -87,16 +87,16 @@ class NODERB (object):
             Process(name=name, target=remote__object, args=(loader,)))
         self.PROCESS[name][1].start()
         self.PROCESS[name].append(self.PROCESS[name][1].pid)
-        self.URI = Pyro4.Proxy(loader["pyro4id"])
-        self.URI._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
+        self.URI = Pyro4.Proxy(loader["pyro4id"]) #Nodeproxy
+        self.URI._pyroHmacKey = bytes(PROXY_PASSWORD)
         conect = False
-
         while not conect:
             try:
                 conect = self.URI.echo() == "hello"
             except:
                 conect = False
             time.sleep(0.3)
+
         if conect:
             self.PROCESS[name].append("OK")
             print "___________STARTING RESOLVER URIs___________________"

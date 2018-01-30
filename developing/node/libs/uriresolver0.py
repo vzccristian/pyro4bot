@@ -7,19 +7,18 @@
 #____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
 import time
-from node.libs import control, utils
+# from node.libs import control, utils
+from libs import control, utils
 import Pyro4
 from termcolor import colored
 
-ROUTER_PASSWORD = "PyRobot"
-ROUTER_IP = "192.168.10.1"
-ROUTER_PORT = "6060"
+PASSWORD = "PyRobot"
 
 @Pyro4.expose
 class uriresolver(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        Pyro4.config.HOST = str(ROUTER_IP)
+        Pyro4.config.HOST = self.ip
         self.URIS = {}
         # print self.pyro4id
         self.ns = None
@@ -28,16 +27,18 @@ class uriresolver(control.Control):
 
     def get_ns(self):
         try:
+            # self.ns = Pyro4.locateNS()  # hay que pasar el port y no funciona
             if self.ns is None:
-                self.ns = Pyro4.Proxy("PYRO:bigbrother@"+ROUTER_IP+":"+ROUTER_PORT)
-                self.ns._pyroHmacKey = bytes(ROUTER_PASSWORD)
-                print "[uriresolver] CONNECTED TO ----> PYRO:bigbrother@"+ROUTER_IP+":"+ROUTER_PORT
+                print "Obteniendo... Proxy de BigBrother en self.ns"
+                self.ns = Pyro4.Proxy("PYRO:bigbrother@192.168.10.1:6060")
+                self.ns._pyroHmacKey = bytes(PASSWORD)
         except:
             print "Error al conectar a BigBrother"
             return False
-        return self.ready()
+        return self.ns.ready()
 
     def ready(self):
+        print "ready en uriresolver"
         return self.ns.ready()
 
     def new_uri(self, name, mode="public"):
@@ -124,6 +125,7 @@ class uriresolver(control.Control):
             return remoteuri
 
     def register_robot(self, uri):
+        print "register_robot"
         #./print(self.basename,self.URIS[self.basename])
         # self.ns.register(self.basename, self.URIS[self.basename])
         try:

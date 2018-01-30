@@ -13,6 +13,7 @@ import subprocess
 PROXY_AND_NS_PASSWORD = "PyRobot"
 PROXY_PORT = 6060
 PROXY_INTERFACE = "wlan1"
+
 """ Class for NS gestion """
 class bigbrother(object):
     def __init__(self, _pyro4ns):
@@ -82,7 +83,7 @@ class bigbrother(object):
 
     @Pyro4.expose
     def register(self, name, uri, safe=False, metadata=None):
-        print "Register", name, uri
+        print "Registering: ", name, uri
         _safe = safe
         _metadata = metadata
         self.pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
