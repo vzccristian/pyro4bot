@@ -7,3 +7,4 @@ Pyro4==4.63
 pywebview==1.8
 simplejson==3.12.0
 termcolor==1.1.0
+cryptography==1.7.1
