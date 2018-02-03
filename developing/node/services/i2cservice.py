@@ -21,7 +21,8 @@ class i2cservice (control.Control):
         print ("I2C:",self.status())
 
         # this line is the last line in constructor method
-        super(i2cservice, self).__init__(self.worker)
+        super(i2cservice, self).__init__()
+        self.init_workers()
 
     def worker(self):
         pass

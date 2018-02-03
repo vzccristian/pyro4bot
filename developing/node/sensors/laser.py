@@ -23,13 +23,14 @@ END_JSON_DOCUMENTATION
 class laser (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        self.send_subscripcion(self.arduino, "LASER")
-
         # this line is the last line in constructor method
-        super(laser, self).__init__(self.worker)
+        super(laser, self).__init__()
+        self.init_workers(self.worker)
+        self.send_subscripcion(self.arduino, "LASER")
 
     def worker(self):
         while self.worker_run:
+            print("laser:",self.LASER[0])
             time.sleep(self.frec)
 
     def get_laser(self):

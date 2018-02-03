@@ -18,7 +18,8 @@ class gpioinfrared(control.Control):
         # GPIO.setup(self.setup[0],GPIO.IN,GPIO.PUD_UP)
         # GPIO.setup(self.setup[1],GPIO.IN,GPIO.PUD_UP)
         # this line is the last line in constructor method
-        super(gpioinfrared, self).__init__(self.worker)
+        super(gpioinfrared, self).__init__()
+        self.init_workers(self.worker)
 
     def worker(self):
         while self.worker_run:

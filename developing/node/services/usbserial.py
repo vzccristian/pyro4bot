@@ -39,7 +39,8 @@ class usbserial(control.Control):
         except:
                 #print("error usbserial")
             raise
-        super(usbserial, self).__init__((self.worker_reader, self.worker_dist))
+        super(usbserial, self).__init__(
+        self.init_workers((self.worker_reader,self.worker_dist))
 
     def worker_reader(self):
         self.serial.flushInput()

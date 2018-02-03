@@ -23,8 +23,8 @@
    "sensors":{
         "laser":{"cls":"laser","LASER":[0,0],"-->":["arduino"],"enable":true,"frec":0.02},
         "infrared":{"cls":"infrared","IR":[0,0,0,0],"-->":["arduino"],"enable":true,"frec":0.02,"enable":true},
-        "base":{"cls":"basemotion","MOTORS":[0,0],"-->":["arduino"],"frec":0.03, "enable":true},
-        "pantilt":{"cls":"pantilt","PT":[90,90],"-->":["arduino"],"frec":0.03, "enable":true},
-        "face":{"cls":"face","-->":["botface.face","laser"],"frec":0.03, "enable":true}
+        "base":{"cls":"basemotion","MOTORS":[0,0],"-->":["arduino"],"frec":0.03, "enable":false},
+        "pantilt":{"cls":"pantilt","PT":[90,90],"-->":["arduino"],"frec":0.03, "enable":false},
+        "face":{"cls":"face","-->":["botface.face","laser"],"frec":0.03, "enable":false}
     }
 }

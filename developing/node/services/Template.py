@@ -13,7 +13,9 @@ class < CLASS_NAME > (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # this line is the last line in constructor method
-        super( < CLASS_NAME > , self).__init__(self.worker)
+        super( < CLASS_NAME > , self).__init__()
+        #if you want run any worker method
+        self.init_workers()
 
     def worker(self):
         while self.worker_run:

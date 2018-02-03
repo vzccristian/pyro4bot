@@ -23,13 +23,13 @@ END_JSON_DOCUMENTATION
 class infrared (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        # self.arduino.subscribe("IR",self.pyro4id)
+        super(infrared, self).__init__()
+        self.init_workers(self.worker)
         self.send_subscripcion(self.arduino, "IR")
-        # this line is the last line in constructor method
-        super(infrared, self).__init__(self.worker)
 
     def worker(self):
         while self.worker_run:
+            print("salida: ",self.IR)
             time.sleep(self.frec)
 # here your methods
 

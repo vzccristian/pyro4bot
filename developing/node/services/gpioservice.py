@@ -29,9 +29,9 @@ class gpioservice(control.Control):
         GPIO.setmode(self.gpio_mode)
         GPIO.setwarnings(False)
         self.create_gpio()
-        # this line is the last line in constructor method
-        super(gpioservice, self).__init__(self.worker)
+        super(gpioservice, self).__init__()
 
+        
     def worker(self):
         pass
 

@@ -13,7 +13,8 @@ class spiservice (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # this line is the last line in constructor method
-        super(spiservice, self).__init__(self.worker)
+        super(spiservice, self).__init__()
+        self.init_workers()
 
     def worker(self):
         while self.worker_run:
