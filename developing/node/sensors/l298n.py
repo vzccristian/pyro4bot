@@ -12,12 +12,13 @@ import RPi.GPIO as GPIO
 class l298n(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        
+
         self.gpioservice.setup(
             [self.IN1, self.IN2, self.IN3, self.IN4], GPIO.OUT, self.pyro4id)
         self.gpioservice.pwm_init(self.ENA, 100, self.pyro4id)
         self.gpioservice.pwm_init(self.ENB, 100, self.pyro4id)
         self.gpioservice.pwm_start((self.ENA, self.ENB), 100)
+        self.moving_forward = True
         self.stop()
         print self.gpioservice.status()
         super(l298n, self).__init__(self.worker)
@@ -29,39 +30,44 @@ class l298n(control.Control):
         except:
             pass
 
-    def forward(self, DCA=100):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def forward(self, DCA=self.DCA):
+        self.DCA=DCA
+        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), self.DCA)
         self.gpioservice.output(self.IN1, 1)
         self.gpioservice.output(self.IN2, 0)
         self.gpioservice.output(self.IN3, 1)
         self.gpioservice.output(self.IN4, 0)
 
-    def stop(self, DCA=0):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def stop(self):
+        self.DCA=0
+        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), self.DCA)
         self.gpioservice.output(self.IN1, 0)
         self.gpioservice.output(self.IN2, 0)
         self.gpioservice.output(self.IN3, 0)
         self.gpioservice.output(self.IN4, 0)
 
-    def backward(self, DCA=100):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def backward(self, DCA=self.DCA):
+        self.DCA=DCA
+        self.moving_forward = False
+        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), self.DCA)
         self.gpioservice.output(self.IN1, 0)
         self.gpioservice.output(self.IN2, 1)
         self.gpioservice.output(self.IN3, 0)
         self.gpioservice.output(self.IN4, 1)
 
-    def setvel(self, DCA, DCB):
+    def setvel(self, DCA, DCB, change_direction=False):
+        self.moving_forward = not moving_forward if change_direction else moving_forward
         self.gpioservice.pwm_changedutycycle(self.ENA, DCA)
         self.gpioservice.pwm_changedutycycle(self.ENB, DCB)
-        self.gpioservice.output(self.IN1, 1)
-        self.gpioservice.output(self.IN2, 0)
-        self.gpioservice.output(self.IN3, 1)
-        self.gpioservice.output(self.IN4, 0)
+        self.gpioservice.output(self.IN1, 1 if self.moving_forward else 0)
+        self.gpioservice.output(self.IN2, 0 if self.moving_forward else 1)
+        self.gpioservice.output(self.IN3, 1 if self.moving_forward else 0)
+        self.gpioservice.output(self.IN4, 0 if self.moving_forward else 1)
 
-    def left(self, DCA=100):
+    def left(self, DCA=self.DCA):
         self.setvel(0, DCA)
 
-    def right(self, DCA=100):
+    def right(self, DCA=self.DCA):
         self.setvel(DCA, 0)
 
 

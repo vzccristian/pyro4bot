@@ -12,7 +12,7 @@ class face(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
 
-        super(face, self).__init__(self.worker)
+        super(face, self).__init__()
 
     def worker(self):
         while self.worker_run:

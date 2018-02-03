@@ -6,8 +6,9 @@ import node.node as nodo
 import time
 import sys
 
-if len(sys.argv) > 1:
-    jsonbot = sys.argv[1]
-else:
-    jsonbot = "./samples/simplebot"
-nod = nodo.NODERB(filename=jsonbot)
+def start_pyro4bot(json="./samples/simplebot"):
+    nod = nodo.NODERB(filename=json)
+
+if __name__ == '__main__':
+    start_pyro4bot()
+    
