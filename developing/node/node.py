@@ -67,8 +67,8 @@ class NODERB (object):
     def load_node(self, data, **kwargs):
         global PROXY_PASSWORD
         PROXY_PASSWORD = self.name
-        print("NOTIFIER:Starting System PyRobot on Ethernet device %s IP: %s" %
-              (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow')))
+        print("NOTIFIER:Starting System PyRobot on Ethernet device %s IP: %s with password: %s" %
+              (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow'), colored(PROXY_PASSWORD, 'yellow')))
         print("NOTIFIER:Node config loaded for filename:%s" %
               (colored(self.filename, 'yellow')))
         self.PROCESS = {}
@@ -119,6 +119,7 @@ class NODERB (object):
         try:
                 # si hay nameserver registar todos los proxys y el SERVER
             daemon = Pyro4.Daemon(host=self.ip, port=self.port_node)
+            daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
             uri = daemon.register(self, objectId=self.name)
             print("____________STARTING PYRO4BOT %s_______________________" % self.name)
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
@@ -134,8 +135,8 @@ class NODERB (object):
             print("ERROR: in PYRO4BOT")
             # raise
         finally:
-            print("[%s] Shuting %s" %
-                  (colored("Down", 'green'), uri.asString()))
+            if (uri is not 0):
+                print("[%s] Shuting %s" %(colored("Down", 'green'), uri.asString()))
 
     def load_robot(self):
         print "____________STARTING PYRO4BOT OBJECT_______________________"
@@ -172,7 +173,7 @@ class NODERB (object):
     def check_local_deps(self, obj):
         check_local = "OK"
         for d in obj["nr_local"]:
-            uri = self.URI.wait_available(d)
+            uri = self.URI.wait_available(d, PROXY_PASSWORD)
             if uri != None:
                 obj["_local"].append(uri)
             else:
@@ -243,6 +244,7 @@ class NODERB (object):
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
             daemon = Pyro4.Daemon(host=ip, port=ports)
+            daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
             uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
             if d.has_key("_REMOTE_STATUS") and d["_REMOTE_STATUS"] == "WAITING":
                 proc_pipe.send("WAITING")

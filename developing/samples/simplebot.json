@@ -15,7 +15,6 @@
       "def_worker":true
     },
    "services":{
-        "camera":{"cls":"usbcam","framerate":25,"width":320,"height":200,"frec":0.01,"worker_run":true,"enable":true},
         "arduino":{"cls":"usbsimulator","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01,"mode":"local","enable":true}
    },
    "sensors":{

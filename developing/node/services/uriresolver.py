@@ -1,10 +1,7 @@
-
-
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control, utils
@@ -83,12 +80,13 @@ class uriresolver(control.Control):
                 return k
         return None
 
-    def wait_available(self, uri, trys=20):  # eso puede ser asinc return
+    def wait_available(self, uri, password, trys=20):  # eso puede ser asinc return
         conect = False
         if uri.find("@") == -1:
             uri = self.get_uri(uri)
         try:
             p = Pyro4.Proxy(uri)
+            p._pyroHmacKey = bytes(password)
         except:
             return None
         while not conect and trys > 0:
@@ -111,6 +109,7 @@ class uriresolver(control.Control):
             try:
                 getbot = self.ns.lookup(name[0:name.find(".")])
                 proxy = Pyro4.Proxy(getbot)
+                proxy._pyroHmacKey = bytes(password)
                 remoteuri, status = proxy.get_name_uri(name)
                 conect = (remoteuri != None and status not in ["down", "wait"])
             except:

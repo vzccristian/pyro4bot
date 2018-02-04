@@ -4,6 +4,11 @@ import Pyro4
 import utils
 
 
+def getProxy(uri, password):
+    proxy = Pyro4.Proxy(uri)
+    proxy._pyroHmacKey = bytes(password)
+    return proxy
+
 # decoradores para las clases generales
 def load_config(in_function):
     def out_function(*args, **kwargs):
@@ -13,22 +18,24 @@ def load_config(in_function):
         except:
             pass
         _self.__dict__.update(kwargs)
+
+        if _self.__dict__.has_key("name"):
+            _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
         if _self.__dict__.has_key("uriresolver"):
-            _self.__dict__["uriresolver"] = Pyro4.Proxy(
-                _self.__dict__["uriresolver"])
+            _self.__dict__["uriresolver"] = getProxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
         if _self.__dict__.has_key("nr_remote"):
             print _self.__dict__["nr_remote"]
         if _self.__dict__.has_key("_local"):
             injects = {}
             for deps in _self.__dict__["_local"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = Pyro4.Proxy(deps)
+                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if _self.__dict__.has_key("_remote"):
             injects = {}
             for deps in _self.__dict__["_remote"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = Pyro4.Proxy(deps)
+                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if _self.__dict__.has_key("-->"):
             del(_self.__dict__["-->"])
@@ -94,7 +101,7 @@ class Control(object):
 
     def subscribe(self, key, uri):
         try:
-            self.subscriptors[key] = Pyro4.Proxy(uri)
+            self.subscriptors[key] = self.getProxy(uri)
             #print ("arduino subcriptor %s %s" %(key,uri))
             return True
         except:

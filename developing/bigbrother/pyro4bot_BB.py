@@ -10,12 +10,18 @@ from termcolor import colored
 import signal
 import subprocess
 
+
 PROXY_AND_NS_PASSWORD = "PyRobot"
 PROXY_PORT = 6060
 PROXY_INTERFACE = "wlan1"
 
-""" Class for NS gestion """
+
 class bigbrother(object):
+    """BigBrothers controls communications middleware.
+
+    Bigbrother is responsible for allowing or not accessing the name server.
+    """
+
     def __init__(self, _pyro4ns):
         self.pyro4ns = _pyro4ns  # Pyro4NS location
 
@@ -39,7 +45,10 @@ class bigbrother(object):
         self.robots = {x: self.pyro4ns.list(
         )[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
         for key, value in self.robots.iteritems():
-            robot_uris = self.proxy(key).get_uris()
+            print "Obteniendo proxy para:",value,"con pass:",key
+            self.robotProxy = Pyro4.Proxy(value)
+            self.robotProxy._pyroHmacKey = bytes(key)
+            robot_uris = self.robotProxy.get_uris()
             for u in robot_uris:
                 currentSensor = u.split(".")[1].split("@")[0]
                 if type(self.sensors.get(currentSensor)) is not list:
@@ -60,13 +69,18 @@ class bigbrother(object):
     def createPyroProxy(self):
         print "Creating proxy for bigBrother"
         try:
-            self.daemon = Pyro4.Daemon(host=utils.get_ip_address(ifname=PROXY_INTERFACE), port=PROXY_PORT)
+            self.daemon = Pyro4.Daemon(host=utils.get_ip_address(
+                ifname=PROXY_INTERFACE), port=PROXY_PORT)
             self.daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
+
+            self.daemon.PYRO_MAXCONNECTIONS = 20
+
             self.uri = self.daemon.register(self, objectId="bigbrother")
             print "bigBrother running : ", self.uri
             self.daemon.requestLoop()
-        except:
+        except Exception:
             print "Error creando proxy"
+            raise
 
     @Pyro4.expose
     def list(self):
@@ -103,7 +117,7 @@ class bigbrother(object):
     def proxy(self, name):
         try:
             return Pyro4.Proxy(self.pyro4ns.lookup(name))
-        except:
+        except Exception:
             return None
 
     # TODO
@@ -111,7 +125,7 @@ class bigbrother(object):
     def request(self, name):
         try:
             return Pyro4.Proxy(self.pyro4ns.lookup(name))
-        except:
+        except Exception:
             return None
 
     @Pyro4.expose
@@ -134,18 +148,22 @@ class nameServer(object):
         try:
             self.pyro4ns = Pyro4.locateNS()
             print "NameServer already working"
-        except:
+        except Exception:
             self.nsThread = threading.Thread(
                 target=self.createNameServer, args=())
             self.nsThread.start()  # Thread-1 started
-            self.pyro4ns = Pyro4.locateNS(hmac_key=bytes(PROXY_AND_NS_PASSWORD))  # Getting NS on main thread
+            self.pyro4ns = Pyro4.locateNS(hmac_key=bytes(
+                PROXY_AND_NS_PASSWORD))  # Getting NS on main thread
 
     """Thread-1 loop for nameserver"""
+
     def createNameServer(self):
         try:
             self.ready = True
-            self.nameserver = nm.startNSloop(host="localhost",hmac=bytes(PROXY_AND_NS_PASSWORD))  # NS ready
-        except:
+            self.nameserver = nm.startNSloop(
+                host="localhost", hmac=bytes(PROXY_AND_NS_PASSWORD))
+            # NS ready
+        except Exception:
             print "Error al crear el nameserver"
 
     def getPyro4NS(self):
@@ -154,12 +172,12 @@ class nameServer(object):
     def isWorking(self):
         return self.ready
 
-    ## ------------------------ ADMIN TOOLS -------------------#
+    # ------------------------ ADMIN TOOLS -------------------#
     def list(self):
         try:
             print "------------------ NAME-SERVER LIST ------------------"
             print self.pyro4ns.list()
-        except:
+        except Exception:
             print "Error name-server"
             raise
 
@@ -188,7 +206,8 @@ class nameServer(object):
 
     def remove(self, name):
         try:
-            print "Removed " + name + " : " + colored(self.pyro4ns.lookup(name), "red")
+            print("Removed " + name + " : " +
+                  colored(self.pyro4ns.lookup(name), "red"))
             self.pyro4ns.remove(name)
         except Pyro4.errors.NamingError:
             print name + " no encontrado."
@@ -199,7 +218,8 @@ class nameServer(object):
         print colored("\nSaliendo...", "red")
         self.nameServerWorking = False
         closer = subprocess.Popen(
-            ["sh", "./killer.sh"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            ["sh", "./killer.sh"], stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE)
         closer.wait()
 
     """Ctrl+z and Ctrl+c handler"""
@@ -251,7 +271,7 @@ if __name__ == "__main__":
                             print(proxy.get_uris())
                 else:
                     print "Comando no encontrado."
-            except:
+            except Exception:
                 print(colored("Comando erroneo", "red"))
                 raise
         time.sleep(1)
