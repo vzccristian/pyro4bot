@@ -19,11 +19,9 @@ class usbsimulator(control.Control):
         self.lock = 1
         self.IR=[0,1,1]
         self.LASER=[0,0]
-
-        super(usbsimulator, self).__init__()
         self.init_workers(self.worker_reader)
         self.init_publisher(self.__dict__)
-
+        
     def worker_reader(self):
         while self.worker_run:
             self.IR[0]=self.IR[0]+1

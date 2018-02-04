@@ -20,7 +20,7 @@ class usbcam(control.Control):
         self.buffer = [0, 0]
         self.available = 0
         self.lock = 1
-        super(usbcam, self).__init__()
+        #super(usbcam, self).__init__()
         self.init_workers(self.worker_read)
 
     def worker_read(self):

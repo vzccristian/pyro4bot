@@ -23,7 +23,6 @@ END_JSON_DOCUMENTATION
 class infrared (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        super(infrared, self).__init__()
         self.init_workers(self.worker)
         self.send_subscripcion(self.arduino, "IR")
 

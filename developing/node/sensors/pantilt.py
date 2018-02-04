@@ -25,7 +25,6 @@ class pantilt(control.Control):
         self.send_subscripcion(self.arduino, "PT")
         self.bar = False
         self.ptblock = False
-        super(pantilt, self).__init__()
         self.init_workers(self.worker)
 
     def worker(self):

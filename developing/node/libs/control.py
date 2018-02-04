@@ -6,7 +6,8 @@ import utils
 
 #____________________DECORATOR FOR GENERAL CLASS__________________
 def load_config(in_function):
-    """ Decorator for load Json options in sensor a service objects"""
+    """ Decorator for load Json options in Pyro4bot objects
+        init superclass control """
     def out_function(*args, **kwargs):
         _self = args[0]
         try:
@@ -33,7 +34,7 @@ def load_config(in_function):
             _self.__dict__.update(injects)
         if _self.__dict__.has_key("-->"):
             del(_self.__dict__["-->"])
-        # print "injections"
+        super(_self.__class__.__mro__[0],_self).__init__()
         in_function(*args, **kwargs)
     return out_function
 
@@ -49,22 +50,20 @@ def load_node(in_function):
 
 @Pyro4.expose
 class Control(object):
-    """ This class provide threading funcionality to all object.
+    """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
+
     def __init__(self, *k, **kw):
         self.threadpublisher=False
+        self.workers = []
         self.data_publication=None
         self.subscriptors = {}
         self.mutex = threading.Lock()
 
-
-    def init_workers(self, fn=None):
+    def init_workers(self, fn):
         """ start all workers daemon"""
-        if fn == None:
-            self.worker_run = False
         if type(fn) not in (list, tuple):
             fn = (fn,)
-        self.workers = []
         if self.worker_run:
             for func in fn:
                 t = threading.Thread(target=func, args=())
@@ -134,5 +133,6 @@ class Control(object):
     def echo(self, msg="hello"):
         return msg
 
+    @property
     def get_pyroid(self):
         return self.pyro4id

@@ -15,9 +15,7 @@ class uriresolver(control.Control):
     def __init__(self, data, **kwargs):
         Pyro4.config.HOST = self.ip
         self.URIS = {}
-        # print self.pyro4id
         self.get_ns()
-        super(uriresolver, self).__init__()
 
     def get_ns(self):
         try:
@@ -126,7 +124,7 @@ class uriresolver(control.Control):
 
     def list_uris_dict(self):
         return self.URIS
-    
+
     def list_uris(self, node=False):
         if node:
             return [self.URIS[x] for x in self.URIS]

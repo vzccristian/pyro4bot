@@ -12,7 +12,7 @@ import RPi.GPIO as GPIO
 class l298n(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        
+
         self.gpioservice.setup(
             [self.IN1, self.IN2, self.IN3, self.IN4], GPIO.OUT, self.pyro4id)
         self.gpioservice.pwm_init(self.ENA, 100, self.pyro4id)
@@ -20,7 +20,6 @@ class l298n(control.Control):
         self.gpioservice.pwm_start((self.ENA, self.ENB), 100)
         self.stop()
         print self.gpioservice.status()
-        super(l298n, self).__init__(self.worker)
 
     def worker(self):
         try:
