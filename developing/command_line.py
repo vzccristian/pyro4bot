@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
-
 import re
 import requests
 import os
 import sys
 from termcolor import cprint
+
 import start_pyro4bot
 
 error_print = lambda x : cprint(x, 'red')
@@ -50,11 +50,10 @@ def install_components_from_json(json):
     error_print("[ERROR] NOT YET")
 
 def help():
-    print("\nusage: [options] inputs\n")
-    print("-cc, --create-component *component_names       create a component from template")
+    print("\nUsage: [options] inputs\n")
+    print("-cc, --create-component *component_names       create component from template")
     print("-i, --install-components [JSON]                download components from the repo")
     print("-s, --start-pyro4bot [JSON]                    starts pyro4bot")
-    pass 
 
 def main():
     if len(sys.argv) == 1:
@@ -64,7 +63,7 @@ def main():
             if len(sys.argv) > 2:
                 create_from_template(sys.argv[2:])
             else:
-                error_print("[ERROR] At least 1 valor needed to create a component from template")
+                error_print("[ERROR] At least one value is needed to create a component from a template")
         elif sys.argv[1] in ['-i', '--install-components']:
             if len(sys.argv) == 3:
                 install_components_from_json(sys.argv[2])
