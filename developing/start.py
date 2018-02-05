@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import start_pyro4bot
-import utils as u
+import misc.utils as u
 import fire
 
 
