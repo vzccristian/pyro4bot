@@ -6,7 +6,9 @@ import node.node as nodo
 import time
 import sys
 
-def start_pyro4bot(json="./samples/simplebot"):
+def start_pyro4bot(json=None):
+    if json is None:
+        json = "./samples/simplebot"
     nod = nodo.NODERB(filename=json)
 
 if __name__ == '__main__':

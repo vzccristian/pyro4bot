@@ -4,11 +4,13 @@
 import re
 import requests
 import os
-import sys
 from termcolor import cprint
 import start_pyro4bot
+import argparse
 
-error_print = lambda x : cprint(x, 'red')
+def error_print(x):
+    cprint(x, 'red')
+
 def create_from_template(*args):
     for a in args:
         try:
@@ -57,26 +59,31 @@ def help():
     pass 
 
 def main():
-    if len(sys.argv) == 1:
-        help()
-    else:
-        if sys.argv[1] in ['-cc', '--create-component']:
-            if len(sys.argv) > 2:
-                create_from_template(sys.argv[2:])
-            else:
-                error_print("[ERROR] At least 1 valor needed to create a component from template")
-        elif sys.argv[1] in ['-i', '--install-components']:
-            if len(sys.argv) == 3:
-                install_components_from_json(sys.argv[2])
-            elif len(sys.argv) == 2:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("create_component", "-cc", help="create a component from template", action='store_true', type=str)
+    parser.add_argument("install_components", "-i", help="install the components needed to create the JSON's robot", type=str)
+    parser.add_argument("start", "-s", help="starts pyro4bot", type=str)
+    parser.add_argument("value")
+    args = parser.parse_args()
+    if args.create_component:
+        if args.value:
+            create_from_template(args.value)
+        else:
+            error_print("[ERROR] At least 1 valor needed to create a component from template")
+    elif args.install_components:
+        if args.value:
+           install_components_from_json(args.value)
+        else:
+            inp = raw_input("You didn't input any parameters. "
+                      "Do you want to install all components of the repository?[y/n]")
+            if inp.lower() == 'y':
                 install_components()
-        elif sys.argv[1] in ['-h', '--help']:
-            help()
-        elif sys.argv[1] in ['-s', '--start-pyro4bot']:
-            if len(sys.argv) == 3:
-                start_pyro4bot.start_pyro4bot(sys.argv[2])
+    elif args.start:
+            if args.value:
+                start_pyro4bot.start_pyro4bot(args.value)
             else:
                 start_pyro4bot.start_pyro4bot()
+
 
 
 if __name__ == '__main__':
