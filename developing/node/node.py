@@ -12,6 +12,10 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
+import pdb
+
+BIGBROTHER_PASSWORD = "PyRobot"
+PROXY_PASSWORD = "default"
 
 
 def import_class(list_class):
@@ -33,9 +37,10 @@ def remote__object(d,q):
     (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
     uriprint = "error"
     try:
-        daemon = Pyro4.Daemon(host=ip, port=ports)
-        py_object = eval(d["cls"])(data=[], **d)
-        uri = daemon.register(py_object, objectId=name_ob)
+        Pyro4.config.SERIALIZERS_ACCEPTED = set(['pickle', 'json', 'marshal', 'serpent'])
+        daemon = Pyro4.Daemon(host=ip, port=ports) # Daemon proxy for NODE
+        daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
+        uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
         uriprint = uri.asString()
         exposed = Pyro4.core.DaemonObject(daemon).get_metadata(name_ob, True)
         q.put(exposed)
@@ -50,7 +55,7 @@ def remote__object(d,q):
 
 
 class NODERB (object):
-    # revisar la carga posterion de parametros json
+    # revisar la carga posterior de parametros json
     def __init__(self, filename="", json=None):
         if json is None:
             json = {}
@@ -59,19 +64,19 @@ class NODERB (object):
         self.load_node(self, PROCESS={}, **self.N_conf.node)
         import_class(self.N_conf.module_cls())
         self.URI_resolv = self.load_uri_resolver()
-        self.URI = Pyro4.Proxy(self.URI_resolv)
         self.load_robot()
         self.create_server_node()
 
     @control.load_node
     def load_node(self, data, **kwargs):
-        print("NOTIFIER:Starting System PyRobot on Ethernet device %s IP: %s" %
-              (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow')))
+        global PROXY_PASSWORD
+        PROXY_PASSWORD = self.name
+        print("NOTIFIER:Starting System PyRobot on Ethernet device %s IP: %s with password: %s" %
+              (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow'), colored(PROXY_PASSWORD, 'yellow')))
         print("NOTIFIER:Node config loaded for filename:%s" %
               (colored(self.filename, 'yellow')))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
-        Pyro4.config.SERIALIZERS_ACCEPTED = set(['pickle', 'json', 'marshal', 'serpent'])
 
     def load_uri_resolver(self):
         name = self.name + ".URI_resolv"
@@ -87,7 +92,8 @@ class NODERB (object):
             Process(name=name, target=remote__object, args=(loader,q)))
         self.PROCESS[name][1].start()
         self.PROCESS[name].append(self.PROCESS[name][1].pid)
-        self.URI = Pyro4.Proxy(loader["pyro4id"])
+        self.URI = Pyro4.Proxy(loader["pyro4id"]) #Nodeproxy
+        self.URI._pyroHmacKey = bytes(PROXY_PASSWORD)
         conect = False
         while not conect:
             try:
@@ -95,11 +101,13 @@ class NODERB (object):
             except Exception:
                 conect = False
             time.sleep(0.3)
+
         if conect:
             self.PROCESS[name].append("OK")
             self.PROCESS[name].append(q.get())
             print "___________STARTING RESOLVER URIs___________________"
             print("URI %s" % (colored(loader["pyro4id"], 'green')))
+
             if self.URI.get_ns():
                 print("NAME SERVER LOCATED. %s" %
                       (colored(" Resolving remote URIs ", 'green')))
@@ -112,10 +120,12 @@ class NODERB (object):
             return None
 
     def create_server_node(self):
+        uri = 0
         Pyro4.config.HOST = self.ip
         try:
             print(self.port_node)
             daemon = Pyro4.Daemon(host=self.ip, port=self.port_node)
+            daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
             uri = daemon.register(self, objectId=self.name)
             print (uri)
             print("___________STARTING PYRO4BOT %s_______________" % self.name)
@@ -137,7 +147,8 @@ class NODERB (object):
             print("ERROR: in PYRO4BOT")
             raise
         finally:
-            print("[%s] Shuting %s" % (colored("Down", 'green'), uri.asString()))
+            if (uri is not 0):
+                print("[%s] Shuting %s" %(colored("Down", 'green'), uri.asString()))
 
     def load_robot(self):
         print "____________STARTING PYRO4BOT OBJECT_______________________"
@@ -174,7 +185,7 @@ class NODERB (object):
     def check_local_deps(self, obj):
         check_local = "OK"
         for d in obj["nr_local"]:
-            uri = self.URI.wait_available(d)
+            uri = self.URI.wait_available(d, PROXY_PASSWORD)
             if uri is not None:
                 obj["_local"].append(uri)
             else:
@@ -250,11 +261,14 @@ class NODERB (object):
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
             daemon = Pyro4.Daemon(host=ip, port=ports)
-            py_object = eval(d["cls"])(data=[], **d)
-            daemon.register(py_object, objectId=name_ob)
+            daemon._pyroHmacKey = bytes(PROXY_PASSWORD)
+            uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
             exposed = Pyro4.core.DaemonObject(daemon).get_metadata(name_ob, True)
             q.put(exposed)
-            proc_pipe.send("OK")
+            if d.has_key("_REMOTE_STATUS") and d["_REMOTE_STATUS"] == "WAITING":
+                proc_pipe.send("WAITING")
+            else:
+                proc_pipe.send("OK")
             daemon.requestLoop()
             print("[%s] Shuting %s" % (colored("Down", 'green'), d["pyro4id"]))
         except Exception as e:
@@ -264,7 +278,6 @@ class NODERB (object):
 
     @Pyro4.expose
     def get_uris(self):
-        print self.URI.list_uris()
         return self.URI.list_uris()
 
     @Pyro4.expose

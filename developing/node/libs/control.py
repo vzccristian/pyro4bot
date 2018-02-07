@@ -5,6 +5,14 @@ import utils
 
 
 #____________________DECORATOR FOR GENERAL CLASS__________________
+
+def getProxy(uri, password):
+    proxy = Pyro4.Proxy(uri)
+    proxy._pyroHmacKey = bytes(password)
+    return proxy
+
+# decoradores para las clases generales
+
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
         init superclass control """
@@ -15,22 +23,25 @@ def load_config(in_function):
         except Exception:
             pass
         _self.__dict__.update(kwargs)
-        if "uriresolver" in _self.__dict__:
-            _self.__dict__["uriresolver"] = Pyro4.Proxy(
-                _self.__dict__["uriresolver"])
-        if "nr_remote" in _self.__dict__:
+
+        if _self.__dict__.has_key("name"):
+            _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
+        if _self.__dict__.has_key("uriresolver"):
+            _self.__dict__["uriresolver"] = getProxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
+        if _self.__dict__.has_key("nr_remote"):
+
             print _self.__dict__["nr_remote"]
         if "_local" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_local"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = Pyro4.Proxy(deps)
+                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "_remote" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_remote"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = Pyro4.Proxy(deps)
+                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "-->" in _self.__dict__:
             del(_self.__dict__["-->"])
@@ -71,6 +82,7 @@ class Control(object):
                 t.setDaemon(True)
                 t.start()
 
+
     def init_publisher(self,data_publication,frec=0.001):
         """ start publisher daemon"""
         self.threadpublisher=True
@@ -108,6 +120,7 @@ class Control(object):
             if key not in self.subscriptors:
                 self.subscriptors[key]=[]
             self.subscriptors[key].append(Pyro4.Proxy(uri))
+
             return True
         except Exception:
             print("ERROR: in subscribe")

@@ -6,6 +6,8 @@ import Pyro4.naming as nm
 import netifaces as ni
 import traceback
 import sys
+from termcolor import colored
+import threading
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
@@ -23,15 +25,17 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
 
 def get_gateway_address(ifname="lo"):
     ip = None
+    print ifname
     try:
         gateway_list = ni.gateways()
         for gw in gateway_list[2]:
-            if gw[1] is ifname:
+            if gw[1].find(ifname) > -1 :
                 ip = gw[0]
+                print gw[0]
                 break
     except:
             raise
-    print ip
+    print "IP en GW",ip
     return ip
 
 
@@ -73,3 +77,6 @@ def format_exception(e):
     exception_str = exception_str[:-1]
 
     return exception_str
+
+def printThread(color="green"):
+    return ((colored("[" + threading.current_thread().getName() + "]", color)))

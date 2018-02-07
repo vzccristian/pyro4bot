@@ -19,7 +19,6 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
-
 class infrared (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
