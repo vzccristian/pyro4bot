@@ -29,9 +29,8 @@ class gpioservice(control.Control):
         GPIO.setmode(self.gpio_mode)
         GPIO.setwarnings(False)
         self.create_gpio()
-        super(gpioservice, self).__init__()
 
-        
+
     def worker(self):
         pass
 
@@ -63,7 +62,7 @@ class gpioservice(control.Control):
         """
         if type(pins) not in (list, tuple):
             pins = (pins,)
-        notavailable=[x for x in pins if x in self.gpio and self.gpio[x][3] is not  None]
+        notavailable = [x for x in pins if x in self.gpio and self.gpio[x][3] is not  None]
         if len(notavailable)!=0:
             print ("GPIO pins in use:",notavailable)
             return False

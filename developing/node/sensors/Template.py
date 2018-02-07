@@ -12,8 +12,8 @@ import Pyro4
 class < CLASS_NAME > (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        # this line is the last line in constructor method
-        super( < CLASS_NAME > , self).__init__(self.worker)
+        #self.init_workers(self.worker)
+        #self.init_publisher(self.__dict__)
 
     def worker(self):
         while self.worker_run:

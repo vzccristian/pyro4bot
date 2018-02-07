@@ -14,8 +14,6 @@ class sonar (control.Control):
     def __init__(self, data, **kwargs):
         self.send_subscripcion(self.arduino, "US")
 
-        # this line is the last line in constructor method
-        super(sonar, self).__init__(self.worker)
 
     def worker(self):
         while self.worker_run:

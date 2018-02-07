@@ -21,7 +21,8 @@ class usbsimulator(control.Control):
         self.LASER=[0,0]
         self.init_workers(self.worker_reader)
         self.init_publisher(self.__dict__)
-        
+  
+
     def worker_reader(self):
         while self.worker_run:
             self.IR[0]=self.IR[0]+1
@@ -29,6 +30,8 @@ class usbsimulator(control.Control):
             time.sleep(self.frec)
 
     def read_serial(self):
+        """ esto es el puto comentario"""
+
         l = self.serial.readline()
         # print l[l.find("{"):l.find("}")+1]
         return l[l.find("{"):l.find("}") + 1]

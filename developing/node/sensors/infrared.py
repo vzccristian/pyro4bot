@@ -19,7 +19,7 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
-@Pyro4.expose
+
 class infrared (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
@@ -28,13 +28,15 @@ class infrared (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print("salida: ",self.IR)
+            #print("salida: ",self.IR)
             time.sleep(self.frec)
-# here your methods
 
+
+    @Pyro4.expose
     def get__ir(self):
         return self.IR
 
+    @Pyro4.expose
     def get_ir_pon(self):
         irp1 = (self.IR[0] + self.IR[1]) / 20
         irp2 = (self.IR[2] + self.IR[3]) / 20

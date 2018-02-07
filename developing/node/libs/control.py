@@ -12,27 +12,27 @@ def load_config(in_function):
         _self = args[0]
         try:
             _self.DATA = args[1]
-        except:
+        except Exception:
             pass
         _self.__dict__.update(kwargs)
-        if _self.__dict__.has_key("uriresolver"):
+        if "uriresolver" in _self.__dict__:
             _self.__dict__["uriresolver"] = Pyro4.Proxy(
                 _self.__dict__["uriresolver"])
-        if _self.__dict__.has_key("nr_remote"):
+        if "nr_remote" in _self.__dict__:
             print _self.__dict__["nr_remote"]
-        if _self.__dict__.has_key("_local"):
+        if "_local" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_local"]:
                 injects[utils.get_uri_name(deps).split(".")[
                     1]] = Pyro4.Proxy(deps)
             _self.__dict__.update(injects)
-        if _self.__dict__.has_key("_remote"):
+        if "_remote" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_remote"]:
                 injects[utils.get_uri_name(deps).split(".")[
                     1]] = Pyro4.Proxy(deps)
             _self.__dict__.update(injects)
-        if _self.__dict__.has_key("-->"):
+        if "-->" in _self.__dict__:
             del(_self.__dict__["-->"])
         super(_self.__class__.__mro__[0],_self).__init__()
         in_function(*args, **kwargs)
@@ -48,7 +48,7 @@ def load_node(in_function):
     return out_function
 
 
-@Pyro4.expose
+
 class Control(object):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
@@ -89,18 +89,18 @@ class Control(object):
                     if key in data_publication:
                         for item in subscriptors:
                             item.publication(key, data_publication[key])
-            except:
+            except Exception:
                 pass
             time.sleep(frec)
-
+    @Pyro4.expose
     def send_subscripcion(self, obj, key):
         """ send a subcripcion request to an object"""
         try:
             obj.subscribe(key, self.pyro4id)
-        except:
+        except Exception:
             print("ERROR: in subscripcion %s URI: %s" % (obj, key))
             return False
-
+    @Pyro4.expose
     def subscribe(self, key, uri):
         """ receive a request for subcripcion from an object and save data in dict subcriptors
             Data estructure store one item subcripcion (key) and subcriptors proxy list """
@@ -109,16 +109,17 @@ class Control(object):
                 self.subscriptors[key]=[]
             self.subscriptors[key].append(Pyro4.Proxy(uri))
             return True
-        except:
+        except Exception:
             print("ERROR: in subscribe")
             return False
 
     @Pyro4.oneway
+    @Pyro4.expose
     def publication(self, key, value):
         """ is used to public in this object a item value """
         try:
             setattr(self, key, value)
-        except:
+        except Exception:
             pass
 
     def adquire(self):
@@ -130,9 +131,10 @@ class Control(object):
     def stop(self):
         self.worker_run = False
 
+
+    @Pyro4.expose
     def echo(self, msg="hello"):
         return msg
-
-    @property
+    @Pyro4.expose
     def get_pyroid(self):
         return self.pyro4id

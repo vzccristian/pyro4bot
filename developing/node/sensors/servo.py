@@ -22,8 +22,6 @@ class servo (control.Control):
         time.sleep(2)
         self.setangle(10.5)
 
-        # this line is the last line in constructor method
-        super( servo , self).__init__(self.worker)
 
     def worker(self):
         while self.worker_run:

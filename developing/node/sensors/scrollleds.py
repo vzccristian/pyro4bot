@@ -14,7 +14,6 @@ class scrollleds (control.Control):
     def __init__(self, data, **kwargs):
         # this line is the last line in constructor method
         pp=scrollphat.IS31FL3730.IS31FL3730(1)
-        super( scrollleds , self).__init__(self.worker)
 
     def worker(self):
         while self.worker_run:

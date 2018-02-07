@@ -13,12 +13,7 @@ import RPi.GPIO as GPIO
 class gpioinfrared(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        # GPIO.setmode(GPIO.BCM)
-        # GPIO.setwarnings(False)
-        # GPIO.setup(self.setup[0],GPIO.IN,GPIO.PUD_UP)
-        # GPIO.setup(self.setup[1],GPIO.IN,GPIO.PUD_UP)
-        # this line is the last line in constructor method
-        super(gpioinfrared, self).__init__()
+
         self.init_workers(self.worker)
 
     def worker(self):

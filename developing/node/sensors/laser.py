@@ -19,7 +19,6 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
-@Pyro4.expose
 class laser (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
@@ -28,9 +27,9 @@ class laser (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print("laser:",self.LASER[0])
+            #print("laser:",self.LASER[0])
             time.sleep(self.frec)
-
+    @Pyro4.expose
     def get_laser(self):
         return self.LASER
 

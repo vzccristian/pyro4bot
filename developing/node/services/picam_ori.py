@@ -37,7 +37,8 @@ class picam(control.control):
         self.buffer=[0,0]
         self.available=0
         self.lock=1
-        super(picam,self).__init__((self.worker_read,))
+        self.init_workers(self.worker_read)
+        self.init_publisher(self.buffer[self.available])
 
     def worker_read(self):
         while self.worker_run:
@@ -47,14 +48,6 @@ class picam(control.control):
                 self.lock,self.available=self.available,self.lock
                 time.sleep(self.frec)
 
-    def worker_publ(self):
-        while self.worker_run:
-            try:
-              for k,v in self.subscriptors.iteritems():
-                  v.publication(self.buffer[self.available][k])
-            except:
-              #print("cam dist error")
-              pass
     @property
     def image(self):
         #print ("cam %s" % (self.available))

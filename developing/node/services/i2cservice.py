@@ -20,10 +20,6 @@ class i2cservice (control.Control):
         self.detect_ports()
         print ("I2C:",self.status())
 
-        # this line is the last line in constructor method
-        super(i2cservice, self).__init__()
-        self.init_workers()
-
     def worker(self):
         pass
 
