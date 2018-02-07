@@ -106,7 +106,7 @@ class NODERB (object):
     def check_local_deps(self, obj):
         check_local = "OK"
         for d in obj["nr_local"]:
-            uri = self.URI.wait_available(d, PROXY_PASSWORD)
+            uri = self.URI.wait_available(d, ROBOT_PASSWORD)
             if uri is not None:
                 obj["_local"].append(uri)
             else:
@@ -151,7 +151,6 @@ class NODERB (object):
         if "_local" not in obj:
             obj["_local"] = []
         if "_remote" not in obj:
-    print("STARTING NODERB")
             obj["_remote"] = []
         if name not in self.PROCESS:
             self.PROCESS[name] = []
