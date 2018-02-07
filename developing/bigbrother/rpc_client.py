@@ -17,7 +17,7 @@ class RPCProxy:
 
 if __name__ == "__main__":
     print "Client"
-    c = Client(('192.168.10.1', 17000), authkey=b'PyRobot')
+    c = Client(('localhost', 17000), authkey=b'PyRobot')
     proxy = RPCProxy(c)
     proxy.request("*.camera")
 

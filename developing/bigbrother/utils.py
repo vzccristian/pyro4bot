@@ -25,17 +25,15 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
 
 def get_gateway_address(ifname="lo"):
     ip = None
-    print ifname
     try:
         gateway_list = ni.gateways()
         for gw in gateway_list[2]:
-            if gw[1].find(ifname) > -1 :
+            if gw[1] is ifname:
                 ip = gw[0]
-                print gw[0]
                 break
     except:
             raise
-    print "IP en GW",ip
+    print ip
     return ip
 
 
@@ -48,6 +46,13 @@ def free_port(port, ip="127.0.0.1"):
         return False
     except:
         return True
+
+
+def get_free_port(port, interval=1, ip="127.0.0.1"):
+    _port = port
+    while not free_port(_port, ip=ip):
+        _port += interval
+    return (_port)
 
 
 def uri_split(uri):
@@ -77,6 +82,7 @@ def format_exception(e):
     exception_str = exception_str[:-1]
 
     return exception_str
+
 
 def printThread(color="green"):
     return ((colored("[" + threading.current_thread().getName() + "]", color)))
