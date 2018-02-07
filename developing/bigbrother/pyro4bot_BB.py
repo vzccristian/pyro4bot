@@ -1,7 +1,6 @@
 import Pyro4
 import Pyro4.naming as nm
 import utils
-from utils import printThread as printT
 import sys
 import threading
 import time
@@ -33,7 +32,7 @@ class bigbrother(object):
         self.thread_bigBrother.start()
 
         self.thread_proxy = threading.Thread(
-            target=self.createPyroProxy, args=())
+            target=self.create_pyro_proxy, args=())
         self.thread_proxy.setDaemon(1)
         self.thread_proxy.start()
 
@@ -45,10 +44,13 @@ class bigbrother(object):
         self.robots = {x: self.pyro4ns.list(
         )[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
         for key, value in self.robots.iteritems():
-            print "Obteniendo proxy para:",value,"con pass:",key
             self.robotProxy = Pyro4.Proxy(value)
             self.robotProxy._pyroHmacKey = bytes(key)
-            robot_uris = self.robotProxy.get_uris()
+            try:
+                robot_uris = self.robotProxy.get_uris()
+            except Exception:
+                print("Error al conectar a: %s " % value)
+                # TODO: Borrar
             for u in robot_uris:
                 currentSensor = u.split(".")[1].split("@")[0]
                 if type(self.sensors.get(currentSensor)) is not list:
@@ -66,18 +68,19 @@ class bigbrother(object):
 
         self.bigBrother.enter(10, 1, self.update, (self.pyro4ns,))
 
-    def createPyroProxy(self):
-        print "Creating proxy for bigBrother"
+    def create_pyro_proxy(self):
         try:
-            self.daemon = Pyro4.Daemon(host=utils.get_ip_address(
-                ifname=PROXY_INTERFACE), port=PROXY_PORT)
-            self.daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
+            myip = utils.get_ip_address(ifname=PROXY_INTERFACE)
+            myport = utils.get_free_port(PROXY_PORT, ip=myip)
 
-            self.daemon.PYRO_MAXCONNECTIONS = 20
+            daemon = Pyro4.Daemon(host=myip, port=myport)
+            daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
 
-            self.uri = self.daemon.register(self, objectId="bigbrother")
-            print "bigBrother running : ", self.uri
-            self.daemon.requestLoop()
+            daemon.PYRO_MAXCONNECTIONS = 20
+
+            self.uri = daemon.register(self, objectId="bigbrother")
+            print "\nbigBrother running : ", self.uri
+            daemon.requestLoop()
         except Exception:
             print "Error creando proxy"
             raise
@@ -150,14 +153,14 @@ class nameServer(object):
             print "NameServer already working"
         except Exception:
             self.nsThread = threading.Thread(
-                target=self.createNameServer, args=())
+                target=self.create_nameserver, args=())
             self.nsThread.start()  # Thread-1 started
             self.pyro4ns = Pyro4.locateNS(hmac_key=bytes(
                 PROXY_AND_NS_PASSWORD))  # Getting NS on main thread
 
     """Thread-1 loop for nameserver"""
 
-    def createNameServer(self):
+    def create_nameserver(self):
         try:
             self.ready = True
             self.nameserver = nm.startNSloop(
@@ -166,10 +169,10 @@ class nameServer(object):
         except Exception:
             print "Error al crear el nameserver"
 
-    def getPyro4NS(self):
+    def get_pyro4ns(self):
         return self.pyro4ns
 
-    def isWorking(self):
+    def is_working(self):
         return self.ready
 
     # ------------------------ ADMIN TOOLS -------------------#
@@ -246,20 +249,20 @@ if __name__ == "__main__":
         PROXY_AND_NS_PASSWORD = sys.argv[1]
 
     ns_Object = nameServer()
-    bb = bigbrother(ns_Object.getPyro4NS())
+    bb = bigbrother(ns_Object.get_pyro4ns())
 
     signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
     signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
 
     while (True):
-        if (ns_Object.isWorking()):  # NS ready for work
+        if (ns_Object.is_working()):  # NS ready for work
             print colored("\n----------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------\n", "green")
             command = raw_input(
                 "\n" + colored("Comando a la espera: ", "yellow"))
             try:
                 command = command.split()
-                realCommand = ns_Object.execute(command[0])
-                if (realCommand is not None):
+                if (command is not None):
+                    realCommand = ns_Object.execute(command[0])
                     if (len(command) is 1):
                         realCommand()
                     elif (len(command) is 2):
@@ -269,10 +272,11 @@ if __name__ == "__main__":
                             # proxy.method()
                             print "URI:", uri, " PROXY: ", proxy
                             print(proxy.get_uris())
+                    elif (len(command) > 2):
+                        print(colored("Demasiados argumentos.", "red"))
                 else:
                     print "Comando no encontrado."
             except Exception:
                 print(colored("Comando erroneo", "red"))
-                raise
         time.sleep(1)
-    print printT(color="red"), " saliendo..."
+    print printThread(color="red"), " saliendo..."

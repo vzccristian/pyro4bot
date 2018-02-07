@@ -1,6 +1,6 @@
 {
    "NODE":{
-      "name":"simplebot",
+      "name":"simplebot2",
       "path":"/home/PYRO4DIR/pyro4bot/developing/node",
       #"path":"/home/pi/td/developing/node",
       "etc":"<path>/etc",

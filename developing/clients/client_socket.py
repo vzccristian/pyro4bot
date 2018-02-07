@@ -15,15 +15,12 @@ import socket
 import struct
 import time
 
-class clientCamera(object):
-    def __init__(self,botname):
-        print "Ejecutando cliente de cámara..."
-        self.bot = ClientNODERB(botname)
-        self.cam = threading.Thread(target=self.execute_camera, args=(self.bot.camera,))
-        self.cam.setDaemon(True)
-        self.cam.start()
 
-    def execute_camera(self,cam):
+def run_camera(cam):
+    cam = threading.Thread(target=execute_camera, args=(cam,))
+    cam.setDaemon(True)
+    cam.start()
+    def execute_camera(cam):
         print "Connecting to Server. Waiting for IP and PORT"
         ip, port = cam.image
         print "Client: "+ip+":" + str(port)
@@ -67,19 +64,9 @@ class clientCamera(object):
             print ("Exit")
             client_socket.close()
 
-    def getBot(self):
-        return self.bot
-
-bot = clientCamera("learnbot1")
-
-# If you need bot, clientCamera.getBot()
-
-# time.sleep(2)
-# bot.l298n.backward(40)
-# time.sleep(2)
-# bot.l298n.left()
-# time.sleep(2)
-# bot.l298n.stop()
+print "Ejecutando cliente de cámara..."
+bot = ClientNODERB("learnbot1") # nombre del bot en la name no el fichero json
+camera = bot.run_camera(bot.camera)
 
 while True:
     time.sleep(0.05)

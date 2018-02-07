@@ -6,6 +6,8 @@ import Pyro4.naming as nm
 import netifaces as ni
 import traceback
 import sys
+from termcolor import colored
+import threading
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
@@ -39,11 +41,19 @@ def free_port(port, ip="127.0.0.1"):
     lo = "127.0.0.1"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
+        # print "Probando",port, "en",ip # TODO
         s.connect((ip, int(port)))
         s.shutdown(2)
         return False
     except:
         return True
+
+
+def get_free_port(port, interval=1, ip="127.0.0.1"):
+    _port = port
+    while not free_port(_port, ip=ip):
+        _port += interval
+    return (_port)
 
 
 def uri_split(uri):
@@ -73,3 +83,7 @@ def format_exception(e):
     exception_str = exception_str[:-1]
 
     return exception_str
+
+
+def printThread(color="green"):
+    return ((colored("[" + threading.current_thread().getName() + "]", color)))

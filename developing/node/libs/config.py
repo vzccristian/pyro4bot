@@ -34,6 +34,7 @@ def parameter_value(data, cad):
     else:
         return data[posi + len(cad):data.find("\n", posi)].rstrip(",").strip('"')
 
+
 def substitute_params(data, reg="<.*?>"):
     for match in re.findall(reg, data):
         m = match.replace("<", '"').replace(">", '":')
@@ -123,6 +124,7 @@ class Config:
         # print self.dependency()
         self.conf["NODE"][self.conf["NODE"]["name"] +
                           ".URI_resolv"] = self.add_uri_conf()
+
 
     def check_semantic(self):
         if "def_frec" not in self.conf["NODE"]:
@@ -246,7 +248,7 @@ class Config:
 
     def add_uri_conf(self):
         conf = {}
-        conf["cls"] = "uriresolver.uriresolver"
+        conf["cls"] = "uriresolver"
         conf["ip"] = self.conf["NODE"]["ip"]
         conf["start_port"] = self.conf["NODE"]["start_port"]
         conf["port_node"] = self.conf["NODE"]["port_node"]
