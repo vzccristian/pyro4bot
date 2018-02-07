@@ -40,7 +40,6 @@ class uriresolver(control.Control):
         self.thread_proxy.start()
 
         self.get_ns()
-        super(uriresolver, self).__init__()
 
     def create_uriresolver_proxy(self):
         try:
@@ -105,20 +104,20 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_ns(self):
-        if self.nameserver is None:
-            # Looking for BigBrother
-            try:
-                Pyro4.config.HOST = str(ROUTER_IP)
-                self.nameserver = Pyro4.Proxy(
-                    "PYRO:bigbrother@" + ROUTER_IP + ":" + ROUTER_PORT)
-                self.nameserver._pyroHmacKey = bytes(ROUTER_PASSWORD)
-                if (self.nameserver.ready()):
-                    printInfo("BIGBROTHER ----> PYRO:bigbrother@" +
-                              ROUTER_IP + ":" + ROUTER_PORT)
-                    self.usingBB = True
-            except Exception:
-                printInfo("BigBrother not found.", "red")
-                self.nameserver = None
+        # if self.nameserver is None:
+        #     # Looking for BigBrother
+        #     try:
+        #         Pyro4.config.HOST = str(ROUTER_IP)
+        #         self.nameserver = Pyro4.Proxy(
+        #             "PYRO:bigbrother@" + ROUTER_IP + ":" + ROUTER_PORT)
+        #         self.nameserver._pyroHmacKey = bytes(ROUTER_PASSWORD)
+        #         if (self.nameserver.ready()):
+        #             printInfo("BIGBROTHER ----> PYRO:bigbrother@" +
+        #                       ROUTER_IP + ":" + ROUTER_PORT)
+        #             self.usingBB = True
+        #     except Exception:
+        #         printInfo("BigBrother not found.", "red")
+        #         self.nameserver = None
 
         if self.nameserver is None:
             # Looking for Network NameServer

@@ -21,12 +21,12 @@ class usbsimulator(control.Control):
         self.LASER=[0,0]
         self.init_workers(self.worker_reader)
         self.init_publisher(self.__dict__)
-  
+
 
     def worker_reader(self):
         while self.worker_run:
             self.IR[0]=self.IR[0]+1
-            self.LASER[0]=self.LASER[0]+1
+            self.LASER[1]=self.LASER[1]+1
             time.sleep(self.frec)
 
     def read_serial(self):

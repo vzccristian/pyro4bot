@@ -26,9 +26,8 @@ class servo (control.Control):
     def worker(self):
         while self.worker_run:
 
-            # write here code for your sensor
-
             time.sleep(self.frec)
+            
     def setangle(self,pos=7.5):
         self.gpioservice.pwm_changedutycycle(self.PIN,pos)
         time.sleep(0.5)

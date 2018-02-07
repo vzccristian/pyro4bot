@@ -24,7 +24,6 @@ class basemotion(control.Control):
     def __init__(self, data, **kwargs):
         # print self.__dict__
         self.send_subscripcion(self.arduino, "BASE")
-        super(basemotion, self).__init__()
         self.init_workers()
 
     def worker(self):

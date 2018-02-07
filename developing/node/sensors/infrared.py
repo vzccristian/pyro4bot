@@ -27,7 +27,7 @@ class infrared (control.Control):
 
     def worker(self):
         while self.worker_run:
-            #print("salida: ",self.IR)
+            print("IR-sal: ",self.IR)
             time.sleep(self.frec)
 
 

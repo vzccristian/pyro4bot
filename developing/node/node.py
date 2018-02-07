@@ -205,6 +205,8 @@ class NODERB (object):
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
             # Registering NODE
             uri = daemon.register(self, objectId=self.name)
+            exposed = Pyro4.core.DaemonObject(daemon).get_metadata(self.name, True)
+            print exposed
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(uri)
             # Printing info
@@ -212,6 +214,7 @@ class NODERB (object):
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
             self.print_process()
             daemon.requestLoop()
+            print("[%s] Shuting %s" % (colored("Down", 'green'), uri))
         except Exception:
             print("ERROR: create_server_node in node.py")
             raise

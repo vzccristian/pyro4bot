@@ -24,11 +24,11 @@ def load_config(in_function):
             pass
         _self.__dict__.update(kwargs)
 
-        if _self.__dict__.has_key("name"):
+        if "name" in _self.__dict__:
             _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
-        if _self.__dict__.has_key("uriresolver"):
+        if "uriresolver" in _self.__dict__:
             _self.__dict__["uriresolver"] = getProxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
-        if _self.__dict__.has_key("nr_remote"):
+        if "nr_remote" in _self.__dict__:
 
             print _self.__dict__["nr_remote"]
         if "_local" in _self.__dict__:
@@ -95,14 +95,14 @@ class Control(object):
         """ public data between all subcriptors in list"""
         while self.threadpublisher:
             try:
-                #print("subscriptors",self.subscriptors)
+                print("subscriptors",self.subscriptors)
                 for key, subscriptors in self.subscriptors.iteritems():
-                    #print(key,subscriptors)
                     if key in data_publication:
                         for item in subscriptors:
+                            print("publicando",key, data_publication[key])
                             item.publication(key, data_publication[key])
             except Exception:
-                pass
+                raise
             time.sleep(frec)
     @Pyro4.expose
     def send_subscripcion(self, obj, key):
@@ -120,7 +120,6 @@ class Control(object):
             if key not in self.subscriptors:
                 self.subscriptors[key]=[]
             self.subscriptors[key].append(Pyro4.Proxy(uri))
-
             return True
         except Exception:
             print("ERROR: in subscribe")
@@ -131,9 +130,10 @@ class Control(object):
     def publication(self, key, value):
         """ is used to public in this object a item value """
         try:
+            print("setattr",key,value)
             setattr(self, key, value)
         except Exception:
-            pass
+            raise
 
     def adquire(self):
         self.mutex.adquire()

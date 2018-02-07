@@ -1,11 +1,11 @@
 {
    "NODE":{
       "name":"simplebot",
-      "path":"/home/PYRO4DIR/pyro4bot/developing/node",
-      #"path":"/home/pi/td/developing/node",
+      #"path":"/home/PYRO4DIR/pyro4bot/developing/node",
+      "path":"/home/paco/Dropbox/td/pyro4bot/developing/node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      "ethernet":"wlan0",
+      "ethernet":"wlp3s0",
       #"ethernet":"enp0s25",
       #"ethernet":"eth0",
       "port_ns":9090,
