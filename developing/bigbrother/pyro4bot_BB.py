@@ -1,6 +1,5 @@
 import Pyro4
 import Pyro4.naming as nm
-# import utils
 import sys
 import threading
 import time
