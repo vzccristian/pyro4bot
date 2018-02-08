@@ -55,6 +55,7 @@ class uriresolver(control.Control):
             print "Error al conectar al proxy."
         except Exception:
             print("ERROR: creating nodeProxy")
+            raise
         finally:
             if (self.uri is not None):
                 print("[%s] Shutting %s" %
@@ -104,20 +105,24 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_ns(self):
-        # if self.nameserver is None:
-        #     # Looking for BigBrother
-        #     try:
-        #         Pyro4.config.HOST = str(ROUTER_IP)
-        #         self.nameserver = Pyro4.Proxy(
-        #             "PYRO:bigbrother@" + ROUTER_IP + ":" + ROUTER_PORT)
-        #         self.nameserver._pyroHmacKey = bytes(ROUTER_PASSWORD)
-        #         if (self.nameserver.ready()):
-        #             printInfo("BIGBROTHER ----> PYRO:bigbrother@" +
-        #                       ROUTER_IP + ":" + ROUTER_PORT)
-        #             self.usingBB = True
-        #     except Exception:
-        #         printInfo("BigBrother not found.", "red")
-        #         self.nameserver = None
+        if self.nameserver is None:
+            if (utils.ping(ROUTER_IP)):
+                # Looking for BigBrother
+                try:
+                    Pyro4.config.HOST = str(ROUTER_IP)
+                    self.nameserver = Pyro4.Proxy(
+                        "PYRO:bigbrother@" + ROUTER_IP + ":" + ROUTER_PORT)
+                    self.nameserver._pyroHmacKey = bytes(ROUTER_PASSWORD)
+                    if (self.nameserver.ready()):
+                        printInfo("BIGBROTHER ----> PYRO:bigbrother@" +
+                                  ROUTER_IP + ":" + ROUTER_PORT)
+                        self.usingBB = True
+                except Exception:
+                    printInfo("BigBrother error.", "red")
+                    self.nameserver = None
+            else:
+                self.nameserver = None
+                printInfo("BigBrother not found.", "red")
 
         if self.nameserver is None:
             # Looking for Network NameServer

@@ -8,6 +8,7 @@ import traceback
 import sys
 from termcolor import colored
 import threading
+import os
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
@@ -86,3 +87,12 @@ def format_exception(e):
 
 def printThread(color="green"):
     return ((colored("[" + threading.current_thread().getName() + "]", color)))
+
+
+def ping(uri):
+    response = False
+    try:
+        response = os.system("ping -c 1 -w2 " + uri + " > /dev/null 2>&1")
+    except Exception:
+        pass
+    return (not response)
