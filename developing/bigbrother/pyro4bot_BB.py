@@ -1,6 +1,6 @@
 import Pyro4
 import Pyro4.naming as nm
-import utils
+# import utils
 import sys
 import threading
 import time
@@ -8,7 +8,10 @@ import sched
 from termcolor import colored
 import signal
 import subprocess
-
+import os
+os.path.abspath('../node/libs')
+import utils
+os.path.abspath('.')
 
 PROXY_AND_NS_PASSWORD = "PyRobot"
 PROXY_PORT = 6060

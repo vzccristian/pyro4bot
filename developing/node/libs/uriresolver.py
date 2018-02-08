@@ -55,7 +55,6 @@ class uriresolver(control.Control):
             print "Error al conectar al proxy."
         except Exception:
             print("ERROR: creating nodeProxy")
-            raise
         finally:
             if (self.uri is not None):
                 print("[%s] Shutting %s" %

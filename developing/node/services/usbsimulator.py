@@ -27,7 +27,7 @@ class usbsimulator(control.Control):
         while self.worker_run:
             self.IR[0]=self.IR[0]+1
             self.LASER[1]=self.LASER[1]+1
-            time.sleep(self.frec)
+            time.sleep(self.frec*5)
 
     def read_serial(self):
         """ esto es el puto comentario"""

@@ -83,7 +83,7 @@ class Control(object):
                 t.start()
 
 
-    def init_publisher(self,data_publication,frec=0.001):
+    def init_publisher(self,data_publication,frec=0.01):
         """ start publisher daemon"""
         self.threadpublisher=True
         t = threading.Thread(target=self.thread_publisher, args=(data_publication,frec))
@@ -94,6 +94,7 @@ class Control(object):
     def thread_publisher(self,data_publication, frec):
         """ public data between all subcriptors in list"""
         while self.threadpublisher:
+            # time.sleep(5)
             try:
                 print("subscriptors",self.subscriptors)
                 for key, subscriptors in self.subscriptors.iteritems():
@@ -101,7 +102,8 @@ class Control(object):
                         for item in subscriptors:
                             print("publicando",key, data_publication[key])
                             item.publication(key, data_publication[key])
-            except Exception:
+            except Exception as e:
+                print utils.format_exception(e)
                 raise
             time.sleep(frec)
     @Pyro4.expose
@@ -118,8 +120,10 @@ class Control(object):
             Data estructure store one item subcripcion (key) and subcriptors proxy list """
         try:
             if key not in self.subscriptors:
-                self.subscriptors[key]=[]
-            self.subscriptors[key].append(Pyro4.Proxy(uri))
+                self.subscriptors[key] = []
+            proxy = Pyro4.Proxy(uri)
+            proxy._pyroHmacKey = bytes(self.__dict__["botname"])
+            self.subscriptors[key].append(proxy)
             return True
         except Exception:
             print("ERROR: in subscribe")
