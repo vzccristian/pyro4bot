@@ -7,4 +7,4 @@ buscar puerto 22 activo:
 nmap -p 22 --open -sV 158.49.241.0/24
 buscar puerto vnc
 nmap -p 5900 158.49.241.0/24 --open -sV
-https://franciscomoya.gitbooks.io/taller-de-raspberry-pi/content/es/elems/spi.html gpio bus fenomenal
+d
