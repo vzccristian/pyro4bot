@@ -24,10 +24,16 @@ class bigbrother(object):
     """
 
     def __init__(self, _pyro4ns):
+        """__init__ method of BigBrother.
+
+        Args:
+            _pyro4ns (nameServer): nameServer object from
+                custom class nameServer
+        """
         self.pyro4ns = _pyro4ns  # Pyro4NS location
 
         self.bigBrother = sched.scheduler(time.time, time.sleep)  # bigBrother
-        self.bigBrother.enter(5, 1, self.update, (self.pyro4ns,))  # bigBrother
+        self.bigBrother.enter(5, 1, self.update, ())  # bigBrother
         self.thread_bigBrother = threading.Thread(
             target=self.bigBrother.run, args=())
         self.thread_bigBrother.setDaemon(1)
@@ -42,7 +48,13 @@ class bigbrother(object):
         self.robots = {}
         self.sensors = {}
 
-    def update(self, pyro4ns):
+    def update(self):
+        """Update the sensor dictionary in each robot.
+
+        Go through the list of registered robots and save each of the robots
+        in self.sensors. The key of the dictionary is the sensor in question
+        and the value is a list of all the robots that have this sensor.
+        """
         self.robots = {x: self.pyro4ns.list(
         )[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
         for key, value in self.robots.iteritems():
@@ -50,27 +62,36 @@ class bigbrother(object):
             self.robotProxy._pyroHmacKey = bytes(key)
             try:
                 robot_uris = self.robotProxy.get_uris()
-            except Exception:
-                print("Error al conectar a: %s " % value)
-                # TODO: Borrar
-            for u in robot_uris:
-                currentSensor = u.split(".")[1].split("@")[0]
-                if type(self.sensors.get(currentSensor)) is not list:
-                    self.sensors[currentSensor] = []
-                    self.sensors.get(currentSensor).append(u)
-                else:
-                    if not (u in self.sensors.get(currentSensor)):
+                for u in robot_uris:
+                    currentSensor = u.split(".")[1].split("@")[0]
+                    if type(self.sensors.get(currentSensor)) is not list:
+                        self.sensors[currentSensor] = []
                         self.sensors.get(currentSensor).append(u)
+                    else:
+                        if not (u in self.sensors.get(currentSensor)):
+                            self.sensors.get(currentSensor).append(u)
+            except Exception:
+                print("Error connecting to: %s " % value)
+                self.remove(name=key)
 
         if self.robots:
             print "ROBOTS:", self.robots
             print "SENSORS:", self.sensors
 
-        # TODO: Guardar clases?
-
-        self.bigBrother.enter(10, 1, self.update, (self.pyro4ns,))
+        self.bigBrother.enter(10, 1, self.update, ())
 
     def create_pyro_proxy(self):
+        """Create proxy to make connections to BigBrother.
+
+        Gets the network address of the network interface indicated in
+        the global variable PROXY_INTERFACE.
+        Obtain a connection port from the port indicated in PROXY_PORT.
+
+        Next, it creates a daemon that is the connection proxy
+        to BigBrother and registers itself.
+
+        It is working in the background listening to requests.
+        """
         try:
             myip = utils.get_ip_address(ifname=PROXY_INTERFACE)
             myport = utils.get_free_port(PROXY_PORT, ip=myip)
@@ -81,34 +102,72 @@ class bigbrother(object):
             daemon.PYRO_MAXCONNECTIONS = 20
 
             self.uri = daemon.register(self, objectId="bigbrother")
-            print "\nbigBrother running : ", self.uri
+            print "\nBigBrother running : ", self.uri
             daemon.requestLoop()
         except Exception:
-            print "Error creando proxy"
-            raise
+            print "Error creating proxy on interface", PROXY_INTERFACE
 
     @Pyro4.expose
     def list(self):
+        """List all objects registered in nameserver.
+
+        Returns a dictionary where the key is the name of the object
+        and the value is the URI associated with that object
+        """
         return self.pyro4ns.list()
 
     @Pyro4.expose
     def lookup(self, name, return_metadata=False):
+        """Look up a single name registration and return the uri.
+
+        Returns the URI associated with the last name as argument.
+
+        Args:
+            name (str): Object name
+            return_metadata (boolean, optional) : By default it is False,
+                and you just get back the registered URI (lookup).
+                If you set it to True, you will get back tuples instead:
+                (uri, set-of-metadata-tags):
+        """
+        print "Lookup:", name, return_metadata
         _return_metadata = return_metadata
         return self.pyro4ns.lookup(name, return_metadata=_return_metadata)
 
     @Pyro4.expose
     def ping(self):
+        """ Check if nameserver is alive.
+
+        Returns the result of calling the ping () method of nameserver.
+        """
+        print "Pinging..."
         return self.pyro4ns.ping()
 
     @Pyro4.expose
     def register(self, name, uri, safe=False, metadata=None):
-        print "Registering: ", name, uri
+        """Register new robot on nameserver.
+
+        Registra un nuevo robot en nameserver haciendo uso del método
+        register() de Pyro4.naming
+
+        Args:
+            name (str): Object name to register
+            uri (str): URI associated with the name of the object
+            safe (bool): normally registering the same name twice silently
+                overwrites the old registration.
+                If you set safe=True, the same name cannot be registered twice.
+        """
+        print "Registering: ", name, uri, safe, metadata
         _safe = safe
         _metadata = metadata
         self.pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
 
     @Pyro4.expose
     def remove(self, name=None, prefix=None, regex=None):
+        """Remove robot from nameserver.
+
+        Remove a nameserver robot according to its name
+        """
+        print "Removing:", name, prefix, regex
         _name = name
         _prefix = prefix
         _regex = regex
