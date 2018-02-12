@@ -7,7 +7,8 @@ from node.libs import control, utils
 import Pyro4
 from termcolor import colored
 import threading
-
+import os
+import sys
 ROUTER_PASSWORD = "PyRobot"
 ROUTER_IP = "192.168.10.1"
 ROUTER_PORT = "6060"
@@ -36,7 +37,7 @@ class uriresolver(control.Control):
         self.password = password
         self.thread_proxy = threading.Thread(
             target=self.create_uriresolver_proxy, args=())
-        self.thread_proxy.setDaemon(1)
+        # self.thread_proxy.setDaemon(1)
         self.thread_proxy.start()
 
         self.get_ns()
@@ -52,13 +53,14 @@ class uriresolver(control.Control):
             self.daemonproxy._pyroHmacKey = bytes(self.password)
             self.daemonproxy.requestLoop()
         except Pyro4.errors.ConnectionClosedError:
-            print "Error al conectar al proxy."
+            print("Error al conectar al proxy")
         except Exception:
             print("ERROR: creating nodeProxy")
         finally:
             if (self.uri is not None):
                 print("[%s] Shutting %s" %
-                      (colored("Down", 'green'), uri.asString()))
+                      (colored("Down", 'green'), self.uri.asString()))
+            os._exit(0)
 
     def register_uriresolver(self):
         attempts = 0

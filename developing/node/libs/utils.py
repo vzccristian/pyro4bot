@@ -10,19 +10,23 @@ from termcolor import colored
 import threading
 import os
 
+
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
     try:
         ip = ni.ifaddresses(ifname)[2][0]['addr']
-    except:
+    except Exception:
         try:
             interface_list = ni.interfaces()
             for x in interface_list:
                 if (x.find("lo") < 0):
                     return ni.ifaddresses(x)[2][0]['addr']
-            ip="127.0.0.1"
-        except:
-            raise
+            ip = "127.0.0.1"
+        except Exception:
+            print("Error al extraer IP de la interfaz "
+                  + colored(ifname, "red"))
+            sys.exit()
     return ip
+
 
 def get_gateway_address(ifname="lo"):
     ip = None
@@ -32,21 +36,18 @@ def get_gateway_address(ifname="lo"):
             if gw[1] is ifname:
                 ip = gw[0]
                 break
-    except:
-            raise
-    print ip
+    except Exception:
+        raise
     return ip
 
 
 def free_port(port, ip="127.0.0.1"):
-    lo = "127.0.0.1"
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        # print "Probando",port, "en",ip # TODO
         s.connect((ip, int(port)))
         s.shutdown(2)
         return False
-    except:
+    except Exception:
         return True
 
 
@@ -76,18 +77,19 @@ def format_exception(e):
     exception_list = traceback.format_stack()
     exception_list = exception_list[:-2]
     exception_list.extend(traceback.format_tb(sys.exc_info()[2]))
-    exception_list.extend(traceback.format_exception_only(sys.exc_info()[0], sys.exc_info()[1]))
+    exception_list.extend(traceback.format_exception_only(
+        sys.exc_info()[0], sys.exc_info()[1]))
 
     exception_str = "Traceback (most recent call last):\n"
     exception_str += "".join(exception_list)
-    # Removing the last \n
+
     exception_str = exception_str[:-1]
 
     return exception_str
 
 
-def printThread(color="green"):
-    return ((colored("[" + threading.current_thread().getName() + "]", color)))
+def printThread(string, color="green"):
+    print((colored("[" + threading.current_thread().getName() + "] ", color))+string)
 
 
 def ping(uri):

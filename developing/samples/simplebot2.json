@@ -18,10 +18,6 @@
         "arduino":{"cls":"usbsimulator","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01,"mode":"local","enable":true}
    },
    "sensors":{
-        "laser":{"cls":"laser","LASER":[0,0],"-->":["arduino"],"enable":true,"frec":0.02},
-        "infrared":{"cls":"infrared","IR":[0,0,0,0],"-->":["arduino"],"enable":true,"frec":0.02,"enable":true},
-        "base":{"cls":"basemotion","MOTORS":[0,0],"-->":["arduino"],"frec":0.03, "enable":true},
-        "pantilt":{"cls":"pantilt","PT":[90,90],"-->":["arduino"],"frec":0.03, "enable":true},
-        "face":{"cls":"face","-->":["botface.face","laser"],"frec":0.03, "enable":true}
+        "laser":{"cls":"laser","LASER":[0,0],"-->":["arduino"],"enable":true,"frec":0.02}
     }
 }

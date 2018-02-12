@@ -2,6 +2,7 @@ import time
 import threading
 import Pyro4
 import utils
+import os
 
 
 #____________________DECORATOR FOR GENERAL CLASS__________________
@@ -47,6 +48,7 @@ def load_config(in_function):
             del(_self.__dict__["-->"])
         super(_self.__class__.__mro__[0],_self).__init__()
         in_function(*args, **kwargs)
+
     return out_function
 
 
@@ -96,11 +98,11 @@ class Control(object):
         while self.threadpublisher:
             # time.sleep(5)
             try:
-                print("subscriptors",self.subscriptors)
+                # print("subscriptors",self.subscriptors)
                 for key, subscriptors in self.subscriptors.iteritems():
                     if key in data_publication:
                         for item in subscriptors:
-                            print("publicando",key, data_publication[key])
+                            # print("publicando",key, data_publication[key])
                             item.publication(key, data_publication[key])
             except Exception as e:
                 print utils.format_exception(e)
@@ -134,7 +136,7 @@ class Control(object):
     def publication(self, key, value):
         """ is used to public in this object a item value """
         try:
-            print("setattr",key,value)
+            # print("setattr",key,value)
             setattr(self, key, value)
         except Exception:
             raise

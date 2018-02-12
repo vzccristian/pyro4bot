@@ -137,7 +137,6 @@ class NODERB (object):
             else:
                 obj["_remote"].append(uri)
         return check_remote
-    print("STARTING NODERB")
 
     def check_deps(self, k):
         self.sensors[k]["_local"] = []
@@ -190,7 +189,7 @@ class NODERB (object):
             else:
                 proc_pipe.send("OK")
             daemon.requestLoop()
-            print("[%s] Shuting %s" % (colored("Down", 'green'), d["pyro4id"]))
+            print("[%s] Shutting %s" % (colored("Down", 'green'), d["pyro4id"]))
         except Exception as e:
             proc_pipe.send("FAIL")
             print("ERROR: creating sensor robot object: " + d["pyro4id"])
@@ -206,7 +205,7 @@ class NODERB (object):
             # Registering NODE
             uri = daemon.register(self, objectId=self.name)
             exposed = Pyro4.core.DaemonObject(daemon).get_metadata(self.name, True)
-            print exposed
+            print "Exposed:", exposed
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(uri)
             # Printing info
@@ -214,7 +213,8 @@ class NODERB (object):
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
             self.print_process()
             daemon.requestLoop()
-            print("[%s] Shuting %s" % (colored("Down", 'green'), uri))
+            print("[%s] Final shutting %s" % (colored("Down", 'green'), uri))
+            os._exit(0)
         except Exception:
             print("ERROR: create_server_node in node.py")
             raise
@@ -254,9 +254,6 @@ class NODERB (object):
                     print(eval("p.{}.__doc__".format(m)))
                 except Exception:
                     raise
-
-
-
 
 if __name__ == "__main__":
     pass
