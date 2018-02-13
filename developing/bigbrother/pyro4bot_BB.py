@@ -33,7 +33,7 @@ class bigbrother(object):
         self.pyro4ns = _pyro4ns  # Pyro4NS location
 
         self.bigBrother = sched.scheduler(time.time, time.sleep)  # bigBrother
-        self.bigBrother.enter(5, 1, self.update, ())  # bigBrother
+        self.bigBrother.enter(5, 1, self.updater, ())  # bigBrother
         self.thread_bigBrother = threading.Thread(
             target=self.bigBrother.run, args=())
         self.thread_bigBrother.setDaemon(1)
@@ -48,6 +48,10 @@ class bigbrother(object):
         self.robots = {}
         self.sensors = {}
 
+    def updater(self):
+        self.update()
+        self.bigBrother.enter(10, 1, self.updater, ())
+
     def update(self):
         """Update the sensor dictionary in each robot.
 
@@ -55,13 +59,15 @@ class bigbrother(object):
         in self.sensors. The key of the dictionary is the sensor in question
         and the value is a list of all the robots that have this sensor.
         """
-        self.robots = {x: self.pyro4ns.list(
+        robots = {x: self.pyro4ns.list(
         )[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
-        for key, value in self.robots.iteritems():
+
+        for key, value in robots.iteritems():
             self.robotProxy = Pyro4.Proxy(value)
             self.robotProxy._pyroHmacKey = bytes(key)
             try:
-                robot_uris = self.robotProxy.get_uris()
+                robot_uris = self.robotProxy.get_uris()  # Return list uris
+                self.robots[key] = robot_uris
                 for u in robot_uris:
                     currentSensor = u.split(".")[1].split("@")[0]
                     if type(self.sensors.get(currentSensor)) is not list:
@@ -72,13 +78,10 @@ class bigbrother(object):
                             self.sensors.get(currentSensor).append(u)
             except Exception:
                 print("Error connecting to: %s " % value)
-                self.remove(name=key)
-
+                self.remove(key)
         if self.robots:
             print "ROBOTS:", self.robots
             print "SENSORS:", self.sensors
-
-        self.bigBrother.enter(10, 1, self.update, ())
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -146,7 +149,7 @@ class bigbrother(object):
     def register(self, name, uri, safe=False, metadata=None):
         """Register new robot on nameserver.
 
-        Registra un nuevo robot en nameserver haciendo uso del método
+        Registra un nuevo robot en nameserver haciendo uso del metodo
         register() de Pyro4.naming
 
         Args:
@@ -160,9 +163,10 @@ class bigbrother(object):
         _safe = safe
         _metadata = metadata
         self.pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
+        threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
-    def remove(self, name=None, prefix=None, regex=None):
+    def remove(self, name, prefix=None, regex=None):
         """Remove robot from nameserver.
 
         Remove a nameserver robot according to its name
@@ -171,18 +175,57 @@ class bigbrother(object):
         _name = name
         _prefix = prefix
         _regex = regex
+        for uri in self.robots:
+            uri = self.robots[name]
+            self.sensors = {key: value for key, value in self.sensors.items()
+                            if value != uri}
+        del self.robots[name]
+
         self.pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
+        threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
     def set_metadata(self, name, metadata):
         return self.pyro4ns.set_metadata(name, metadata)
 
     @Pyro4.expose
-    def proxy(self, name):
+    def proxy(self, obj, passw=None):
+        target = obj.split(".")
         try:
-            return Pyro4.Proxy(self.pyro4ns.lookup(name))
+            all_proxys = []
+            if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
+                for x in self.robots[target[0]].iteritems():
+                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
+                return all_proxys
+            elif (not target[0] and target[1]):  # .sensor
+                for x in self.sensors[target[1]].iteritems():
+                    return utils.get_pyro4proxy(x, target[0])
+            elif (target[0].count("*") == 1 and target[1] and
+                    target[1].count("*") == 0):  # *.sensor
+                for x in self.sensors[target[1]].iteritems():
+                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
+                return all_proxys
+            elif (target[0].count("*") == 1 and target[0].count("*")):
+                print target, "obj7" # TODO regex
+            else:
+                print "Objeto no valido"
         except Exception:
-            return None
+            print "Error al acceder a", target
+
+        # try:
+        #     if ('@' in obj):
+        #         (name, ip, port) = utils.uri_split(obj)
+        #         proxy = Pyro4.Proxy(name)
+        #         if not (passw):
+        #             passw = name
+        #     else:
+        #         proxy = Pyro4.Proxy(self.pyro4ns.lookup(obj))
+        #         if not (passw):
+        #             passw = obj
+        #     proxy._pyroHmacKey = bytes(passw)
+        #     return proxy
+        # except Exception:
+        #     return None
 
     # TODO
     @Pyro4.expose

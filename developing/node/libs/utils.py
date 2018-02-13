@@ -99,3 +99,8 @@ def ping(uri):
     except Exception:
         pass
     return (not response)
+
+def get_pyro4proxy(uri, password):
+    proxy = Pyro4.Proxy(uri)
+    proxy._pyroHmacKey = bytes(password)
+    return proxy

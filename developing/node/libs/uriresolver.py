@@ -166,6 +166,52 @@ class uriresolver(control.Control):
             return None
         return self.nameserver.ready()
 
+    def get_proxy_without_uri(self, obj, passw=None):
+        target = obj.split(".")
+        if (target[0] and target[1] and
+                target[0].count("*") == 0 and
+                target[1].count("*") == 0):
+            if (passw is None):
+                passw = target[0]
+            try:
+                proxy = utils.get_pyro4proxy(
+                    self.nameserver.lookup(target[0]), passw)
+                bot_uris = proxy.get_uris()
+                for x in bot_uris:
+                    (name, ip, port) = utils.uri_split(x)
+                    if (name.split(".")[1] == target[1]):
+                        proxy = utils.get_pyro4proxy(x, passw)
+                        return proxy
+            except Exception:
+                print "Error al resolver ", obj
+        else:
+            if (self.usingBB):
+                self.nameserver.proxy(target, passw)
+            else:
+                print "Para usar esta funcionalidad se necesita de BigBrother"
+                return None
+
+    @Pyro4.expose
+    def get_proxy(self, obj, passw=None):
+        print "get_proxy", obj
+        if (self.nameserver):
+            try:
+                # PYRO:simplebot.infrared@192.168.10.67:6001
+                if (obj.count('PYRO:') == 1 and obj.count('@') == 1 and
+                        obj.count(":") == 2 and obj.count(".") in range(3, 5)):
+                            (name, _, _) = utils.uri_split(obj)
+                            if ("." in name):
+                                name = name.split(".")[0]
+                            if (passw is None):
+                                passw = name
+                            return utils.get_pyro4proxy(obj, passw)
+                elif (obj.count(".") == 1):  # simplebot.sensor
+                    return (self.get_proxy_without_uri(obj, passw))
+                else:
+                    print "Objeto no valido"
+            except Exception:
+                return None
+
     @Pyro4.expose
     def new_uri(self, name, mode="public"):
         if mode == "local":
@@ -255,7 +301,7 @@ class uriresolver(control.Control):
             if self.nameserver is not None:
                 # print "___________REGISTERING PYRO4BOT ON NAME SERVER_________________"
                 self.URIS[self.botName] = uri
-                print("REGISTERING NAME SERVER URI: %s" %
+                print("REGISTERING ROBOT URI: %s" %
                       (colored(self.URIS[self.botName], 'green')))
                 if (self.usingBB):
                     self.nameserver.register(
@@ -276,6 +322,7 @@ class uriresolver(control.Control):
             return [self.URIS[x] for x in self.URIS]
         else:
             return [self.URIS[x] for x in self.URIS if x.find(".") > -1 and self.URIS[x].find("127.0.0.1") is -1]
+
 
 
 def printInfo(text, color="green"):

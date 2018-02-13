@@ -7,11 +7,6 @@ import os
 
 #____________________DECORATOR FOR GENERAL CLASS__________________
 
-def getProxy(uri, password):
-    proxy = Pyro4.Proxy(uri)
-    proxy._pyroHmacKey = bytes(password)
-    return proxy
-
 # decoradores para las clases generales
 
 def load_config(in_function):
@@ -28,7 +23,7 @@ def load_config(in_function):
         if "name" in _self.__dict__:
             _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
         if "uriresolver" in _self.__dict__:
-            _self.__dict__["uriresolver"] = getProxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
+            _self.__dict__["uriresolver"] = utils.get_pyro4proxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
         if "nr_remote" in _self.__dict__:
 
             print _self.__dict__["nr_remote"]
@@ -36,13 +31,13 @@ def load_config(in_function):
             injects = {}
             for deps in _self.__dict__["_local"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
+                    1]] = utils.get_pyro4proxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "_remote" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_remote"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = getProxy(deps,_self.__dict__["name"].split(".")[0])
+                    1]] = utils.get_pyro4proxy(deps,_self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "-->" in _self.__dict__:
             del(_self.__dict__["-->"])
@@ -115,6 +110,7 @@ class Control(object):
             obj.subscribe(key, self.pyro4id)
         except Exception:
             print("ERROR: in subscripcion %s URI: %s" % (obj, key))
+            raise
             return False
     @Pyro4.expose
     def subscribe(self, key, uri):
@@ -123,12 +119,16 @@ class Control(object):
         try:
             if key not in self.subscriptors:
                 self.subscriptors[key] = []
-            proxy = Pyro4.Proxy(uri)
-            proxy._pyroHmacKey = bytes(self.__dict__["botname"])
+            print "Subscribe control.py pidiendo", uri
+            # proxy = Pyro4.Proxy(uri)
+            # proxy._pyroHmacKey = bytes(self.__dict__["botname"])
+            proxy = self.__dict__["uriresolver"].get_proxy(uri)
+            print proxy
             self.subscriptors[key].append(proxy)
             return True
         except Exception:
             print("ERROR: in subscribe")
+            raise
             return False
 
     @Pyro4.oneway
