@@ -193,7 +193,6 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_proxy(self, obj, passw=None):
-        print "get_proxy", obj
         if (self.nameserver):
             try:
                 # PYRO:simplebot.infrared@192.168.10.67:6001
@@ -301,7 +300,7 @@ class uriresolver(control.Control):
             if self.nameserver is not None:
                 # print "___________REGISTERING PYRO4BOT ON NAME SERVER_________________"
                 self.URIS[self.botName] = uri
-                print("REGISTERING ROBOT URI: %s" %
+                print("REGISTERING ROBOT: %s" %
                       (colored(self.URIS[self.botName], 'green')))
                 if (self.usingBB):
                     self.nameserver.register(

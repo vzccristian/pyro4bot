@@ -119,11 +119,7 @@ class Control(object):
         try:
             if key not in self.subscriptors:
                 self.subscriptors[key] = []
-            print "Subscribe control.py pidiendo", uri
-            # proxy = Pyro4.Proxy(uri)
-            # proxy._pyroHmacKey = bytes(self.__dict__["botname"])
             proxy = self.__dict__["uriresolver"].get_proxy(uri)
-            print proxy
             self.subscriptors[key].append(proxy)
             return True
         except Exception:

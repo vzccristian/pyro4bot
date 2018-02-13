@@ -211,22 +211,7 @@ class bigbrother(object):
                 print "Objeto no valido"
         except Exception:
             print "Error al acceder a", target
-
-        # try:
-        #     if ('@' in obj):
-        #         (name, ip, port) = utils.uri_split(obj)
-        #         proxy = Pyro4.Proxy(name)
-        #         if not (passw):
-        #             passw = name
-        #     else:
-        #         proxy = Pyro4.Proxy(self.pyro4ns.lookup(obj))
-        #         if not (passw):
-        #             passw = obj
-        #     proxy._pyroHmacKey = bytes(passw)
-        #     return proxy
-        # except Exception:
-        #     return None
-
+            
     # TODO
     @Pyro4.expose
     def request(self, name):
