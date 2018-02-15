@@ -16,14 +16,17 @@ import struct
 import time
 
 
-def run_camera(cam):
-    cam = threading.Thread(target=execute_camera, args=(cam,))
-    cam.setDaemon(True)
-    cam.start()
-    def execute_camera(cam):
+class clientCamera(object):
+    def __init__(self, camera):
+        self.cam = camera
+        self.cam_t = threading.Thread(target=self.execute_camera, args=())
+        self.cam_t.setDaemon(True)
+        self.cam_t.start()
+
+    def execute_camera(self):
         print "Connecting to Server. Waiting for IP and PORT"
-        ip, port = cam.image
-        print "Client: "+ip+":" + str(port)
+        ip, port = self.cam.image
+        print "Client: " + ip + ":" + str(port)
         client_socket = socket.socket()
         try:
             client_socket.connect((ip, port))
@@ -47,26 +50,29 @@ def run_camera(cam):
                     image_stream.seek(0)
 
                     # BytesIO
-                    data = np.fromstring(image_stream.getvalue(), dtype=np.uint8)
+                    data = np.fromstring(
+                        image_stream.getvalue(), dtype=np.uint8)
                     c = cv2.imdecode(data, 1)
                     # centro=[]
                     # centro,img=track(c)
                     cv2.imshow('learnbot1-' + str(port), c)
                     if cv2.waitKey(1) == 27:
                         exit(0)
-            except:
+            except Exception:
                 print "Error al recibir"
             finally:
                 connection.close()
-        except:
+        except Exception:
             print "Error al conectar a " + ip + ":" + str(port)
         finally:
-            print ("Exit")
+            print("Exit")
             client_socket.close()
 
-print "Ejecutando cliente de cámara..."
-bot = ClientNODERB("learnbot1") # nombre del bot en la name no el fichero json
-camera = bot.run_camera(bot.camera)
 
-while True:
-    time.sleep(0.05)
+if __name__ == "__main__":
+    print("Ejecutando cliente de camara...")
+    bot = ClientNODERB("picambot")  # nombre del bot en la name no el fichero json
+    camera = clientCamera(bot.camera)
+
+    while True:
+        time.sleep(0.05)

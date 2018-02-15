@@ -73,8 +73,7 @@ class picam(control.Control):
         self.cleaner.start()
 
         self.ip = utils.get_ip_address(self.ethernet)
-
-        super(picam, self).__init__((self.worker_read,))
+        self.init_workers(self.worker_read)
 
     def worker_read(self):
         """ Main worker"""

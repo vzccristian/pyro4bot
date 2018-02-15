@@ -23,14 +23,15 @@ class bigbrother(object):
     Bigbrother is responsible for allowing or not accessing the name server.
     """
 
-    def __init__(self, _pyro4ns):
+    def __init__(self, _priv_pyro4ns, _pub_pyro4ns):
         """__init__ method of BigBrother.
 
         Args:
-            _pyro4ns (nameServer): nameServer object from
+            _priv_pyro4ns (nameServer): nameServer object from
                 custom class nameServer
         """
-        self.pyro4ns = _pyro4ns  # Pyro4NS location
+        self.private_pyro4ns = _priv_pyro4ns  # Private Pyro4NS location
+        self.public_pyro4ns = _pub_pyro4ns  # Public Pyro4NS location
 
         self.bigBrother = sched.scheduler(time.time, time.sleep)  # bigBrother
         self.bigBrother.enter(5, 1, self.updater, ())  # bigBrother
@@ -59,8 +60,8 @@ class bigbrother(object):
         in self.sensors. The key of the dictionary is the sensor in question
         and the value is a list of all the robots that have this sensor.
         """
-        robots = {x: self.pyro4ns.list(
-        )[x] for x in self.pyro4ns.list() if x not in "Pyro.NameServer"}
+        robots = {x: self.private_pyro4ns.list(
+        )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
 
         for key, value in robots.iteritems():
             self.robotProxy = Pyro4.Proxy(value)
@@ -106,9 +107,11 @@ class bigbrother(object):
 
             self.uri = daemon.register(self, objectId="bigbrother")
             print "\nBigBrother running : ", self.uri
+            self.public_pyro4ns.register("bigbrother", self.uri)
             daemon.requestLoop()
         except Exception:
             print "Error creating proxy on interface", PROXY_INTERFACE
+            raise
 
     @Pyro4.expose
     def list(self):
@@ -117,7 +120,7 @@ class bigbrother(object):
         Returns a dictionary where the key is the name of the object
         and the value is the URI associated with that object
         """
-        return self.pyro4ns.list()
+        return self.private_pyro4ns.list()
 
     @Pyro4.expose
     def lookup(self, name, return_metadata=False):
@@ -134,7 +137,11 @@ class bigbrother(object):
         """
         print "Lookup:", name, return_metadata
         _return_metadata = return_metadata
-        return self.pyro4ns.lookup(name, return_metadata=_return_metadata)
+        try:
+            uri = self.private_pyro4ns.lookup(name, return_metadata=_return_metadata)
+        except Pyro4.errors.NamingError:
+            uri = None
+        return uri
 
     @Pyro4.expose
     def ping(self):
@@ -143,7 +150,7 @@ class bigbrother(object):
         Returns the result of calling the ping () method of nameserver.
         """
         print "Pinging..."
-        return self.pyro4ns.ping()
+        return self.private_pyro4ns.ping()
 
     @Pyro4.expose
     def register(self, name, uri, safe=False, metadata=None):
@@ -162,7 +169,7 @@ class bigbrother(object):
         print "Registering: ", name, uri, safe, metadata
         _safe = safe
         _metadata = metadata
-        self.pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
+        self.private_pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
         threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
@@ -181,12 +188,12 @@ class bigbrother(object):
                             if value != uri}
         del self.robots[name]
 
-        self.pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
+        self.private_pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
         threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
     def set_metadata(self, name, metadata):
-        return self.pyro4ns.set_metadata(name, metadata)
+        return self.private_pyro4ns.set_metadata(name, metadata)
 
     @Pyro4.expose
     def proxy(self, obj, passw=None):
@@ -211,18 +218,18 @@ class bigbrother(object):
                 print "Objeto no valido"
         except Exception:
             print "Error al acceder a", target
-            
+
     # TODO
     @Pyro4.expose
     def request(self, name):
         try:
-            return Pyro4.Proxy(self.pyro4ns.lookup(name))
+            return Pyro4.Proxy(self.private_pyro4ns.lookup(name))
         except Exception:
             return None
 
     @Pyro4.expose
     def ready(self):
-        if self.pyro4ns is not None:
+        if self.private_pyro4ns is not None:
             return True
         else:
             return False
@@ -230,64 +237,89 @@ class bigbrother(object):
 
 class nameServer(object):
     def __init__(self):
-        self.pyro4ns = None  # Nameserver location
-        self.ready = False  # Flags
-        self.nameserver = None  # Object Name server for Thread-1
-        self.nsThread = None  # Thread for NSLoop
+        # Public NS
+        self.public_pyro4ns = None  # Public Nameserver location
+        self.pub_nameserver = None  # Object Name server for Thread-1
+        self.pub_ns_t = None  # Thread for NSLoop
+
+        # Private NS
+        self.private_pyro4ns = None  # Nameserver location
+        self.priv_ready = False  # Flags
+        self.priv_nameserver = None  # Object Name server for Thread-1
+        self.priv_ns_t = None  # Thread for NSLoop
+
         self.start()
 
     def start(self):
         try:
-            self.pyro4ns = Pyro4.locateNS()
+            self.private_pyro4ns = Pyro4.locateNS()
             print "NameServer already working"
         except Exception:
-            self.nsThread = threading.Thread(
-                target=self.create_nameserver, args=())
-            self.nsThread.start()  # Thread-1 started
-            self.pyro4ns = Pyro4.locateNS(hmac_key=bytes(
-                PROXY_AND_NS_PASSWORD))  # Getting NS on main thread
+            self.priv_ns_t = threading.Thread(
+                target=self.create_nameserver,
+                kwargs={'passw': PROXY_AND_NS_PASSWORD})
+            self.priv_ns_t.start()  # Thread-1 started
+            time.sleep(1)
+            self.private_pyro4ns = Pyro4.locateNS(
+                host="localhost",
+                hmac_key=bytes(PROXY_AND_NS_PASSWORD))  # Private NS
+
+            ip = utils.get_ip_address(ifname=PROXY_INTERFACE)
+            self.pub_ns_t = threading.Thread(
+                target=self.create_nameserver,
+                kwargs={'host': ip, })
+            self.pub_ns_t.start()
+            time.sleep(1)
+            self.public_pyro4ns = Pyro4.locateNS(host=ip)  # Public NS
 
     """Thread-1 loop for nameserver"""
 
-    def create_nameserver(self):
+    def create_nameserver(self, host="localhost", passw=False):
         try:
-            self.ready = True
-            self.nameserver = nm.startNSloop(
-                host="localhost", hmac=bytes(PROXY_AND_NS_PASSWORD))
-            # NS ready
+            if ("localhost" in host):  # Private NS
+                self.priv_ready = True
+                print(colored("Started private name server.", 'yellow'))
+                self.priv_nameserver = nm.startNSloop(
+                    host=host, hmac=bytes(passw))
+            else:  # Public NS
+                print(colored("Started public name server.", 'yellow'))
+                self.pub_nameserver = nm.startNSloop(host=host)
         except Exception:
-            print "Error al crear el nameserver"
+            print("Error al crear el nameserver %s" % _host)
 
-    def get_pyro4ns(self):
-        return self.pyro4ns
+    def get_priv_pyro4ns(self):
+        return self.private_pyro4ns
+
+    def get_pub_pyro4ns(self):
+        return self.public_pyro4ns
 
     def is_working(self):
-        return self.ready
+        return self.priv_ready
 
     # ------------------------ ADMIN TOOLS -------------------#
     def list(self):
         try:
             print "------------------ NAME-SERVER LIST ------------------"
-            print self.pyro4ns.list()
+            print self.private_pyro4ns.list()
         except Exception:
             print "Error name-server"
             raise
 
     # TODO
     def listprefix(self, _prefix):
-        entries = self.pyro4ns.list(prefix=_prefix)
+        entries = self.private_pyro4ns.list(prefix=_prefix)
         return entries
 
     # TODO
     def listregex(self, _regex):
-        entries = self.pyro4ns.list(regex=_regex)
+        entries = self.private_pyro4ns.list(regex=_regex)
         return entries
 
     """Get URI for a determinate pyro4object"""
 
     def lookup(self, name):
         try:
-            uri = self.pyro4ns.lookup(name)
+            uri = self.private_pyro4ns.lookup(name)
             print "Looking for " + name + " : " + colored(uri, "green")
             return uri
         except Pyro4.errors.NamingError:
@@ -299,8 +331,8 @@ class nameServer(object):
     def remove(self, name):
         try:
             print("Removed " + name + " : " +
-                  colored(self.pyro4ns.lookup(name), "red"))
-            self.pyro4ns.remove(name)
+                  colored(self.private_pyro4ns.lookup(name), "red"))
+            self.private_pyro4ns.remove(name)
         except Pyro4.errors.NamingError:
             print name + " no encontrado."
 
@@ -308,11 +340,12 @@ class nameServer(object):
 
     def exit(self):
         print colored("\nSaliendo...", "red")
-        self.nameServerWorking = False
+        self.priv_nameserverWorking = False
         closer = subprocess.Popen(
             ["sh", "./killer.sh"], stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
         closer.wait()
+        os._exit(0)
 
     """Ctrl+z and Ctrl+c handler"""
 
@@ -331,41 +364,45 @@ class nameServer(object):
 
 
 if __name__ == "__main__":
+    try:
+        if len(sys.argv) is 2:
+            PROXY_INTERFACE = sys.argv[1]
+        elif len(sys.argv) is 3:
+            PROXY_AND_NS_PASSWORD = sys.argv[1]
 
-    if len(sys.argv) is 2:
-        PROXY_INTERFACE = sys.argv[1]
-    elif len(sys.argv) is 3:
-        PROXY_AND_NS_PASSWORD = sys.argv[1]
+        print(colored("Starting BigBrother...", 'green'))
 
-    ns_Object = nameServer()
-    bb = bigbrother(ns_Object.get_pyro4ns())
+        ns_Object = nameServer()
+        bb = bigbrother(ns_Object.get_priv_pyro4ns(), ns_Object.get_pub_pyro4ns())
 
-    signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
-    signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
+        signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
+        signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
 
-    while (True):
-        if (ns_Object.is_working()):  # NS ready for work
-            print colored("\n----------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------\n", "green")
-            command = raw_input(
-                "\n" + colored("Comando a la espera: ", "yellow"))
-            try:
-                command = command.split()
-                if (command is not None):
-                    realCommand = ns_Object.execute(command[0])
-                    if (len(command) is 1):
-                        realCommand()
-                    elif (len(command) is 2):
-                        uri = realCommand(command[1])
-                        if (uri is not None):
-                            proxy = Pyro4.Proxy(uri)
-                            # proxy.method()
-                            print "URI:", uri, " PROXY: ", proxy
-                            print(proxy.get_uris())
-                    elif (len(command) > 2):
-                        print(colored("Demasiados argumentos.", "red"))
-                else:
-                    print "Comando no encontrado."
-            except Exception:
-                print(colored("Comando erroneo", "red"))
-        time.sleep(1)
-    print printThread(color="red"), " saliendo..."
+        while (True):
+            if (ns_Object.is_working()):  # NS ready for work
+                print colored("\n----------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------\n", "green")
+                command = raw_input(
+                    "\n" + colored("Comando a la espera: ", "yellow"))
+                try:
+                    command = command.split()
+                    if (command is not None):
+                        realCommand = ns_Object.execute(command[0])
+                        if (len(command) is 1):
+                            realCommand()
+                        elif (len(command) is 2):
+                            uri = realCommand(command[1])
+                            if (uri is not None):
+                                proxy = Pyro4.Proxy(uri)
+                                # proxy.method()
+                                print "URI:", uri, " PROXY: ", proxy
+                                print(proxy.get_uris())
+                        elif (len(command) > 2):
+                            print(colored("Demasiados argumentos.", "red"))
+                    else:
+                        print "Comando no encontrado."
+                except Exception:
+                    print(colored("Comando erroneo", "red"))
+            time.sleep(1)
+        print printThread(color="red"), " saliendo..."
+    except (KeyboardInterrupt, SystemExit):
+        os._exit(0)
