@@ -13,7 +13,6 @@ import RPi.GPIO as GPIO
 class gpioinfrared(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-
         self.init_workers(self.worker)
 
     def worker(self):

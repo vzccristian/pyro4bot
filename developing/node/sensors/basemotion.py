@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
 import time
-from node.libs import control, utils
+from node.libs import control
 import Pyro4
 
 """
@@ -18,13 +18,14 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
+
 @Pyro4.expose
 class basemotion(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # print self.__dict__
         self.send_subscripcion(self.arduino, "BASE")
-        self.init_workers()
+        self.init_workers(self.worker)
 
     def worker(self):
         while self.worker_run:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control
@@ -36,7 +36,8 @@ class gpiobase(control.Control):
         self.PWMB.start(50)
 
         # this line is the last line in constructor method
-        super(gpiobase, self).__init__(self.worker)
+        self.init_workers(self.worker)
+
 
     def worker(self):
         try:
