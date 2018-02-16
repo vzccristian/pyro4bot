@@ -8,13 +8,13 @@ from termcolor import colored
 import signal
 import subprocess
 import os
-os.path.abspath('../node/libs')
+sys.path.append("../node/libs")
 import utils
-os.path.abspath('.')
+import myjson
 
-PROXY_AND_NS_PASSWORD = "PyRobot"
-PROXY_PORT = 6060
-PROXY_INTERFACE = "wlan1"
+
+def load_config(filename):
+    return myjson.MyJson(filename).json
 
 
 class bigbrother(object):
@@ -23,13 +23,15 @@ class bigbrother(object):
     Bigbrother is responsible for allowing or not accessing the name server.
     """
 
-    def __init__(self, _priv_pyro4ns, _pub_pyro4ns):
+    def __init__(self, _priv_pyro4ns, _pub_pyro4ns, config):
         """__init__ method of BigBrother.
 
         Args:
             _priv_pyro4ns (nameServer): nameServer object from
                 custom class nameServer
         """
+        self.config = config
+
         self.private_pyro4ns = _priv_pyro4ns  # Private Pyro4NS location
         self.public_pyro4ns = _pub_pyro4ns  # Public Pyro4NS location
 
@@ -88,8 +90,8 @@ class bigbrother(object):
         """Create proxy to make connections to BigBrother.
 
         Gets the network address of the network interface indicated in
-        the global variable PROXY_INTERFACE.
-        Obtain a connection port from the port indicated in PROXY_PORT.
+        json file.
+        Obtain a connection port from the port indicated in json file.
 
         Next, it creates a daemon that is the connection proxy
         to BigBrother and registers itself.
@@ -97,11 +99,11 @@ class bigbrother(object):
         It is working in the background listening to requests.
         """
         try:
-            myip = utils.get_ip_address(ifname=PROXY_INTERFACE)
-            myport = utils.get_free_port(PROXY_PORT, ip=myip)
+            myip = utils.get_ip_address(ifname=self.config["interface"])
+            myport = utils.get_free_port(self.config["proxy_port"], ip=myip)
 
             daemon = Pyro4.Daemon(host=myip, port=myport)
-            daemon._pyroHmacKey = bytes(PROXY_AND_NS_PASSWORD)
+            daemon._pyroHmacKey = bytes(self.config["proxy_password"])
 
             daemon.PYRO_MAXCONNECTIONS = 20
 
@@ -110,7 +112,7 @@ class bigbrother(object):
             self.public_pyro4ns.register("bigbrother", self.uri)
             daemon.requestLoop()
         except Exception:
-            print "Error creating proxy on interface", PROXY_INTERFACE
+            print "Error creating proxy on interface", self.config["interface"]
             raise
 
     @Pyro4.expose
@@ -236,7 +238,9 @@ class bigbrother(object):
 
 
 class nameServer(object):
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
+
         # Public NS
         self.public_pyro4ns = None  # Public Nameserver location
         self.pub_nameserver = None  # Object Name server for Thread-1
@@ -257,14 +261,14 @@ class nameServer(object):
         except Exception:
             self.priv_ns_t = threading.Thread(
                 target=self.create_nameserver,
-                kwargs={'passw': PROXY_AND_NS_PASSWORD})
+                kwargs={'passw': self.config["nameserver_password"]})
             self.priv_ns_t.start()  # Thread-1 started
             time.sleep(1)
             self.private_pyro4ns = Pyro4.locateNS(
                 host="localhost",
-                hmac_key=bytes(PROXY_AND_NS_PASSWORD))  # Private NS
+                hmac_key=bytes(self.config["nameserver_password"]))  # Private NS
 
-            ip = utils.get_ip_address(ifname=PROXY_INTERFACE)
+            ip = utils.get_ip_address(ifname=self.config["interface"])
             self.pub_ns_t = threading.Thread(
                 target=self.create_nameserver,
                 kwargs={'host': ip, })
@@ -285,7 +289,7 @@ class nameServer(object):
                 print(colored("Started public name server.", 'yellow'))
                 self.pub_nameserver = nm.startNSloop(host=host)
         except Exception:
-            print("Error al crear el nameserver %s" % _host)
+            print("Error al crear el nameserver %s" % host)
 
     def get_priv_pyro4ns(self):
         return self.private_pyro4ns
@@ -365,15 +369,20 @@ class nameServer(object):
 
 if __name__ == "__main__":
     try:
-        if len(sys.argv) is 2:
-            PROXY_INTERFACE = sys.argv[1]
-        elif len(sys.argv) is 3:
-            PROXY_AND_NS_PASSWORD = sys.argv[1]
+        if len(sys.argv) is 1:
+            json_file = load_config("config/bigbrother.json")
+        elif len(sys.argv) is 2:
+            json_file = load_config(sys.argv[1])
+        else:
+            print "Demasiados argumentos."
+            exit(0)
 
         print(colored("Starting BigBrother...", 'green'))
 
-        ns_Object = nameServer()
-        bb = bigbrother(ns_Object.get_priv_pyro4ns(), ns_Object.get_pub_pyro4ns())
+        ns_Object = nameServer(json_file)
+        bb = bigbrother(ns_Object.get_priv_pyro4ns(),
+                        ns_Object.get_pub_pyro4ns(),
+                        json_file)
 
         signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
         signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
