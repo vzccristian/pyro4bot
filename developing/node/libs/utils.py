@@ -1,14 +1,11 @@
-import socket
-import fcntl
-import struct
 import Pyro4
-import Pyro4.naming as nm
 import netifaces as ni
 import traceback
 import sys
 from termcolor import colored
 import threading
 import os
+import socket
 
 
 def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
@@ -89,7 +86,8 @@ def format_exception(e):
 
 
 def printThread(string, color="green"):
-    print((colored("[" + threading.current_thread().getName() + "] ", color))+string)
+    print(
+        (colored("[" + threading.current_thread().getName() + "] ", color)) + string)
 
 
 def ping(uri):
@@ -99,6 +97,7 @@ def ping(uri):
     except Exception:
         pass
     return (not response)
+
 
 def get_pyro4proxy(uri, password):
     proxy = Pyro4.Proxy(uri)

@@ -1,46 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
-import simplejson
-import re
-import pprint
-import collections
 import os.path
 import utils
-
-
-def dict_merge(dct, merge_dct):
-    for k, v in merge_dct.iteritems():
-        if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
-            dict_merge(dct[k], merge_dct[k])
-        else:
-            dct[k] = merge_dct[k]
-
-
-def del_coments(data, ch="#"):
-    salida = ""
-    for line in data.splitlines():
-        if (line.find(ch) > -1):
-            line = line[0:line.find(ch)]
-        salida = salida + line + "\n"
-    return salida
-
-
-def parameter_value(data, cad):
-    posi = data.find(cad)
-    if posi < 0:
-        return cad
-    else:
-        return data[posi + len(cad):data.find("\n", posi)].rstrip(",").strip('"')
-
-
-def substitute_params(data, reg="<.*?>"):
-    for match in re.findall(reg, data):
-        m = match.replace("<", '"').replace(">", '":')
-        data = data.replace(match, parameter_value(data, m))
-    return data
-
+import myjson
 
 def get_field(search_dict, field, enable=True):
     """
@@ -68,63 +31,23 @@ def get_field(search_dict, field, enable=True):
     return fields_found
 
 
-def disable_lines(json):
-    for key in [x for x in json.keys() if x != "NODE"]:
-        for k, v in json[key].items():
-            if get_field(v, "enable") == [False]:
-                del(json[key][k])
-    return json
-
-
-class MyJson(object):
-    def __init__(self, filename):
-        self.json = self.load_json(filename)
-
-    def load_json(self, filename):
-        if filename.find(".json") < 0:
-            filename = filename + ".json"
-        try:
-            data = open(filename).read()
-            data = del_coments(data)
-            data = substitute_params(data)
-            json = simplejson.loads(data)
-            json = self.load_dependencies(json)
-        except:
-            print("ERROR: loading %s" % (filename))
-            raise
-            exit(0)
-        return json
-
-    def load_dependencies(self, nodo):
-        for k, v in nodo.iteritems():
-            if type(v) is dict:
-                if k.find("(") >= 0 and k.find(")") >= 0:
-                    new_file = k[k.find("(") + 1:k.find(")")]
-                    hook = self.load_json(new_file)
-                    dict_merge(hook, v)
-                    nodo[k[0:k.find("(")].strip()] = hook
-                    del(nodo[k])
-                    k = k[0:k.find("(")].strip()
-                self.load_dependencies(nodo[k])
-            else:
-                pass
-        return nodo
-
-
 class Config:
     def __init__(self, filename="", json=None):
         if json is None:
             json = {}
-        if filename == "":
-            self.conf = json
-        else:
-            self.conf = MyJson(filename).json
-        self.conf = disable_lines(self.conf)
+        self.conf = json if (filename == "") else myjson.MyJson(
+            filename, dependencies=True).json
+        self.disable_lines()
         self.check_semantic()
         # print self.dependency()
         self.conf["NODE"][self.conf["NODE"]["name"] +
-                          ".URI_resolv"] = self.add_uri_conf()
+                          ".URI_resolv"] = self.add_uri_conf
 
+    def disable_lines(self):
+        for key in [x for x in self.conf.keys() if x != "NODE"]:
+            for k, v in self.conf[key].items():
+                if get_field(v, "enable") == [False]:
+                    del(self.conf[key][k])
 
     def check_semantic(self):
         if "def_frec" not in self.conf["NODE"]:
@@ -183,7 +106,7 @@ class Config:
         return [self.module(m) for m in self.classes()]
 
     def module(self, mod_cls):
-        """Return directory, module, class  if exist file .py"""
+        """Return directory, module, class  if exist file .py."""
         mod, cls = mod_cls.split(".")
         for d in self.node["path_cls"]:
             if os.path.isfile(self.node["path"] + "/" + d + "/" + mod + ".py"):
@@ -255,7 +178,6 @@ class Config:
         conf["port_ns"] = self.conf["NODE"]["port_ns"]
         conf["mode"] = "local"
         conf["basename"] = self.conf["NODE"]["name"]
-
         return conf
 
     @property
@@ -275,7 +197,3 @@ class Config:
         r = self.conf["services"]
         r.update(self.conf["sensors"])
         return r
-
-
-# Main function
-# if __name__ == "__main__":
