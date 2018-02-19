@@ -73,7 +73,8 @@ class picam(control.Control):
         self.cleaner.start()
 
         self.ip = utils.get_ip_address(self.ethernet)
-        self.init_workers(self.worker_read)
+
+        super(picam, self).__init__((self.worker_read,))
 
     def worker_read(self):
         """ Main worker"""
@@ -122,6 +123,7 @@ class picam(control.Control):
     @property
     def image(self):
         """Return IP and PORT to socket conection """
+        print image
         newClient = ClientSocket(self.initPort + 1)
         self.clients.append(newClient)
         self.initPort = newClient.port

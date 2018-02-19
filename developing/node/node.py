@@ -179,7 +179,7 @@ class NODERB (object):
         """ doc string for mi huevos"""
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
-            daemon = Pyro4.Daemon(host=ip, port=ports)
+            daemon = Pyro4.Daemon(host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
             uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
             exposed = Pyro4.core.DaemonObject(daemon).get_metadata(name_ob, True)

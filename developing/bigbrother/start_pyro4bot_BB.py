@@ -27,8 +27,11 @@ class bigbrother(object):
         """__init__ method of BigBrother.
 
         Args:
-            _priv_pyro4ns (nameServer): nameServer object from
+            _priv_pyro4ns (nameServer): private nameServer object from
                 custom class nameServer
+            _pub_pyro4ns (nameServer): public nameServer object from
+                custom class nameServer
+            config : dict obtaneid from json file
         """
         self.config = config
 

@@ -23,7 +23,8 @@ def load_config(in_function):
         if "name" in _self.__dict__:
             _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
         if "uriresolver" in _self.__dict__:
-            _self.__dict__["uriresolver"] = utils.get_pyro4proxy(_self.__dict__["uriresolver"],_self.__dict__["name"].split(".")[0])
+            _self.__dict__["uriresolver"] = utils.get_pyro4proxy(
+                _self.__dict__["uriresolver"], _self.__dict__["name"].split(".")[0])
         if "nr_remote" in _self.__dict__:
 
             print _self.__dict__["nr_remote"]
@@ -31,17 +32,17 @@ def load_config(in_function):
             injects = {}
             for deps in _self.__dict__["_local"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps,_self.__dict__["name"].split(".")[0])
+                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "_remote" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_remote"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps,_self.__dict__["name"].split(".")[0])
+                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
         if "-->" in _self.__dict__:
             del(_self.__dict__["-->"])
-        super(_self.__class__.__mro__[0],_self).__init__()
+        super(_self.__class__.__mro__[0], _self).__init__()
         in_function(*args, **kwargs)
 
     return out_function
@@ -56,15 +57,14 @@ def load_node(in_function):
     return out_function
 
 
-
 class Control(object):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
 
     def __init__(self, *k, **kw):
-        self.threadpublisher=False
+        self.threadpublisher = False
         self.workers = []
-        self.data_publication=None
+        self.data_publication = None
         self.subscriptors = {}
         self.mutex = threading.Lock()
 
@@ -79,30 +79,36 @@ class Control(object):
                 t.setDaemon(True)
                 t.start()
 
-
-    def init_publisher(self,data_publication,frec=0.01):
+    def init_publisher(self, data_publication, frec=0.01):
         """ start publisher daemon"""
-        self.threadpublisher=True
-        t = threading.Thread(target=self.thread_publisher, args=(data_publication,frec))
+        self.threadpublisher = True
+        t = threading.Thread(target=self.thread_publisher,
+                             args=(data_publication, frec))
         self.workers.append(t)
         t.setDaemon(True)
         t.start()
 
-    def thread_publisher(self,data_publication, frec):
+    def thread_publisher(self, data_publication, frec):
         """ public data between all subcriptors in list"""
         while self.threadpublisher:
             # time.sleep(5)
             try:
-                # print("subscriptors",self.subscriptors)
+                print("subscriptors", self.subscriptors)
                 for key, subscriptors in self.subscriptors.iteritems():
-                    if key in data_publication:
-                        for item in subscriptors:
-                            # print("publicando",key, data_publication[key])
-                            item.publication(key, data_publication[key])
+                    print "Key", key, "Subs", subscriptors, "DATA", data_publication
+                    try:
+                        if key in data_publication:
+                            for item in subscriptors:
+                                # print("publicando",key, data_publication[key])
+                                item.publication(key, data_publication[key])
+                    except TypeError:
+                        print "Argumento no esperado."
+                        exit()
             except Exception as e:
                 print utils.format_exception(e)
                 raise
             time.sleep(frec)
+
     @Pyro4.expose
     def send_subscripcion(self, obj, key):
         """ send a subcripcion request to an object"""
@@ -112,6 +118,7 @@ class Control(object):
             print("ERROR: in subscripcion %s URI: %s" % (obj, key))
             raise
             return False
+
     @Pyro4.expose
     def subscribe(self, key, uri):
         """ receive a request for subcripcion from an object and save data in dict subcriptors
@@ -146,10 +153,10 @@ class Control(object):
     def stop(self):
         self.worker_run = False
 
-
     @Pyro4.expose
     def echo(self, msg="hello"):
         return msg
+
     @Pyro4.expose
     def get_pyroid(self):
         return self.pyro4id

@@ -39,8 +39,8 @@ class usbserial(control.Control):
         except:
                 #print("error usbserial")
             raise
-        super(usbserial, self).__init__()
-        self.init_workers((self.worker_reader,self.worker_dist))
+        self.init_workers((self.worker_reader))
+        print self.buffer[self.available]
         self.init_publisher(self.buffer[self.available])
 
     def worker_reader(self):
@@ -56,15 +56,15 @@ class usbserial(control.Control):
                 pass
             time.sleep(self.frec)
 
-    def worker_dist(self):
-        while self.worker_run:
-            try:
-                for k, v in self.subscriptors.iteritems():
-                    v.publication(k, self.buffer[self.available][k])
-            except:
-                #print("USB DIST error: ")
-                pass
-            time.sleep(self.frec)
+    # def worker_dist(self):
+    #     while self.worker_run:
+    #         try:
+    #             for k, v in self.subscriptors.iteritems():
+    #                 v.publication(k, self.buffer[self.available][k])
+    #         except:
+    #             #print("USB DIST error: ")
+    #             pass
+    #         time.sleep(self.frec)
 
     def read_serial(self):
         l = self.serial.readline()

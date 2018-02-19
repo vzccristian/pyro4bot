@@ -7,13 +7,15 @@ class ClientNODERB(object):
             self.name = name[0:name.find("@")]
             self.ip = name[name.find("@") + 1:]
             self.ns = False
+            print name
         else:
             self.name = name
             self.ip = ""
             self.ns = True
+            print name
         self.port_robot = port_robot
-        self.proxy_robot()
         try:
+            self.proxy_robot()
             Pyro4.config.SERIALIZER = "pickle"
             for p in self.proxys:
                 con = p.split("@")[0].split(".")[1]
@@ -37,22 +39,25 @@ class ClientNODERB(object):
             # NameServer o BigBrother
             try:
                 ns = Pyro4.locateNS(host="192.168.10.1")
-                # BigBrother
-                try:
-                    bb_uri = ns.lookup("bigbrother")
-                    bb = Pyro4.Proxy(bb_uri)
-                    bb._pyroHmacKey = bytes("PyRobot")
-                    robot_uri = bb.lookup(self.name)
-                except Pyro4.errors.NamingError:  # Busco en NS de robot
-                    robot_uri = ns.lookup(self.name)
-                try:
-                    self.node = Pyro4.Proxy(robot_uri)
-                    self.node._pyroHmacKey = bytes(self.name)
-                    self.proxys = self.node.get_uris()
-                except Exception:
-                    self.node = None
-                    print "Robot no encontrado"
-                    os._exit(0)
             except Exception:
                 print "No se puede localizar un servidor de nombres."
+            # BigBrother
+            try:
+                bb_uri = ns.lookup("bigbrother")
+                bb = Pyro4.Proxy(bb_uri)
+                bb._pyroHmacKey = bytes("PyRobot")
+                robot_uri = bb.lookup(self.name)
+            except Pyro4.errors.NamingError:  # Busco en NS de robot
+                robot_uri = ns.lookup(self.name)
+            try:
+                self.node = Pyro4.Proxy(robot_uri)
+                self.node._pyroHmacKey = bytes(self.name)
+            except Exception:
+                self.node = None
+        if (self.node):
+            self.proxys = self.node.get_uris()
+            print self.proxys
+        else:
+            print "Robot no encontrado"
+            os._exit(0)
         return self.proxys

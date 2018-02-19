@@ -14,11 +14,12 @@ import Pyro4
 class usbsimulator(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
+        print "init"
         self.buffer = [0, 0]
         self.available = 0
         self.lock = 1
-        self.IR=[0,1,1]
-        self.LASER=[0,0]
+        self.IR = [0, 1, 1]
+        self.LASER = [0, 0]
         self.init_workers(self.worker_reader)
         self.init_publisher(self.__dict__)
 
