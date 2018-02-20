@@ -23,12 +23,11 @@ class laser (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.init_workers(self.worker)
-        print self.arduino
         self.send_subscripcion(self.arduino, "LASER")
 
     def worker(self):
         while self.worker_run:
-            #print("LASER-sal:",self.LASER)
+            print("LASER-sal:", self.LASER)
             time.sleep(self.frec)
     @Pyro4.expose
     def get_laser(self):

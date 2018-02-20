@@ -5,7 +5,7 @@
       #"path":"/home/paco/Dropbox/td/pyro4bot/developing/node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      "ethernet":"wlan0",
+      "ethernet":"wlxc4e984e024a2",
       #"ethernet":"enp0s25",
       #"ethernet":"eth0",
       "port_ns":9090,

@@ -3,11 +3,12 @@ import threading
 import Pyro4
 import utils
 import os
-
+import token
 
 #____________________DECORATOR FOR GENERAL CLASS__________________
 
 # decoradores para las clases generales
+
 
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
@@ -64,7 +65,7 @@ class Control(object):
     def __init__(self, *k, **kw):
         self.threadpublisher = False
         self.workers = []
-        self.data_publication = None
+        self.token_data = None
         self.subscriptors = {}
         self.mutex = threading.Lock()
 
@@ -79,40 +80,45 @@ class Control(object):
                 t.setDaemon(True)
                 t.start()
 
-    def init_publisher(self, data_publication, frec=0.01):
+    def init_publisher(self, token_data, frec=0.01):
         """ start publisher daemon"""
-        self.threadpublisher = True
-        t = threading.Thread(target=self.thread_publisher,
-                             args=(data_publication, frec))
-        self.workers.append(t)
-        t.setDaemon(True)
-        t.start()
+        if isinstance(token_data, token.Token):
+            self.threadpublisher = True
+            t = threading.Thread(target=self.thread_publisher,
+                                 args=(token_data, frec))
+            self.workers.append(t)
+            t.setDaemon(True)
+            t.start()
+        else:
+            print "Can not publish to object other than token"
 
-    def thread_publisher(self, data_publication, frec):
+    def thread_publisher(self, token_data, frec):
         """ public data between all subcriptors in list"""
         while self.threadpublisher:
-            # time.sleep(5)
+            d = token_data.get_attribs()
             try:
-                print("subscriptors", self.subscriptors)
-                for key, subscriptors in self.subscriptors.iteritems():
-                    print "Key", key, "Subs", subscriptors, "DATA", data_publication
+                for key in self.subscriptors.keys():
+                    subscriptors = self.subscriptors[key]
                     try:
-                        if key in data_publication:
+                        if key in d:
                             for item in subscriptors:
-                                # print("publicando",key, data_publication[key])
-                                item.publication(key, data_publication[key])
+                                # print("publicando",key, d[key])
+                                item.publication(key, d[key])
                     except TypeError:
                         print "Argumento no esperado."
+                        raise
                         exit()
             except Exception as e:
                 print utils.format_exception(e)
                 raise
             time.sleep(frec)
 
+
     @Pyro4.expose
     def send_subscripcion(self, obj, key):
         """ send a subcripcion request to an object"""
         try:
+            print "Me subscribo a:",obj,key
             obj.subscribe(key, self.pyro4id)
         except Exception:
             print("ERROR: in subscripcion %s URI: %s" % (obj, key))

@@ -4,7 +4,7 @@
 #____________developed by paco andres____________________
 import time
 import datetime
-from node.libs import control, utils
+from node.libs import control, utils, token
 import serial
 import simplejson as json
 import Pyro4
@@ -20,12 +20,14 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
+
 @Pyro4.expose
 class usbserial(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.subscriptors = {}
-        self.buffer = [0, 0]
+        # self.buffer = [{}, {}]
+        self.buffer = token.Token()
         self.writer = []
         self.available = 0
         self.lock = 1
@@ -34,42 +36,40 @@ class usbserial(control.Control):
                 self.comPort, self.comPortBaud, timeout=0.05)
             # print self.comPort
             if self.serial.isOpen():
-                #print(self.serial.name + ' is open..')
+                # print(self.serial.name + ' is open..')
                 pass
-        except:
-                #print("error usbserial")
+        except Exception:
+            # print("error usbserial")
             raise
-        self.init_workers((self.worker_reader))
-        print self.buffer[self.available]
-        self.init_publisher(self.buffer[self.available])
+        self.init_workers(self.worker_reader)
+        self.init_publisher(self.buffer)
+
+    # def worker_reader(self):
+    #     self.serial.flushInput()
+    #     while self.worker_run:
+    #         #print ("usb: %s %s" %(self.available,self.block))
+    #         l = self.serial.readline().split('\r')[0]
+    #         # print l
+    #         try:
+    #             self.buffer[self.lock] = json.loads(self.read_serial())
+    #             print self.buffer[self.lock]
+    #             self.lock, self.available = self.available, self.lock
+    #         except:
+    #             pass
+    #         time.sleep(self.frec)
 
     def worker_reader(self):
         self.serial.flushInput()
         while self.worker_run:
-            #print ("usb: %s %s" %(self.available,self.block))
-            l = self.serial.readline().split('\r')[0]
-            # print l
             try:
-                self.buffer[self.lock] = json.loads(self.read_serial())
-                self.lock, self.available = self.available, self.lock
-            except:
+                self.buffer.update_from_dict(json.loads(self.read_serial()))
+            except Exception:
                 pass
             time.sleep(self.frec)
 
-    # def worker_dist(self):
-    #     while self.worker_run:
-    #         try:
-    #             for k, v in self.subscriptors.iteritems():
-    #                 v.publication(k, self.buffer[self.available][k])
-    #         except:
-    #             #print("USB DIST error: ")
-    #             pass
-    #         time.sleep(self.frec)
-
     def read_serial(self):
-        l = self.serial.readline()
-        # print l[l.find("{"):l.find("}")+1]
-        return l[l.find("{"):l.find("}") + 1]
+        line = self.serial.readline()
+        return line[line.find("{"):line.find("}") + 1]
 
     @Pyro4.oneway
     def command(self, comman="ee"):

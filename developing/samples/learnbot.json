@@ -17,7 +17,7 @@
     },
    "services":{
         "camera":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
-        "arduino":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.02,"enable":true}
+        "arduino":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.1,"enable":true}
    },
    "sensors":{
         "laser":{"cls":"laser","LASER":[0,0,0],"-->":["arduino"],"enable":true,"frec":0.02,"worker_run":true},

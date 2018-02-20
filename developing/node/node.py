@@ -243,14 +243,15 @@ class NODERB (object):
             print(v[-1])
 
     @Pyro4.expose
-    def get_docstring(self,pyro4id,methods):
-        """hola"""
+    def get_docstring(self, pyro4id, methods):
+        """Return doc_string documentation"""
         print pyro4id, methods
         p = Pyro4.Proxy(pyro4id)
-        for k,met in methods.iteritems():
+        for k, met in methods.iteritems():
             for m in met:
                 try:
-                    print k,m,p
+                    # TODO
+                    print k, m, p
                     print(eval("p.{}.__doc__".format(m)))
                 except Exception:
                     raise
