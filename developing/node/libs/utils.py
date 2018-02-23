@@ -24,6 +24,21 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
             sys.exit()
     return ip
 
+def get_all_ip_address():
+    address = []
+    try:
+        for x in ni.interfaces():
+            add = ni.ifaddresses(x)
+            try:
+                for ips in add[ni.AF_INET]:
+                    address.append(ips["addr"])
+            except Exception:
+                pass
+    except Exception:
+        print "Error in utils.get_all_ip_address()"
+        raise
+        exit()
+    return address
 
 def get_gateway_address(ifname="lo"):
     ip = None

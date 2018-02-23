@@ -169,7 +169,6 @@ class NODERB (object):
                 st = colored(status, 'green')
                 self.PROCESS[name].append(utils.get_pyro4proxy(
                     obj["pyro4id"], self.name).__docstring__())
-                print self.PROCESS[name]
             if status == "FAIL":
                 st = colored(status, 'red')
             if status == "WAITING":
@@ -262,13 +261,12 @@ class NODERB (object):
 
     @Pyro4.expose
     def print_process(self):
-        print "SELF.PROCESS", self.PROCESS
         for k, v in self.PROCESS.iteritems():
             name = v[0]
             pid = str(v[2])
             status = str("[" + colored(v[3], 'green') + "]")
             print(status.ljust(17, " ") + pid + name.rjust(50, "."))
-            print(v[-1])
+            # print(v[-1])
 
     @Pyro4.expose
     def add_docstring(self, new_object, exposed):

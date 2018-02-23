@@ -1,5 +1,8 @@
 import Pyro4
 import os
+import sys
+sys.path.append("../node/libs")
+import utils
 
 class ClientNODERB(object):
     def __init__(self, name, port_robot=4041, ns=True):
@@ -24,6 +27,7 @@ class ClientNODERB(object):
                 setattr(self, con, proxy)
         except Exception:
             print("ERROR: conection")
+            raise
             exit()
 
     def proxy_robot(self):
@@ -37,10 +41,22 @@ class ClientNODERB(object):
                 exit()
         else:
             # NameServer o BigBrother
-            try:
-                ns = Pyro4.locateNS(host="192.168.10.1")
-            except Exception:
+            for x in utils.get_all_ip_address():
+                print "Locating on :", x
+                try:
+                    # TODO
+                    # Pyro4.config.NS_HOST = Pyro4.config.NS_BCHOST = x
+                    # print "CONFIG",  Pyro4.config.NS_HOST
+                    # print Pyro4.config.NS_PORT
+                    # print Pyro4.config.HOST
+                    # print Pyro4.config.NS_BCHOST
+                    # print Pyro4.config.NS_BCPORT
+                    ns = Pyro4.locateNS()
+                except Exception:
+                    ns = None
+            if not ns:
                 print "No se puede localizar un servidor de nombres."
+                exit()
             # BigBrother
             try:
                 bb_uri = ns.lookup("bigbrother")
