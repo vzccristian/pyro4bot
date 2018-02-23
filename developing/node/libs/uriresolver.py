@@ -323,6 +323,10 @@ class uriresolver(control.Control):
             return [self.URIS[x] for x in self.URIS if x.find(".") > -1 and self.URIS[x].find("127.0.0.1") is -1]
 
 
+    @Pyro4.expose
+    def get_robot_uri(self):
+        return self.URIS[self.botName]
+
 
 def printInfo(text, color="green"):
     print colored("[uriresolver]:" + text, color)

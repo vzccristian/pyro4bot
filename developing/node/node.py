@@ -14,10 +14,10 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
+from libs.docstring import Docstring
 
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
-
 
 
 def import_class(list_class):
@@ -43,12 +43,13 @@ class NODERB (object):
             json = {}
 
         self.filename = filename  # Json file
-        self.N_conf = config.Config(filename=filename, json=json)  # Config from Json
+        self.N_conf = config.Config(
+            filename=filename, json=json)  # Config from Json
         self.load_node(self, PROCESS={}, **self.N_conf.node)
         import_class(self.N_conf.module_cls())
 
         self.URI = None  # URIProxy for internal uri resolver
-        self.URI_resolv = None  # Just URI
+        self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
 
         self.load_robot()
@@ -59,8 +60,10 @@ class NODERB (object):
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
         ROBOT_PASSWORD = self.name
-        print(colored("NOTIFIER", "cyan") + (":Starting System PyRobot on Ethernet device %s IP: %s with password: %s" % (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow'), colored(ROBOT_PASSWORD, 'yellow'))))
-        print(colored("NOTIFIER", "cyan") + (":Node config loaded for filename:%s" % (colored(self.filename, 'yellow'))))
+        print(colored("NOTIFIER", "cyan") + (":Starting System PyRobot on Ethernet device %s IP: %s with password: %s" %
+                                             (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow'), colored(ROBOT_PASSWORD, 'yellow'))))
+        print(colored("NOTIFIER", "cyan") + (":Node config loaded for filename:%s" %
+                                             (colored(self.filename, 'yellow'))))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
 
@@ -156,17 +159,18 @@ class NODERB (object):
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
             obj["uriresolver"] = self.URI_resolv
-            q = Queue()
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
-                Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe,q)))
+                Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
             status = serv_pipe.recv()
             self.PROCESS[name].append(status)
-            self.PROCESS[name].append(q.get())
             if status == "OK":
                 st = colored(status, 'green')
+                self.PROCESS[name].append(utils.get_pyro4proxy(
+                    obj["pyro4id"], self.name).__docstring__())
+                print self.PROCESS[name]
             if status == "FAIL":
                 st = colored(status, 'red')
             if status == "WAITING":
@@ -175,41 +179,65 @@ class NODERB (object):
         else:
             print("ERROR: " + name + " is runing")
 
-    def pyro4bot__object(self, d, proc_pipe, q):
-        """ doc string for mi huevos"""
+    def pyro4bot__object(self, d, proc_pipe):
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
-            daemon = Pyro4.Daemon(host=ip, port=utils.get_free_port(ports, ip=ip))
+            # Daemon proxy for sensor
+            daemon = Pyro4.Daemon(
+                host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
-            uri = daemon.register(eval(d["cls"])(data=[], **d), objectId=name_ob)
-            exposed = Pyro4.core.DaemonObject(daemon).get_metadata(name_ob, True)
-            q.put(exposed)
+
+            # Sensor object
+            new_object = eval(d["cls"])(data=[], **d)
+
+            # Associate object to the daemon
+            uri = daemon.register(new_object, objectId=name_ob)
+
+            # Get and save exposed methods
+            exposed = Pyro4.core.DaemonObject(
+                daemon).get_metadata(name_ob, True)
+            new_object.exposed.update(exposed)
+
+            # Save dosctring documentation inside sensor object
+            new_object.docstring.update(
+                self.add_docstring(new_object, exposed))
+
             if d.has_key("_REMOTE_STATUS") and d["_REMOTE_STATUS"] == "WAITING":
                 proc_pipe.send("WAITING")
             else:
                 proc_pipe.send("OK")
             daemon.requestLoop()
-            print("[%s] Shutting %s" % (colored("Down", 'green'), d["pyro4id"]))
+            print("[%s] Shutting %s" %
+                  (colored("Down", 'green'), d["pyro4id"]))
         except Exception as e:
             proc_pipe.send("FAIL")
             print("ERROR: creating sensor robot object: " + d["pyro4id"])
             print utils.format_exception(e)
-            # raise
 
     def create_server_node(self):
         uri = None
         try:
+            # Daemon proxy for node robot
             self.port_node = utils.get_free_port(self.port_node)
             daemon = Pyro4.Daemon(host=self.ip, port=self.port_node)
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
-            # Registering NODE
+
+            # Associate object (node) to the daemon
             uri = daemon.register(self, objectId=self.name)
-            exposed = Pyro4.core.DaemonObject(daemon).get_metadata(self.name, True)
-            print "Exposed:", exposed
+
+            # Get exposed methods from node
+            self.exposed = Pyro4.core.DaemonObject(
+                daemon).get_metadata(self.name, True)
+
+            # Get docstring from exposed methods on node
+            self.docstring = self.add_docstring(self, self.exposed)
+
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(uri)
+
             # Printing info
-            print(colored("____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
+            print(colored(
+                "____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
             self.print_process()
             daemon.requestLoop()
@@ -235,6 +263,7 @@ class NODERB (object):
 
     @Pyro4.expose
     def print_process(self):
+        print "SELF.PROCESS", self.PROCESS
         for k, v in self.PROCESS.iteritems():
             name = v[0]
             pid = str(v[2])
@@ -243,18 +272,19 @@ class NODERB (object):
             print(v[-1])
 
     @Pyro4.expose
-    def get_docstring(self, pyro4id, methods):
-        """Return doc_string documentation"""
-        print pyro4id, methods
-        p = Pyro4.Proxy(pyro4id)
-        for k, met in methods.iteritems():
-            for m in met:
-                try:
-                    # TODO
-                    print k, m, p
-                    print(eval("p.{}.__doc__".format(m)))
-                except Exception:
-                    raise
+    def add_docstring(self, new_object, exposed):
+        """Return doc_string documentation in methods_and_docstring"""
+        docstring = {}
+        for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
+            for m in exposed[key]:
+                if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
+                    docstring[m] = eval("new_object." + str(m) + ".__doc__")
+        return docstring
 
-if __name__ == "__main__":
-    pass
+    @Pyro4.expose
+    def __exposed__(self):
+        return self.exposed
+
+    @Pyro4.expose
+    def __docstring__(self):
+        return self.docstring

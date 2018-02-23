@@ -35,7 +35,6 @@ JSON_DOCUMENTATION
 END_JSON_DOCUMENTATION
 """
 
-@Pyro4.expose
 class picam(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
@@ -50,7 +49,7 @@ class picam(control.Control):
         #self.camera.saturation = 0
         #self.camera.ISO = 0
         self.camera.video_stabilization = True
-        self.camera.exposure_compensation = 0
+        #self.camera.sure_compensation = 0
         #self.camera.exposure_mode = 'auto'
         #self.camera.meter_mode = 'average'
         #self.camera.awb_mode = 'auto'
@@ -77,7 +76,7 @@ class picam(control.Control):
         self.init_workers(self.worker_read)
 
     def worker_read(self):
-        """ Main worker"""
+        """Main worker."""
         while self.worker_run:
             for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
                 # Si hay clientes a la espera...
@@ -111,16 +110,7 @@ class picam(control.Control):
                 except Exception as e:
                     utils.format_exception(e)
 
-    def worker_publ(self):
-        while self.worker_run:
-            try:
-                for k, v in self.subscriptors.iteritems():
-                    v.publication(self.buffer[self.available][k])
-            except:
-                #print("cam dist error")
-                pass
-
-    @property
+    @Pyro4.expose
     def image(self):
         """Return IP and PORT to socket conection """
         newClient = ClientSocket(self.initPort + 1)
@@ -157,13 +147,9 @@ class picam(control.Control):
             self.clients = [c for c in self.clients if not c.closed]
             # print "Despues:", self.clients
 
-    def subscribe(self, key, uri):
-        try:
-            self.subscriptors[key] = Pyro4.Proxy(uri)
-            print ("arduino subcriptor %s %s" % (key, uri))
-            return True
-        except:
-            return False
+    def test(self):
+        print "hola"
+
 
 
 class ClientSocket():
@@ -208,7 +194,3 @@ class ClientSocket():
     def setClosed(self):
         """ Set client as closed """
         self.closed = True
-
-
-if __name__ == "__main__":
-    pass

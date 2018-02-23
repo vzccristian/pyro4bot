@@ -1,14 +1,12 @@
-import time
 import threading
 import Pyro4
 import utils
 import os
+import time
 import token
 
-#____________________DECORATOR FOR GENERAL CLASS__________________
 
 # decoradores para las clases generales
-
 
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
@@ -43,6 +41,8 @@ def load_config(in_function):
             _self.__dict__.update(injects)
         if "-->" in _self.__dict__:
             del(_self.__dict__["-->"])
+        _self.__dict__["docstring"] = {}
+        _self.__dict__["exposed"] = {}
         super(_self.__class__.__mro__[0], _self).__init__()
         in_function(*args, **kwargs)
 
@@ -118,7 +118,6 @@ class Control(object):
     def send_subscripcion(self, obj, key):
         """ send a subcripcion request to an object"""
         try:
-            print "Me subscribo a:",obj,key
             obj.subscribe(key, self.pyro4id)
         except Exception:
             print("ERROR: in subscripcion %s URI: %s" % (obj, key))
@@ -166,3 +165,11 @@ class Control(object):
     @Pyro4.expose
     def get_pyroid(self):
         return self.pyro4id
+
+    @Pyro4.expose
+    def __exposed__(self):
+        return self.exposed
+
+    @Pyro4.expose
+    def __docstring__(self):
+        return self.docstring
