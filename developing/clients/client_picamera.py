@@ -24,8 +24,8 @@ class clientCamera(object):
         self.cam_t.start()
 
     def execute_camera(self):
-        print "Connecting to Server. Waiting for IP and PORT"
-        ip, port = self.cam.image
+        print "Connecting to Server. Waiting for IP and PORT..."
+        ip, port = self.cam.image()
         print "Client: " + ip + ":" + str(port)
         client_socket = socket.socket()
         try:

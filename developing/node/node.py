@@ -14,7 +14,6 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
-from libs.docstring import Docstring
 
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
