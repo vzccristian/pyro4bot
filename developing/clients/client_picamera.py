@@ -3,7 +3,7 @@
 #____________developed by paco andres____________________
 
 import threading
-from nodeproxy import ClientNODERB
+from _client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
@@ -71,7 +71,7 @@ class clientCamera(object):
 
 if __name__ == "__main__":
     print("Ejecutando cliente de camara...")
-    bot = ClientNODERB("picambot")  # nombre del bot en la name no el fichero json
+    bot = ClientRobot("picambot")  # nombre del bot en la name no el fichero json
     camera = clientCamera(bot.camera)
 
     while True:

@@ -3,7 +3,7 @@
 #____________developed by paco andres____________________
 
 import threading
-from nodeproxy import clientNODERB
+from _client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
@@ -41,8 +41,8 @@ def run_camera(cam):
         if cv2.waitKey(1) == 27:
             exit(0)
 
-#bot=clientNODERB("simplebot@158.49.241.68") #nombre del bot en la name no el fichero json
-bot=clientNODERB("learnbot1")
+#bot=ClientRobot("simplebot@158.49.241.68") #nombre del bot en la name no el fichero json
+bot=ClientRobot("learnbot1")
 cam=threading.Thread(target=run_camera,args=(bot.camera,))
 cam.setDaemon(True)
 cam.start()

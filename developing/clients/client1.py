@@ -3,7 +3,7 @@
 #____________developed by paco andres____________________
 
 import threading
-from nodeproxy import ClientNODERB
+from _client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
@@ -43,7 +43,7 @@ def run_camera(cam):
 
 
 # nombre del bot en la name no el fichero json
-bot = ClientNODERB("learnbot1@192.168.1.40")
+bot = ClientRobot("learnbot1@192.168.1.40")
 cam = threading.Thread(target=run_camera, args=(bot.camera,))
 cam.setDaemon(True)
 cam.start()

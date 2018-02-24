@@ -55,7 +55,7 @@ class uriresolver(control.Control):
         except Pyro4.errors.ConnectionClosedError:
             print("Error al conectar al proxy")
         except Exception:
-            print("ERROR: creating nodeProxy")
+            print("ERROR: creating _client_robot")
         finally:
             if (self.uri is not None):
                 print("[%s] Shutting %s" %

@@ -1,7 +1,7 @@
 import Pyro4
 
 
-class ClientNODERB(object):
+class ClientRobot(object):
     def __init__(self, name):
         self.name = name
         try:
