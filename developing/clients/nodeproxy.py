@@ -41,16 +41,11 @@ class ClientNODERB(object):
                 exit()
         else:
             # NameServer o BigBrother
-            for x in utils.get_all_ip_address():
-                print "Locating on :", x
+            for x in utils.get_all_ip_address(broadcast=True):
+                # print "Locating on :", x
                 try:
-                    # TODO
-                    # Pyro4.config.NS_HOST = Pyro4.config.NS_BCHOST = x
-                    # print "CONFIG",  Pyro4.config.NS_HOST
-                    # print Pyro4.config.NS_PORT
-                    # print Pyro4.config.HOST
-                    # print Pyro4.config.NS_BCHOST
-                    # print Pyro4.config.NS_BCPORT
+                    # print "CONFIG",  Pyro4.config.asDict()
+                    Pyro4.config.BROADCAST_ADDRS = x
                     ns = Pyro4.locateNS()
                 except Exception:
                     ns = None

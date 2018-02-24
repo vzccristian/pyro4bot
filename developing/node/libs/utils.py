@@ -24,14 +24,17 @@ def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en
             sys.exit()
     return ip
 
-def get_all_ip_address():
+def get_all_ip_address(broadcast=False):
     address = []
     try:
         for x in ni.interfaces():
             add = ni.ifaddresses(x)
             try:
                 for ips in add[ni.AF_INET]:
-                    address.append(ips["addr"])
+                    if broadcast:
+                        address.append(ips["broadcast"])
+                    else:
+                        address.append(ips["addr"])
             except Exception:
                 pass
     except Exception:
