@@ -111,7 +111,7 @@ class bigbrother(object):
             daemon.PYRO_MAXCONNECTIONS = 20
 
             self.uri = daemon.register(self, objectId="bigbrother")
-            print "\nBigBrother running : ", self.uri
+            print "\nBigBrother running :", self.uri
             self.public_pyro4ns.register("bigbrother", self.uri)
             daemon.requestLoop()
         except Exception:

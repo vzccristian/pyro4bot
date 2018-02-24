@@ -1,3 +1,5 @@
+"""Utils to PYRO4BOT."""
+
 import Pyro4
 import netifaces as ni
 import traceback
@@ -8,23 +10,31 @@ import os
 import socket
 
 
-def get_ip_address(ifname="lo"):  # necesita netifaces pero se comporta mejor en raspberry
+def get_ip_address(ifname="lo"):
+    """Return IP address from a specific interface."""
     try:
-        ip = ni.ifaddresses(ifname)[2][0]['addr']
+        ip = ni.ifaddresses(ifname)[ni.AF_INET]['addr']
     except Exception:
+        #  Invalid interface name
         try:
             interface_list = ni.interfaces()
             for x in interface_list:
-                if (x.find("lo") < 0):
-                    return ni.ifaddresses(x)[2][0]['addr']
+                if (x != "lo"):
+                    return ni.ifaddresses(x)[ni.AF_INET]['addr']
             ip = "127.0.0.1"
         except Exception:
-            print("Error al extraer IP de la interfaz "
+            print("ERROR: Obtaining IP from the network interface. "
                   + colored(ifname, "red"))
             sys.exit()
     return ip
 
+
 def get_all_ip_address(broadcast=False):
+    """Return the list of IPs of all network interfaces.
+
+    If broadcast = True, returns the list of broadcast IPs of all network
+    interfaces.
+    """
     address = []
     try:
         for x in ni.interfaces():
@@ -38,12 +48,14 @@ def get_all_ip_address(broadcast=False):
             except Exception:
                 pass
     except Exception:
-        print "Error in utils.get_all_ip_address()"
+        print("ERROR: utils.get_all_ip_address()")
         raise
         exit()
     return address
 
+
 def get_gateway_address(ifname="lo"):
+    """Return gateway address from a specific interface."""
     ip = None
     try:
         gateway_list = ni.gateways()
@@ -57,6 +69,8 @@ def get_gateway_address(ifname="lo"):
 
 
 def free_port(port, ip="127.0.0.1"):
+    """Return True if the port is free at a specific IP address, otherwise \
+    return False."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((ip, int(port)))
@@ -67,6 +81,7 @@ def free_port(port, ip="127.0.0.1"):
 
 
 def get_free_port(port, interval=1, ip="127.0.0.1"):
+    """Return free port from a specific IP."""
     _port = port
     while not free_port(_port, ip=ip):
         _port += interval
@@ -74,6 +89,7 @@ def get_free_port(port, interval=1, ip="127.0.0.1"):
 
 
 def uri_split(uri):
+    """Split Pyro4 URI in name, ip and port."""
     name = uri[uri.find("PYRO:") + 5:uri.find("@")]
     ip = uri[uri.find("@") + 1:uri.find(":", 7)]
     port = int(uri[uri.find(":", 7) + 1:])
@@ -81,14 +97,17 @@ def uri_split(uri):
 
 
 def get_uri(name, ip, port):
+    """Return the Pyro4 URI formed from name, ip and port."""
     return "PYRO:" + name + "@" + ip + ":" + str(port)
 
 
 def get_uri_name(uri):
+    """Return name from Pyro4 URI."""
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
 
 def format_exception(e):
+    """Representation of exceptions."""
     exception_list = traceback.format_stack()
     exception_list = exception_list[:-2]
     exception_list.extend(traceback.format_tb(sys.exc_info()[2]))
@@ -104,11 +123,15 @@ def format_exception(e):
 
 
 def printThread(string, color="green"):
+    """Print on console the thread that executes the code and the text \
+    passed by parameter."""
     print(
-        (colored("[" + threading.current_thread().getName() + "] ", color)) + string)
+        (colored("[" + threading.current_thread().getName() + "] ", color)
+         ) + string)
 
 
 def ping(uri):
+    """Ping and return True if there is connection, False otherwise."""
     response = False
     try:
         response = os.system("ping -c 1 -w2 " + uri + " > /dev/null 2>&1")
@@ -118,6 +141,7 @@ def ping(uri):
 
 
 def get_pyro4proxy(uri, password):
+    """Given a Pyro4 URI and a password, return the connection proxy."""
     proxy = Pyro4.Proxy(uri)
     proxy._pyroHmacKey = bytes(password)
     return proxy
