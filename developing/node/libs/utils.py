@@ -13,14 +13,14 @@ import socket
 def get_ip_address(ifname="lo"):
     """Return IP address from a specific interface."""
     try:
-        ip = ni.ifaddresses(ifname)[ni.AF_INET]['addr']
+        ip = ni.ifaddresses(ifname)[ni.AF_INET][0]['addr']
     except Exception:
         #  Invalid interface name
         try:
             interface_list = ni.interfaces()
             for x in interface_list:
                 if (x != "lo"):
-                    return ni.ifaddresses(x)[ni.AF_INET]['addr']
+                    return ni.ifaddresses(x)[ni.AF_INET][0]['addr']
             ip = "127.0.0.1"
         except Exception:
             print("ERROR: Obtaining IP from the network interface. "
