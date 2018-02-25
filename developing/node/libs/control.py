@@ -25,7 +25,7 @@ def load_config(in_function):
             _self.__dict__["uriresolver"] = utils.get_pyro4proxy(
                 _self.__dict__["uriresolver"], _self.__dict__["name"].split(".")[0])
         if "nr_remote" in _self.__dict__:
-
+            #  TODO
             print _self.__dict__["nr_remote"]
         if "_local" in _self.__dict__:
             injects = {}

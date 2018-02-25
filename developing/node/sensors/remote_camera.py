@@ -35,7 +35,9 @@ class RemoteCamera (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print(self.sensors)
+            # print(self.sensors)
+            print(".")
+            time.sleep(self.frec*10)
             # write here code for your sensor thread
 
     # here your methods

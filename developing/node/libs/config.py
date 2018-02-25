@@ -79,7 +79,9 @@ class Config:
         error = False
         for m in self.classes():
             if not self.module(m):
-                print("Could not find module %s" % m)
+                print("Could not find module %s in %s or %s" % (
+                    m, self.node["path"]+"/"+self.node["path_cls"][0],
+                    self.node["path"]+"/"+self.node["path_cls"][1]))
                 error = True
 
         newservices = {}
