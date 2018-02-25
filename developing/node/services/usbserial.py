@@ -44,19 +44,6 @@ class usbserial(control.Control):
         self.init_workers(self.worker_reader)
         self.init_publisher(self.buffer)
 
-    # def worker_reader(self):
-    #     self.serial.flushInput()
-    #     while self.worker_run:
-    #         #print ("usb: %s %s" %(self.available,self.block))
-    #         l = self.serial.readline().split('\r')[0]
-    #         # print l
-    #         try:
-    #             self.buffer[self.lock] = json.loads(self.read_serial())
-    #             print self.buffer[self.lock]
-    #             self.lock, self.available = self.available, self.lock
-    #         except:
-    #             pass
-    #         time.sleep(self.frec)
 
     def worker_reader(self):
         self.serial.flushInput()

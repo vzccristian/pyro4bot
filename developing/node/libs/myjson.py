@@ -16,6 +16,9 @@ class MyJson(object):
             data = self.substitute_params(data)
             json = simplejson.loads(data)
             json = self.load_dependencies(json) if (dependencies) else json
+        except ValueError, e:
+            print("ERROR: JSON incorrectly described: "+str(e))
+            exit(0)
         except Exception:
             print("ERROR: loading %s" % (filename))
             raise

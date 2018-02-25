@@ -1,0 +1,21 @@
+{
+   "NODE":{
+      "name":"picambot_remote",
+      "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
+      "etc":"<path>/etc",
+      "path_cls":["services","sensors"],
+      "ethernet":"wlxc4e984e024a2",
+      "name_server":true,
+      "port_ns":9090,
+      "port_node":4040,
+      "start_port":5050,
+      "def_frec":0.03,
+      "def_worker":true
+    },
+   "services":{
+
+   },
+   "sensors":{
+        "remote_camera":{"cls":"RemoteCamera","-->":["picambot.camera"],"enable":true,"frec":0.02,"worker_run":true}
+    }
+}

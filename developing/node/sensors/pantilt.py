@@ -22,7 +22,7 @@ END_JSON_DOCUMENTATION
 class pantilt(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        self.send_subscripcion(self.arduino, "PT")
+        self.send_subscripcion(self.usbserial, "PT")
         self.bar = False
         self.ptblock = False
         self.init_workers(self.worker)

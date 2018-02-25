@@ -6,10 +6,9 @@ import Pyro4
 
 """
 JSON_DOCUMENTATION
-{SENSOR_NAME} : < SENSOR NAME >
-{c} cls : < CLASS NAME >
-{d} --> : [ DEPENDENCIES ]
-{m} ATRIBUTE1 : < VALUE >
+{SENSOR_NAME} : remote_camera
+{c} cls : RemoteCamera
+{d} --> : [picambot.camera]
 {m} frec : 0.02
 {m} worker_run : true
 {m} enable : true
@@ -17,7 +16,7 @@ END_JSON_DOCUMENTATION
 """
 
 
-class < CLASS NAME > (control.Control):
+class RemoteCamera (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # Atribute example
@@ -36,7 +35,7 @@ class < CLASS NAME > (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print(".")
+            print(self.sensors)
             # write here code for your sensor thread
 
     # here your methods

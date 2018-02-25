@@ -11,7 +11,7 @@ import Pyro4
 JSON_DOCUMENTATION
 {SENSOR_NAME} : laser
 {c} cls : laser
-{d} --> : ["arduino"]
+{d} --> : ["usbsimulator"]
 {m} LASER : [0,0,0]
 {m} frec : 0.02
 {m} worker_run : true
@@ -23,7 +23,7 @@ class laser (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.init_workers(self.worker)
-        self.send_subscripcion(self.arduino, "LASER")
+        self.send_subscripcion(self.usbserial, "LASER")
 
     def worker(self):
         while self.worker_run:
@@ -32,7 +32,3 @@ class laser (control.Control):
     @Pyro4.expose
     def get_laser(self):
         return self.LASER
-
-
-if __name__ == "__main__":
-    pass

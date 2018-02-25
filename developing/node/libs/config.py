@@ -70,12 +70,16 @@ class Config:
             if "frec" not in v:
                 v["frec"] = self.conf["NODE"]["def_frec"]
             if "." not in v["cls"]:
-                v["cls"] = v["cls"] + "." + v["cls"]
+                if "file" in v:
+                    v["cls"] = v["file"] + "." + v["cls"]
+                else:
+                    v["cls"] = k + "." + v["cls"]
+
 
         error = False
         for m in self.classes():
             if not self.module(m):
-                print "Could not find module ", m
+                print("Could not find module %s" % m)
                 error = True
 
         newservices = {}
@@ -87,7 +91,7 @@ class Config:
 
         newrobot = {}
         for n in self.sensors:
-            if self.sensors[n].has_key("-->"):
+            if ("-->") in self.sensors[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.sensors[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.sensors[n]["-->"] if x.find(".") >= 0]

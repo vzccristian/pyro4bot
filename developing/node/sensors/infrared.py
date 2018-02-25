@@ -23,7 +23,7 @@ class infrared (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.init_workers(self.worker)
-        self.send_subscripcion(self.arduino, "IR")
+        self.send_subscripcion(self.usbserial, "IR")
 
     def worker(self):
         while self.worker_run:
