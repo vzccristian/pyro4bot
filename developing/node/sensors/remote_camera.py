@@ -20,6 +20,7 @@ class RemoteCamera (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # Atribute example
+        print self.__dict__
         self.value = 0
 
         # Worker example
@@ -37,6 +38,7 @@ class RemoteCamera (control.Control):
         while self.worker_run:
             # print(self.sensors)
             print(".")
+
             time.sleep(self.frec*10)
             # write here code for your sensor thread
 

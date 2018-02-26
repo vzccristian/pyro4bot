@@ -30,6 +30,7 @@ class uriresolver(control.Control):
         # NameServer
         self.nameserver = None  # Local, NameServer or BigBrother location
         self.usingBB = False
+        self.broadcast_ns = Pyro4.config.BROADCAST_ADDRS
 
         # DaemonProxy
         self.daemonproxy = None  # Proxy object
@@ -106,36 +107,36 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_ns(self):
-        if self.nameserver is None:
-            if (utils.ping(ROUTER_IP)):
-                # Looking for BigBrother
-                try:
-                    Pyro4.config.HOST = str(ROUTER_IP)
-                    self.nameserver = Pyro4.Proxy(
-                        "PYRO:bigbrother@" + ROUTER_IP + ":" + ROUTER_PORT)
-                    self.nameserver._pyroHmacKey = bytes(ROUTER_PASSWORD)
-                    if (self.nameserver.ready()):
-                        printInfo("BIGBROTHER ----> PYRO:bigbrother@" +
-                                  ROUTER_IP + ":" + ROUTER_PORT)
-                        self.usingBB = True
-                except Exception:
-                    printInfo("BigBrother error.", "red")
-                    self.nameserver = None
-            else:
-                self.nameserver = None
-                printInfo("BigBrother not found.", "red")
-
+        default_ns = Pyro4.config.BROADCAST_ADDRS
         if self.nameserver is None:
             # Looking for Network NameServer
-            try:
-                self.nameserver = Pyro4.locateNS()
-                printInfo("Nameserver located")
-                self.nameserver.ping()
-            except Exception:
-                printInfo("NameServer not found.", "red")
-                self.nameserver = None
+            for x in utils.get_all_ip_address(broadcast=True):
+                try:
+                    Pyro4.config.BROADCAST_ADDRS = x
+                    self.broadcast_ns = x
+                    self.nameserver = Pyro4.locateNS()
+                    printInfo("NameServer located.")
+                    self.nameserver.ping()
+                except Exception:
+                    self.nameserver = None
+
+            if (self.nameserver):
+                # ¿BigBrother or Random NS?
+                try:
+                    ns_uri = self.nameserver.lookup("bigbrother")
+                    possible_ns = utils.get_pyro4proxy(ns_uri, ROUTER_PASSWORD)
+                    if (possible_ns.ready()):
+                        self.ns_uri = ns_uri
+                        self.nameserver = possible_ns
+                        printInfo("[NS_Type] BigBrother ----> %s" %
+                                  self.ns_uri)
+                        self.usingBB = True
+                except Pyro4.errors.NamingError:
+                    printInfo("[NS_Type] Generic NameServer ----> %s" %
+                              self.nameserver.lookup("Pyro.NameServer"))
 
         if self.nameserver is None:
+            printInfo("NameServer not found.", "red")
             # Creating a NameServer
             try:
                 port = utils.get_free_port(self.port_ns, ip=self.ip)
@@ -153,6 +154,7 @@ class uriresolver(control.Control):
             attempts = 0
             while attempts < 10:
                 try:
+                    Pyro4.config.BROADCAST_ADDRS = default_ns
                     self.nameserver = Pyro4.locateNS()
                     self.nameserver.ping()
                     break
@@ -174,8 +176,10 @@ class uriresolver(control.Control):
             if (passw is None):
                 passw = target[0]
             try:
+                Pyro4.config.BROADCAST_ADDRS = self.broadcast_ns
+                ns = Pyro4.locateNS()
                 proxy = utils.get_pyro4proxy(
-                    self.nameserver.lookup(target[0]), passw)
+                    ns.lookup(target[0]), passw)
                 bot_uris = proxy.get_uris()
                 for x in bot_uris:
                     (name, ip, port) = utils.uri_split(x)
@@ -184,26 +188,28 @@ class uriresolver(control.Control):
                         return proxy
             except Exception:
                 print "Error al resolver ", obj
+                raise
         else:
             if (self.usingBB):
-                self.nameserver.proxy(target, passw)
+                ns.proxy(target, passw)
             else:
                 print "Para usar esta funcionalidad se necesita de BigBrother"
                 return None
+        return None
 
     @Pyro4.expose
     def get_proxy(self, obj, passw=None):
-        if (self.nameserver):
+        if (self.get_ns()):
             try:
                 # PYRO:simplebot.infrared@192.168.10.67:6001
                 if (obj.count('PYRO:') == 1 and obj.count('@') == 1 and
                         obj.count(":") == 2 and obj.count(".") in range(3, 5)):
-                            (name, _, _) = utils.uri_split(obj)
-                            if ("." in name):
-                                name = name.split(".")[0]
-                            if (passw is None):
-                                passw = name
-                            return utils.get_pyro4proxy(obj, passw)
+                    (name, _, _) = utils.uri_split(obj)
+                    if ("." in name):
+                        name = name.split(".")[0]
+                    if (passw is None):
+                        passw = name
+                    return utils.get_pyro4proxy(obj, passw)
                 elif (obj.count(".") == 1):  # simplebot.sensor
                     return (self.get_proxy_without_uri(obj, passw))
                 else:
@@ -306,6 +312,7 @@ class uriresolver(control.Control):
                     self.nameserver.register(
                         self.botName, self.URIS[self.botName])
                 else:
+                    Pyro4.config.BROADCAST_ADDRS = self.broadcast_ns
                     nserver = Pyro4.locateNS()
                     nserver.register(self.botName, self.URIS[self.botName])
             else:
@@ -321,7 +328,6 @@ class uriresolver(control.Control):
             return [self.URIS[x] for x in self.URIS]
         else:
             return [self.URIS[x] for x in self.URIS if x.find(".") > -1 and self.URIS[x].find("127.0.0.1") is -1]
-
 
     @Pyro4.expose
     def get_robot_uri(self):

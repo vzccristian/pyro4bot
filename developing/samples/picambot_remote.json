@@ -16,6 +16,6 @@
 
    },
    "sensors":{
-        "remote_camera":{"cls":"RemoteCamera","-->":["picambot.camera"],"enable":true,"frec":0.02,"worker_run":true}
+        "remote_camera":{"cls":"RemoteCamera","-->":["picambot.picam"],"enable":true,"frec":0.02,"worker_run":true}
     }
 }

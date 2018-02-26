@@ -25,8 +25,13 @@ def load_config(in_function):
             _self.__dict__["uriresolver"] = utils.get_pyro4proxy(
                 _self.__dict__["uriresolver"], _self.__dict__["name"].split(".")[0])
         if "nr_remote" in _self.__dict__:
-            #  TODO
-            print _self.__dict__["nr_remote"]
+            injects = {}
+            for d in _self.__dict__["nr_remote"]:
+                injects[d] = _self.__dict__["uriresolver"].get_proxy(d)
+                if not injects[d]:
+                    print("Can not connect to %s" % d)
+                _self.__dict__.update(injects)
+            # print _self.__dict__["nr_remote"]
         if "_local" in _self.__dict__:
             injects = {}
             for deps in _self.__dict__["_local"]:
@@ -43,6 +48,8 @@ def load_config(in_function):
             del(_self.__dict__["-->"])
         _self.__dict__["docstring"] = {}
         _self.__dict__["exposed"] = {}
+
+        # print     _self.__dict__
         super(_self.__class__.__mro__[0], _self).__init__()
         in_function(*args, **kwargs)
 

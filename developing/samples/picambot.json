@@ -15,9 +15,9 @@
       "def_worker":true
     },
    "services":{
-        "camera":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true}
+        "picam":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true}
    },
    "sensors":{
-     
+
     }
 }
