@@ -1,6 +1,6 @@
 {
   "name":"bigbrother",
-  "interface":"wlan1",
+  "interface":"eth0",
   "proxy_port":6060,
   "proxy_password":"PyRobot",
   "nameserver_port":9090,
