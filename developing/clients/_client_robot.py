@@ -45,9 +45,9 @@ class ClientRobot(object):
         self.bigbrother_passw = bigbrother_passw if (
             bigbrother_passw) else DEFAULT_BB_PASSWORD
         try:
-            self._proxy_robot()
+            proxys = self._proxy_robot()
             Pyro4.config.SERIALIZER = "pickle"
-            for p in self.proxys:
+            for p in proxys:
                 con = p.split("@")[0].split(".")[1]
                 proxy = utils.get_pyro4proxy(p, self.name)
                 setattr(self, con, proxy)
@@ -57,7 +57,7 @@ class ClientRobot(object):
             exit()
 
     def _proxy_robot(self):
-        self.proxys = None
+        proxys = None
         if not self.ns:
             try:
                 uri = "PYRO:" + self.name + "@" + \
@@ -92,8 +92,8 @@ class ClientRobot(object):
                 self.node = None
         if (self.node):
             try:
-                self.proxys = self.node.get_uris()
-                # print self.proxys
+                proxys = self.node.get_uris()
+                # print proxys
             except Exception:
                 print("ERROR: Unable to obtain list of robot sensors: \
                       \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
@@ -102,4 +102,4 @@ class ClientRobot(object):
         else:
             print("Robot not found.")
             os._exit(0)
-        return self.proxys
+        return proxys

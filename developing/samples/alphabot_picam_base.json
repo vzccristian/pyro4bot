@@ -14,7 +14,7 @@
     },
    "services":{
         "picam":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
-	       "gpioservice":{"cls":"gpioservice","gpio_mode":11,"frec":0.02,"enable":true,"worker_run":false}
+	      "gpioservice":{"cls":"gpioservice","gpio_mode":11,"frec":0.02,"enable":true,"worker_run":false}
    },
    "sensors":{
 	    "l298n":{"cls":"l298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26,"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}

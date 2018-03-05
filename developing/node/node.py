@@ -200,6 +200,10 @@ class NODERB (object):
             new_object.docstring.update(
                 self.add_docstring(new_object, exposed))
 
+            # print name_ob
+            # print exposed
+            # print new_object.docstring
+
             if d.has_key("_REMOTE_STATUS") and d["_REMOTE_STATUS"] == "WAITING":
                 proc_pipe.send("WAITING")
             else:
@@ -229,6 +233,9 @@ class NODERB (object):
 
             # Get docstring from exposed methods on node
             self.docstring = self.add_docstring(self, self.exposed)
+
+            # print(self.exposed)
+            # print(self.docstring)
 
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(uri)
