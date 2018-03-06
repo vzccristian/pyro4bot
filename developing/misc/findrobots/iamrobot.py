@@ -40,7 +40,7 @@ class Robot():
             if data=="hi pyro4bot":
                 # print("From: {}:{} --> {}".format(
                 #     wherefrom[0], wherefrom[1], data))
-                self.s.sendto(str(socket.gethostname() + "/" + " hello "),
+                self.s.sendto(str(socket.gethostname() + "/" + "hello"),
                      (wherefrom[0], wherefrom[1]))
             time.sleep(1)
 

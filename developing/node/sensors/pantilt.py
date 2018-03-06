@@ -36,7 +36,7 @@ class pantilt(control.Control):
     @Pyro4.oneway
     def move(self, pan=90, tilt=90):
         if self.ptblock == False:
-            self.arduino.command("setpt " + str(pan) + "," + str(tilt))
+            self.usbserial.command("setpt " + str(pan) + "," + str(tilt))
             while self.PT[0] != pan and self.PT[1] != tilt:
                 print "wait servo"
                 self.ptblock = True

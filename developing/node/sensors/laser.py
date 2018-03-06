@@ -27,8 +27,8 @@ class laser (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print("LASER-sal:", self.LASER)
-            time.sleep(self.frec*20)
+            # print("LASER-sal:", self.LASER)
+            time.sleep(self.frec)
     @Pyro4.expose
     def get_laser(self):
         return self.LASER

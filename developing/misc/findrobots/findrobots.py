@@ -44,7 +44,6 @@ class Searcher():
             interface_list.remove("lo")
             interfaces = zip(
                 interface_list, get_all_ip_address(broadcast=True))
-            # print interfaces
             n = 0
             for interface in interfaces:
                 threading.Thread(target=self.send, args=(

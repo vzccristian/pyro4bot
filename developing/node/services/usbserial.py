@@ -26,31 +26,31 @@ class usbserial(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.subscriptors = {}
-        # self.buffer = [{}, {}]
         self.buffer = token.Token()
         self.writer = []
-        self.available = 0
-        self.lock = 1
+        self.json = ""
         try:
             self.serial = serial.Serial(
-                self.comPort, self.comPortBaud, timeout=0.05)
-            # print self.comPort
+                self.comPort, self.comPortBaud, timeout=3.0)
             if self.serial.isOpen():
                 # print(self.serial.name + ' is open..')
                 pass
         except Exception:
-            # print("error usbserial")
+            print("error usbserial")
             raise
-        self.init_workers(self.worker_reader)
-        self.init_publisher(self.buffer)
+        self.init_workers(self.worker_reader,)
+        self.init_publisher(self.buffer,)
 
 
     def worker_reader(self):
         self.serial.flushInput()
         while self.worker_run:
             try:
-                self.buffer.update_from_dict(json.loads(self.read_serial()))
+                # print self.serial.read()
+                self.json = json.loads(self.read_serial())
+                self.buffer.update_from_dict(self.json)
             except Exception:
+                #raise
                 pass
             time.sleep(self.frec)
 
@@ -59,9 +59,12 @@ class usbserial(control.Control):
         return line[line.find("{"):line.find("}") + 1]
 
     @Pyro4.oneway
-    def command(self, comman="ee"):
-        print comman
-        self.serial.write(comman + "\r\n")
+    def command(self, com="ee"):
+        # print com
+        self.serial.write(com + "\r\n")
+
+    def get__all(self):
+        return self.json
 
 
 if __name__ == "__main__":

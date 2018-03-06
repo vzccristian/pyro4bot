@@ -27,7 +27,7 @@ class < CLASS NAME > (control.Control):
         self.init_workers(self.worker)
 
         # Subscription example
-        #  self.send_subscripcion(self.arduino, "LASER")
+        #  self.send_subscripcion(self.usbserial, "LASER")
 
         # Publication example
         # self.buffer = token.Token()

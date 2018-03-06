@@ -10,25 +10,35 @@ import cv2
 import urllib
 import numpy as np
 
+SPEED = 1000
 
-def run_camera(cam):
-    while True:
-        c = cam.image
-        #gray = cv2.cvtColor(c, cv2.COLOR_BGR2GRAY)
-        cv2.imshow('learnbot', c)
-        if cv2.waitKey(1) == 27:
-            exit(0)
-
-
-# nombre del bot en la name no el fichero json
-bot = ClientRobot("learnbot1@192.168.1.37")
-cam = threading.Thread(target=run_camera, args=(bot.camera,))
-cam.setDaemon(True)
-cam.start()
-bot.pantilt.move(90, 120)
-for i in range(1, 1000):
-    print("ir:%s" % (bot.infrared.get_ir()))
-bot.base.set__vel(0, 0)
-bot.pantilt.move(90, 120)
-while True:
-    pass
+bot = ClientRobot("robot_lineas")
+print("Bot adquirido...")
+# bot.pantilt.move(90, 120)
+# print bot.infrared.__docstring__()
+# print bot.basemotion.__docstring__()
+bot.basemotion.set__vel(mi=0,md=0)
+time.sleep(2)
+while (True):
+    try:
+        ir =  bot.infrared.get__ir()
+        print ir
+        ir_fixed = map(lambda x: 1 if x < 200 else 0, ir)
+        print ir_fixed
+        if ir_fixed[0]:
+            print "izq"
+            bot.basemotion.set__vel(mi=0,md=SPEED)
+        elif (ir_fixed[1] or ir_fixed[2]):
+            print "recto"
+            bot.basemotion.set__vel(mi=SPEED,md=SPEED)
+        elif ir_fixed[3]:
+            print "der"
+            bot.basemotion.set__vel(SPEED,0)
+        else:
+            print "otro_recto"
+            bot.basemotion.set__vel(SPEED,SPEED)
+        time.sleep(0.01)
+    except:
+        pass
+    # bot.basemotion.set__vel(mi=0,md=0)
+print("Saliendo...")

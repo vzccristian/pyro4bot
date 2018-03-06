@@ -12,7 +12,7 @@ import Pyro4
 class sonar (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        self.send_subscripcion(self.arduino, "US")
+        self.send_subscripcion(self.usbserial, "US")
         self.init_workers(self.worker)
 
     def worker(self):

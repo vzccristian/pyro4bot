@@ -22,9 +22,10 @@ class Token(object):
 
     def update_from_dict(self, d):
         if isinstance(d, dict):
-            d_up = d.copy()
-            for k, value in d_up.iteritems():
-                self.update_key_value(k, value)
+            self.attribs.update(d.copy())
+            # d_up = d.copy()
+            # for k, value in d_up.iteritems():
+            #     self.update_key_value(k, value)
         else:
             print "Error. The parameter is not a dictionary"
 

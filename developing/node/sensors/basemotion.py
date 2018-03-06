@@ -30,11 +30,13 @@ class basemotion(control.Control):
     def worker(self):
         while self.worker_run:
             # write here code for your sensor
+            # print self.usbserial.get__all()
             time.sleep(self.frec)
 
     @Pyro4.oneway
     def set__vel(self, mi=1, md=1):
-        self.arduino.command("base " + str(mi) + "," + str(md))
+        print "base " + str(mi) + "," + str(md)
+        self.usbserial.command(com="base " + str(mi) + "," + str(md))
 
     def get_base(self):
         return self.BASE
