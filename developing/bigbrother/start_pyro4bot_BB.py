@@ -243,7 +243,7 @@ class bigbrother(object):
 class nameServer(object):
     def __init__(self, config):
         self.config = config
-        Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
+
         # Public NS
         self.public_pyro4ns = None  # Public Nameserver location
         self.pub_nameserver = None  # Object Name server for Thread-1

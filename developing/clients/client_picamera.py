@@ -71,8 +71,13 @@ class clientCamera(object):
 
 if __name__ == "__main__":
     print("Ejecutando cliente de camara...")
+<<<<<<< HEAD
     bot = ClientRobot("learnbot1")  # nombre del bot en la name no el fichero json
     clientCamera(bot.picam)
+=======
+    bot = ClientRobot("picambot")  # nombre del bot en la name no el fichero json
+    camera = clientCamera(bot.camera)
+>>>>>>> parent of d059c42... Changes for Alphabot
 
     while True:
         time.sleep(0.05)

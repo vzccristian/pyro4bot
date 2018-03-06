@@ -139,7 +139,6 @@ class uriresolver(control.Control):
             printInfo("NameServer not found.", "red")
             # Creating a NameServer
             try:
-                Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
                 port = utils.get_free_port(self.port_ns, ip=self.ip)
                 self.nsThread = threading.Thread(
                     target=Pyro4.naming.startNSloop,
