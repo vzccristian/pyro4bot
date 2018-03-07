@@ -76,6 +76,11 @@ class Config:
                     v["cls"] = k + "." + v["cls"]
 
 
+        if "path" not in self.node:
+            self.node["path"] = __file__[:__file__.rfind('/')] + '/..'
+            self.node["etc"] = self.node["path"] + '/etc'
+            
+
         error = False
         for m in self.classes():
             if not self.module(m):
