@@ -25,7 +25,7 @@ class basemotion(control.Control):
     def __init__(self, data, **kwargs):
         # print self.__dict__
         self.send_subscripcion(self.usbserial, "BASE")
-        self.init_workers(self.worker)
+        # self.init_workers(self.worker)
 
     def worker(self):
         while self.worker_run:
@@ -35,7 +35,7 @@ class basemotion(control.Control):
 
     @Pyro4.oneway
     def set__vel(self, mi=1, md=1):
-        print "base " + str(mi) + "," + str(md)
+        # print "base " + str(mi) + "," + str(md)
         self.usbserial.command(com="base " + str(mi) + "," + str(md))
 
     def get_base(self):

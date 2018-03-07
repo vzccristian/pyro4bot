@@ -21,6 +21,6 @@
    },
    "sensors":{
         "infrared":{"cls":"gpio_infrared","setup":[16,19],"IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
-        "base":{"cls":"gpio_base","setup":[12,13,6,20,21,26],"BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
+        "basemotion":{"cls":"gpio_base","setup":[12,13,6,20,21,26],"BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
     }
 }

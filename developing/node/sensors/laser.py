@@ -22,7 +22,7 @@ END_JSON_DOCUMENTATION
 class laser (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
-        self.init_workers(self.worker)
+        # self.init_workers(self.worker)
         self.send_subscripcion(self.usbserial, "LASER")
 
     def worker(self):

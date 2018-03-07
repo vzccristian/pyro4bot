@@ -19,7 +19,7 @@ class l298n(control.Control):
         self.gpioservice.pwm_init(self.ENB, 100, self.pyro4id)
         self.gpioservice.pwm_start((self.ENA, self.ENB), 100)
         self.stop()
-        print self.gpioservice.status()
+        # print self.gpioservice.status()
 
     def worker(self):
         try:
@@ -28,26 +28,29 @@ class l298n(control.Control):
         except:
             pass
 
-    def forward(self, DCA=100):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def forward(self, DCA=100, DCB=100):
+        self.gpioservice.pwm_changedutycycle(self.ENA, DCA)
+        self.gpioservice.pwm_changedutycycle(self.ENB, DCB)
         self.gpioservice.output(self.IN1, 1)
         self.gpioservice.output(self.IN2, 0)
-        self.gpioservice.output(self.IN3, 1)
-        self.gpioservice.output(self.IN4, 0)
+        self.gpioservice.output(self.IN3, 0)
+        self.gpioservice.output(self.IN4, 1)
 
-    def stop(self, DCA=0):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def stop(self, DCA=0,  DCB=0):
+        self.gpioservice.pwm_changedutycycle(self.ENA, DCA)
+        self.gpioservice.pwm_changedutycycle(self.ENB, DCB)
         self.gpioservice.output(self.IN1, 0)
         self.gpioservice.output(self.IN2, 0)
         self.gpioservice.output(self.IN3, 0)
         self.gpioservice.output(self.IN4, 0)
 
-    def backward(self, DCA=100):
-        self.gpioservice.pwm_changedutycycle((self.ENA, self.ENB), DCA)
+    def backward(self, DCA=100, DCB=100):
+        self.gpioservice.pwm_changedutycycle(self.ENA, DCA)
+        self.gpioservice.pwm_changedutycycle(self.ENB, DCB)
         self.gpioservice.output(self.IN1, 0)
         self.gpioservice.output(self.IN2, 1)
-        self.gpioservice.output(self.IN3, 0)
-        self.gpioservice.output(self.IN4, 1)
+        self.gpioservice.output(self.IN3, 1)
+        self.gpioservice.output(self.IN4, 0)
 
     def setvel(self, DCA, DCB):
         self.gpioservice.pwm_changedutycycle(self.ENA, DCA)

@@ -60,7 +60,7 @@ class usbserial(control.Control):
 
     @Pyro4.oneway
     def command(self, com="ee"):
-        # print com
+        print com
         self.serial.write(com + "\r\n")
 
     def get__all(self):

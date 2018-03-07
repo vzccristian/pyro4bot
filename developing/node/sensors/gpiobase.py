@@ -29,12 +29,12 @@ class gpiobase(control.Control):
         GPIO.setup(self.ENB, GPIO.OUT)
         # self.gpioservice.setup(self.setup,GPIO.OUT,self.pyro4id)
 
-        self.forward()
+
         self.PWMA = GPIO.PWM(self.ENA, 500)
         self.PWMB = GPIO.PWM(self.ENB, 500)
         self.PWMA.start(50)
         self.PWMB.start(50)
-
+        self.stop()
         # this line is the last line in constructor method
         self.init_workers(self.worker)
 
@@ -46,7 +46,7 @@ class gpiobase(control.Control):
         finally:
             print "limpiando"
             GPIO.cleanup()
-# here your methods
+
 
     def forward(self):
         print "forward"
