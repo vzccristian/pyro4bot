@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # All datas defined in json configuration are atributes in your code object
-import time
+
 from node.libs import control
 import Pyro4
-import RPi.GPIO as GPIO
 import EPDDriver
-import spidev as SPI
 import time
 import cStringIO as IO
+import spidev as SPI
 from PIL import ImageFont, ImageDraw, Image
 # 3V3
 # GND
@@ -36,7 +35,9 @@ class WSEPaper(control.Control):
         self.disp.delay()
         self.disp.EPD_init_Part()
         self.disp.delay()
-        #self.font = ImageFont.truetype("../../misc/font/PixelOperator.ttf")
+        self.font_size = 40
+        self.font_link ="/usr/share/fonts/truetype/freefont/FreeMono.ttf"
+        self.font = ImageFont.truetype(self.font_link, size=self.font_size)
         self.buffer = []
         self.init_workers(self.worker)
 
@@ -76,7 +77,6 @@ class WSEPaper(control.Control):
         im = center_image(im, size_x, size_y)
         return im.convert("1")
 
-
     def print_image(self, img, pos_x=0, pos_y=0):
         self.canvas.paste(self.transform_image(img),
                           (pos_x, pos_y))
@@ -91,6 +91,19 @@ class WSEPaper(control.Control):
                         val = val | 0x01 << x8
                 listim2.append(val)
         listim2.extend([0] * 1000)
-        # print len(listim2)
         self.disp.EPD_Dis_Part(pos_x, pos_x+im.size[0]-1, pos_y, pos_y+im.size[1]-1, listim2) # xStart, xEnd, yStart, yEnd, DisBuffer
-        uploadtime = time.time()
+
+    @staticmethod
+    def get_size(text, font):
+        test_img = Image.new('RGB', (1, 1))
+        test_draw = ImageDraw.Draw(test_img)
+        return test_draw.textsize(text, font)
+
+    def set_text(self, text, font=0):
+        if font not in [0, self.font_size]:
+            self.font = ImageFont.truetype(self.font_link, font)
+        img = Image.new('RGB', (200, 200), (255, 255, 255))
+        d = ImageDraw.Draw(img)
+        d.text((20, 20), text, fill=(255, 0, 0),font=self.font)
+        img.save("image.jpg")
+        self.set_image(open("image.jpg").read())
