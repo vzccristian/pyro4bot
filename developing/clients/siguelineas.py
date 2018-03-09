@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#____________developed by paco andres____________________
 
-
+import threading
 from _client_robot import ClientRobot
 import time
 import Pyro4
@@ -27,6 +28,6 @@ while (True):
             bot.basemotion.set__vel(mi=0,md=SPEED)
         else:
             bot.basemotion.set__vel(SPEED,SPEED)
-        time.sleep(0.01)
+        time.sleep(0.1)
     except:
         pass

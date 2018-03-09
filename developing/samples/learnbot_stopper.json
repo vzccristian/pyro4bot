@@ -1,0 +1,24 @@
+{
+   "NODE":{
+      "name":"learnbot1_stopper",
+      "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
+      "etc":"<path>/etc",
+      "path_cls":["services","sensors"],
+      "ethernet":"wlan0",
+      "name_server":true,
+      "port_ns":9090,
+      "port_node":4040,
+      "start_port":5050,
+      "def_frec":0.1,
+      "def_worker":true
+    },
+   "services":{
+     "picam":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true},
+      "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.02,"enable":true}
+   },
+   "sensors":{
+        "laser":{"cls":"laser","LASER":[0,0,0],"-->":["usbserial"],"enable":true,"frec":0.02,"worker_run":true},
+        "infrared":{"cls":"infrared","IR":[0,0,0,0],"-->":["usbserial"],"enable":true,"frec":0.02,"worker_run":true},
+        "basemotion":{"cls":"basemotion","BASE":[0,0],"-->":["usbserial"],"frec":0.03, "enable":true,"worker_run":true}
+    }
+}

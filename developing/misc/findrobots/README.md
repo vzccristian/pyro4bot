@@ -1,10 +1,7 @@
 # How to install iamrobot as service
 
-First, the default working directory is: /home/pi/PYRO4DIR/pyro4bot/developing/misc
-You can change this directory in the path variable within the file install_iamrobot.sh
-
-Make sure you have the file iamrobot.py and iamrobot.service in the directory
-indicated in install_iamrobot.sh
+Situate in the directory where you have the files iamrobot.py, iamrobot.service,
+install_iamrobot.sh and findrobots.py
 
 Checked this, execute:
 

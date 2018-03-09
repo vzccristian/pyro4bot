@@ -1,0 +1,12 @@
+[Unit]
+Description=iamrobot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /lib/systemd/system/iamrobot.py
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

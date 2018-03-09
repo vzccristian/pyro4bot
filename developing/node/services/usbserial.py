@@ -46,7 +46,6 @@ class usbserial(control.Control):
         self.serial.flushInput()
         while self.worker_run:
             try:
-                # print self.serial.read()
                 self.json = json.loads(self.read_serial())
                 self.buffer.update_from_dict(self.json)
             except Exception:
