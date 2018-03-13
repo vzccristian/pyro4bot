@@ -4,6 +4,7 @@
 import os.path
 import utils
 import myjson
+from inspection import _modules, module_class, import_module
 
 def get_field(search_dict, field, enable=True):
     """
@@ -39,7 +40,13 @@ class Config:
             filename, dependencies=True).json
         self.disable_lines()
         self.check_semantic()
-        # print self.dependency()
+        self.services_order = self.dependency(self.services)
+        self.sensors_order = self.dependency(self.sensors)
+        # print(self.sensors_order)
+        # print(self.services_order)
+        # print(self.sensors)
+        # print(self.services)
+        # exit()
         self.conf["NODE"][self.conf["NODE"]["name"] +
                           ".URI_resolv"] = self.add_uri_conf
 
@@ -56,9 +63,6 @@ class Config:
         if "ip" not in self.conf["NODE"]:
             self.conf["NODE"]["ip"] = utils.get_ip_address(
                 self.conf["NODE"]["ethernet"])
-            # print self.conf["NODE"]["ethernet"]
-            # print utils.get_ip_address(self.conf["NODE"]["ethernet"])
-
         if "name" not in self.conf["NODE"]:
             self.conf["NODE"]["name"] = "node"
 
@@ -69,116 +73,113 @@ class Config:
                 v["mode"] = "public"
             if "frec" not in v:
                 v["frec"] = self.conf["NODE"]["def_frec"]
-            if "." not in v["cls"]:
-                if "file" in v:
-                    v["cls"] = v["file"] + "." + v["cls"]
-                else:
-                    v["cls"] = k + "." + v["cls"]
-
-
-        if "path" not in self.node:
-            self.node["path"] = __file__[:__file__.rfind('/')] + '/..'
-            self.node["etc"] = self.node["path"] + '/etc'
-            
-
-        error = False
-        for m in self.classes():
-            if not self.module(m):
-                print("Could not find module %s in %s or %s" % (
-                    m, self.node["path"]+"/"+self.node["path_cls"][0],
-                    self.node["path"]+"/"+self.node["path_cls"][1]))
-                error = True
-
         newservices = {}
         for n in self.services:
+            #print(module_class(self.services[n]["cls"],_modules))
+            self.services[n]["module"]=module_class(self.services[n]["cls"],_modules).lstrip("node.")
             if "." not in n:
                 newservices[self.node["name"] + "." + n] = self.services[n]
             else:
                 newservices[n] = self.services[n]
-
+        self.services = newservices
         newrobot = {}
+        for n in self.services:
+            self.services[n]["_locals"] = []
+            self.services[n]["_remotes"] = []
+            if "-->" in self.services[n]:
+                self.services[n]["_locals"],self.services[n]["_remotes"] = self.local_remote(self.services,n)
         for n in self.sensors:
+            self.sensors[n]["module"]=module_class(self.sensors[n]["cls"],_modules)
+            self.sensors[n]["_services"]=list(self.services)
             if ("-->") in self.sensors[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.sensors[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.sensors[n]["-->"] if x.find(".") >= 0]
-                self.sensors[n]["-->"] = sp + cp
+                self.sensors[n]["-->"] = sp + cp  #esto se puede simplificar
             if n.find(".") == -1:
                 newrobot[self.node["name"] + "." + n] = self.sensors[n]
             else:
                 newrobot[n] = self.sensors[n]
 
-        self.services = newservices
         self.sensors = newrobot
-        if error:
-            exit()
+        for n in self.sensors:
+            self.sensors[n]["_locals"]=[]
+            self.sensors[n]["_remotes"]=[]
+            if "-->" in self.sensors[n]:
+                self.sensors[n]["_locals"],self.sensors[n]["_remotes"] = self.local_remote(self.sensors,n)
+                #print("REMO:",self.sensors[n]["_remotes"])
 
-    def module_cls(self):
-        return [self.module(m) for m in self.classes()]
-
-    def module(self, mod_cls):
-        """Return directory, module, class  if exist file .py."""
-        mod, cls = mod_cls.split(".")
-        for d in self.node["path_cls"]:
-            if os.path.isfile(self.node["path"] + "/" + d + "/" + mod + ".py"):
-                return d, mod, cls
-        return None
-
-    def classes(self):
-        return list(set(get_field(self.services, "cls") + get_field(self.sensors, "cls")))
-
-    def dependency(self):
-        dep_resueltas = [x for x in self.sensors if not get_field(self.sensors[x], "-->")]
-        condep = [x for x in self.sensors if get_field(self.sensors[x], "-->")]
+    def dependency(self,ser):
+        ser_order = [x for x in ser if not get_field(ser[x], "_locals")]
+        condep = [x for x in ser if get_field(ser[x], "_locals")]
         nivel_dep = 0
         while condep and nivel_dep < 20:
             for i in condep:
-                dep_nec = [x for x in get_field(self.sensors[i], "-->")]
+                dep_nec = [x for x in get_field(ser[i], "_locals")]
                 # print "dep necesarias para ",i,"--",dep_nec
                 dep_imcump = [x for x in get_field(
-                    self.sensors[i], "-->") if x not in dep_resueltas]
+                    ser[i], "_locals") if x not in ser_order]
                 # print "deps imcumplidas",dep_imcump
                 if dep_imcump == []:
-                    dep_resueltas.append(i)
+                    ser_order.append(i)
                     condep.remove(i)
             nivel_dep += 1
         if nivel_dep == 20:
-            print "ERROR:there are unresolved dependencies", condep, "-->", dep_imcump
+            print "ERROR:there are unresolved services dependencies", condep, "-->", dep_imcump
             exit()
-        else:
-            return dep_resueltas
+        return ser_order
 
-    def whithout_deps(self):
-        return [x for x in self.sensors if not get_field(self.sensors[x], "-->")]
+    def get_imports(self):
+        """
+        Return two lists of tuples, one (module,class) for all services a other
+        for sensors
+        """
+        services = [(self.services[s]["module"],self.services[s]["cls"]) for s in self.services_order]
+        sensors = [(self.sensors[s]["module"],self.sensors[s]["cls"]) for s in self.sensors_order]
+        return set(services),set(sensors)
 
-    def has_remote(self, k):
-        local, remote = self.local_remote(k)
+    def whithout_deps(self,part):
+        """
+         Return sensors or services whihout dependencies
+         part can be sensor or services
+        """
+        return [x for x in part if not get_field(part[x], "-->")]
+
+    def with_deps(self,part):
+        """
+         Return sensors or services whih dependencies.
+         part can be sensor or services
+        """
+        return [x for x in part if get_field(part[x], "-->")]
+
+    def has_remote(self, part,k):
+        """
+        return true if  k is a remote service or sensor
+        """
+        local, remote = self.local_remote(part,k)
         return bool(remote)
 
-    def has_local(self, k):
-        local, remote = self.local_remote(k)
+    def has_local(self,part,k):
+        """
+        return true if  k is a local service or sensor
+        """
+        local, remote = self.local_remote(part,k)
         return bool(local)
 
-    def local_remote(self, k):
-        local = [x for x in self.sensors[k]["-->"]
+    def local_remote(self,part,k):
+        """
+        return two list. services or sensors locals and remotes
+        """
+        if "-->" in part[k]:
+            local = [x for x in part[k]["-->"]
                  if x.find(self.node["name"] + ".") > -1]
-        remote = [x for x in self.sensors[k]["-->"]
-                  if x.find(self.node["name"] + ".") == -1]
+            remote = [x for x in part[k]["-->"]
+                      if x.find(self.node["name"] + ".") == -1]
+        else:
+            local = []
+            remote = []
         return local, remote
 
-    def with_deps(self):
-        return [x for x in self.sensors if get_field(self.sensors[x], "-->")]
-
-    def with_local_deps(self):
-        deps = [x for x in self.sensors if get_field(
-            self.sensors[x], "-->") and self.has_local(x)]
-        return deps
-
-    def with_remote_deps(self):
-        deps = [x for x in self.sensors.keys() if get_field(
-            self.sensors[x], "-->") and self.has_remote(x)]
-        # print deps
-        return deps
 
     def add_uri_conf(self):
         conf = {}
@@ -205,6 +206,4 @@ class Config:
 
     @property
     def sensors(self):
-        r = self.conf["services"]
-        r.update(self.conf["sensors"])
-        return r
+        return self.conf["sensors"]

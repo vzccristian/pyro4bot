@@ -36,6 +36,10 @@ END_JSON_DOCUMENTATION
 """
 
 class picam(control.Control):
+    """
+    REQUIRED:IN1,IN2,IN3,IN4,ENA,ENB
+    """
+    width=640
     @control.load_config
     def __init__(self, data, **kwargs):
         self.camera = PiCamera()
@@ -146,10 +150,6 @@ class picam(control.Control):
             # print "Antes:", self.clients
             self.clients = [c for c in self.clients if not c.closed]
             # print "Despues:", self.clients
-
-    def test(self):
-        print "hola"
-
 
 
 class ClientSocket():

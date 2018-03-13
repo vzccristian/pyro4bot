@@ -18,13 +18,15 @@ class uriresolver(control.Control):
     @control.load_config
     def __init__(self, robot, password="default"):
         # Atributes
+
         Pyro4.config.HOST = "localhost"
         self.botName = robot["name"]  # Robot's Name
         self.port = robot["port_node"]
         self.start_port = robot["start_port"]
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
-
+        print("")
+        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________","yellow"))
         self.URIS = {}
 
         # NameServer
@@ -89,6 +91,7 @@ class uriresolver(control.Control):
                 connect = False
             time.sleep(0.3)
         if connect:
+            print("")
             print(
                 colored("___________STARTING RESOLVER URIs___________________",
                         "yellow"))
@@ -187,7 +190,7 @@ class uriresolver(control.Control):
                         proxy = utils.get_pyro4proxy(x, passw)
                         return proxy
             except Exception:
-                print "Error al resolver ", obj
+                # print "Error al resolver ", obj
                 raise
         else:
             if (self.usingBB):

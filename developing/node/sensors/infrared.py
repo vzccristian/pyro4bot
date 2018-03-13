@@ -20,6 +20,7 @@ END_JSON_DOCUMENTATION
 """
 
 class infrared (control.Control):
+    __REQUIRED = ["usbserial","IR"]
     @control.load_config
     def __init__(self, data, **kwargs):
         # self.init_workers(self.worker)

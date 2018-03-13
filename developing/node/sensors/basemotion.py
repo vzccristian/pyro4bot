@@ -21,6 +21,7 @@ END_JSON_DOCUMENTATION
 
 @Pyro4.expose
 class basemotion(control.Control):
+    __REQUIRED = ["usbserial","BASE"]
     @control.load_config
     def __init__(self, data, **kwargs):
         # print self.__dict__

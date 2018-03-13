@@ -18,7 +18,6 @@ def load_config(in_function):
         except Exception:
             pass
         _self.__dict__.update(kwargs)
-
         if "name" in _self.__dict__:
             _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
         if "uriresolver" in _self.__dict__:
@@ -28,19 +27,25 @@ def load_config(in_function):
             injects = {}
             for d in _self.__dict__["nr_remote"]:
                 injects[d] = _self.__dict__["uriresolver"].get_proxy(d)
-                if not injects[d]:
-                    print("Can not connect to %s" % d)
+                # if not injects[d]:
+                #     print("Can not connect to %s" % d)
                 _self.__dict__.update(injects)
             # print _self.__dict__["nr_remote"]
-        if "_local" in _self.__dict__:
+        if "_locals" in _self.__dict__:
             injects = {}
-            for deps in _self.__dict__["_local"]:
+            for deps in _self.__dict__["_locals"]:
                 injects[utils.get_uri_name(deps).split(".")[
                     1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
-        if "_remote" in _self.__dict__:
+        if "_remotes" in _self.__dict__:
             injects = {}
-            for deps in _self.__dict__["_remote"]:
+            for deps in _self.__dict__["_remotes"]:
+                injects[utils.get_uri_name(deps).split(".")[
+                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
+            _self.__dict__.update(injects)
+        if "_services" in _self.__dict__:
+            injects = {}
+            for deps in _self.__dict__["_services"]:
                 injects[utils.get_uri_name(deps).split(".")[
                     1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
             _self.__dict__.update(injects)
@@ -180,3 +185,7 @@ class Control(object):
     @Pyro4.expose
     def __docstring__(self):
         return self.docstring
+
+    @Pyro4.expose
+    def get_class(self):
+        return self._dict__[cls]

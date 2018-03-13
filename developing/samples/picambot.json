@@ -1,7 +1,7 @@
 {
    "NODE":{
       "name":"picambot",
-      "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
+      "path":"./node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
       "ethernet":"wlan0",
@@ -15,7 +15,7 @@
       "def_worker":true
     },
    "services":{
-        "picam":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true}
+        "camara":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true}
    },
    "sensors":{
 

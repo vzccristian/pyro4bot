@@ -15,22 +15,35 @@ import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
 
+
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
+_LOCAL_TRAYS = 5
+_REMOTE_TRAYS = 10
 
-
-def import_class(list_class):
+def import_class(services,sensors):
     """ Import necesary packages for robot"""
-    try:
-        print(colored("____________IMPORTING CLASS_______________________",
+    print("")
+    print(colored("____________IMPORTING CLASS FOR ROBOT______________________",
                       'yellow'))
-        for c in sorted(list_class):
-            print colored("CLASS", "cyan"), "%s: from %s import %s" % (c[2], c[0], c[1])
-            exec("from %s import %s" % (c[0], c[1]), globals())
-    except Exception:
-        print("ERROR IMPORTING CLASS:", c[0] + "/" + c[1] + "." + c[2])
-        traceback.print_exc()
-        exit(0)
+    print(" SERVICES:")
+    for module,cls in services:
+        try:
+            print(colored("      FROM {} IMPORT {}".format(module,cls), "cyan"))
+            exec("from {} import {}".format(module,cls),globals())
+        except Exception:
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls,module))
+            traceback.print_exc()
+            exit(0)
+    print(" SENSORS:")
+    for module,cls in sensors:
+        try:
+            print(colored("      FROM {} IMPORT {}".format(module,cls), "cyan"))
+            exec("from {} import {}".format(module,cls),globals())
+        except Exception:
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls,module))
+            traceback.print_exc()
+            exit(0)
 
 # ___________________CLASS NODERB________________________________________
 
@@ -45,13 +58,16 @@ class NODERB (object):
         self.N_conf = config.Config(
             filename=filename, json=json)  # Config from Json
         self.load_node(self, PROCESS={}, **self.N_conf.node)
-        import_class(self.N_conf.module_cls())
-
+        import_class(*self.N_conf.get_imports())
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
-
-        self.load_robot()
+        print("")
+        print(colored("_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
+        self.load_objects(self.services,self.N_conf.services_order)
+        print("")
+        print(colored("_________STARTING PYRO4BOT PLUGINS___________________", "yellow"))
+        self.load_objects(self.sensors,self.N_conf.sensors_order)
 
         self.create_server_node()
 
@@ -59,12 +75,14 @@ class NODERB (object):
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
         ROBOT_PASSWORD = self.name
-        print(colored("NOTIFIER", "cyan") + (":Starting System PyRobot on Ethernet device %s IP: %s with password: %s" %
-                                             (colored(self.ethernet, 'yellow'), colored(self.ip, 'yellow'), colored(ROBOT_PASSWORD, 'yellow'))))
-        print(colored("NOTIFIER", "cyan") + (":Node config loaded for filename:%s" %
-                                             (colored(self.filename, 'yellow'))))
+        print("")
+        print(colored("_________STARTING PYRO4BOT SYSTEM__________","yellow"))
+        print("  Ethernet device {} IP: {}".format(colored(self.ethernet,"cyan"),colored(self.ip,"cyan")))
+        print("  Password: {}".format(colored(ROBOT_PASSWORD,"cyan")))
+        print("  Filename: {}".format(colored(self.filename, 'cyan')))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
+        self.services = self.N_conf.services
 
     def load_uri_resolver(self):
         uri_r = uriresolver.uriresolver(self.N_conf.node,
@@ -72,45 +90,80 @@ class NODERB (object):
         self.URI_resolv, self.URI = uri_r.register_uriresolver()
         return uri_r
 
-    def load_robot(self):
-        print(colored("_________STARTING PYRO4BOT OBJECT___________________", "yellow"))
-        for k in self.N_conf.whithout_deps():  # No dependencies
-            self.start__object(k, self.sensors[k])
-        object_robot = self.N_conf.with_deps()
+    def load_objects(self,parts,order):
+        object_robot = order
         for k in object_robot:
-            self.sensors[k]["_local_trys"] = 25
-            self.sensors[k]["_remote_trys"] = 5
+            parts[k]["_local_trys"] = _LOCAL_TRAYS
+            parts[k]["_remote_trys"] = _REMOTE_TRAYS
+            parts[k]["_services_trys"] = _LOCAL_TRAYS
+            parts[k]["nr_local"] = list(parts[k].get("_locals",[]))
+            parts[k]["nr_remote"] = list(parts[k].get("_remotes",[]))
+            parts[k]["nr_service"] = list(parts[k].get("_services",[]))
+            parts[k]["_non_required"] = self.check_requireds(parts[k])
+        errors=False
+        for k in object_robot:
+            if parts[k]["_non_required"]:
+                print(colored("ERROR: class {} require {} for {}  ".
+                              format(parts[k]["cls"],parts[k]["_non_required"],k),"red"))
+                errors=True
+        if errors:
+            exit()
 
         while object_robot != []:
             k = object_robot.pop(0)
-            self.sensors[k]["nr_local"], self.sensors[k]["nr_remote"] = self.N_conf.local_remote(
-                k)
-            st_local, st_remote = self.check_deps(k)
+            st_local, st_remote, st_service = self.check_deps(parts[k])
             if st_local == "ERROR":
-                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, self.sensors[k]["nr_local"])
+                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["nr_local"])
                 continue
             if st_remote == "ERROR":
-                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, self.sensors[k]["nr_remote"])
+                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["nr_remote"])
+                continue
+            if st_service == "ERROR":
+                print "[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["nr_service"])
                 continue
 
-            if st_local == "WAIT" or st_remote == "WAIT":
+            if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
                 continue
-            if st_local == "OK":
-                del(self.sensors[k]["nr_local"])
-                del(self.sensors[k]["_local_trys"])
+
+            if st_local == "OK" and st_service =="OK":
+                del(parts[k]["nr_local"])
+                del(parts[k]["_local_trys"])
+                del(parts[k]["nr_service"])
+                del(parts[k]["_services_trys"])
                 if st_remote == "OK":
-                    del(self.sensors[k]["_remote_trys"])
-                    del(self.sensors[k]["nr_remote"])
-                self.sensors[k]["_REMOTE_STATUS"] = st_remote
-                self.start__object(k, self.sensors[k])
+                    del(parts[k]["_remote_trys"])
+                    del(parts[k]["nr_remote"])
+                parts[k]["_REMOTE_STATUS"] = st_remote
+                self.start__object(k, parts[k])
+
+    def get_class_REQUIRED(self,cls):
+        """ return a list of requeriments if cls has __REQUIRED class attribute"""
+        try:
+            dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
+            return dic_cls
+        except:
+            return []
+
+    def check_requireds(self,obj):
+        """
+        for a given obj this method calc requeriments class and
+        get unfulfilled requeriments for an obj
+        inside _service and _local find on left side string
+        """
+        requireds=self.get_class_REQUIRED(obj["cls"])
+        connectors = obj.get("_services",[])+obj.get("_locals",[])
+        keys = list(obj.keys())+obj.get("_remotes",[])
+        unfulfilled = [x for x in requireds if x not in
+                       map(lambda x:x.split(".")[1],connectors) + keys]
+        return unfulfilled
 
     def check_local_deps(self, obj):
         check_local = "OK"
         for d in obj["nr_local"]:
             uri = self.URI.wait_available(d, ROBOT_PASSWORD)
             if uri is not None:
-                obj["_local"].append(uri)
+                obj["_locals"].append(uri)
             else:
                 obj["_local_trys"] -= 1
                 if obj["_local_trys"] < 0:
@@ -120,6 +173,22 @@ class NODERB (object):
                     check_local = "WAIT"
                     break
         return check_local
+
+    def check_service_deps(self, obj):
+        check_service = "OK"
+        for d in obj["nr_service"]:
+            uri = self.URI.wait_available(d, ROBOT_PASSWORD)
+            if uri is not None:
+                obj["_services"].append(uri)
+            else:
+                obj["_services_trys"] -= 1
+                if obj["_services_trys"] < 0:
+                    check_service = "ERROR"
+                    break
+                else:
+                    check_service = "WAIT"
+                    break
+        return check_service
 
     def check_remote_deps(self, obj):
         check_remote = "OK"
@@ -137,27 +206,30 @@ class NODERB (object):
                     check_remote = "WAIT"
                     break
             else:
-                obj["_remote"].append(uri)
+                obj["_remotes"].append(uri)
         return check_remote
 
-    def check_deps(self, k):
-        self.sensors[k]["_local"] = []
-        self.sensors[k]["_remote"] = []
-        check_local = self.check_local_deps(self.sensors[k])
-        check_remote = self.check_remote_deps(self.sensors[k])
-        return check_local, check_remote
+    def check_deps(self,obj):
+        obj["_locals"] = []
+        obj["_remotes"] = []
+        obj["_services"] = []
+        check_local = self.check_local_deps(obj)
+        check_services = self.check_service_deps(obj)
+        check_remote = self.check_remote_deps(obj)
+        return check_local, check_remote, check_services
 
     def start__object(self, name, obj):
         serv_pipe, client_pipe = Pipe()
-        if "_local" not in obj:
-            obj["_local"] = []
-        if "_remote" not in obj:
-            obj["_remote"] = []
+        if "_locals" not in obj:
+            obj["_locals"] = []
+        if "_remotes" not in obj:
+            obj["_remotes"] = []
         if name not in self.PROCESS:
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
             obj["uriresolver"] = self.URI_resolv
+            #print(obj)
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))
@@ -241,6 +313,7 @@ class NODERB (object):
             self.URI.register_robot_on_nameserver(uri)
 
             # Printing info
+            print("")
             print(colored(
                 "____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
