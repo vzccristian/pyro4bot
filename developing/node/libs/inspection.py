@@ -26,7 +26,7 @@ def explore_package(module_name):
         modules.extend(explore_package(qname))
     return modules
 
-def get_clases(m):
+def get_clases(m,error=False):
     """
     return a list of classes for a given module
     warning: if module has non instaled package return a empty list
@@ -37,21 +37,24 @@ def get_clases(m):
         for name, obj in inspect.getmembers(mod,inspect.isclass):
             list_class.append(name)
     except Exception as e:
-            pass
+        if error:
+            print("error in {} :{}".format(m,e))
     return list_class
 
-def get_packages_not_found(m):
+def get_packages_not_found(m,error=False):
     """
     return a set of packages for a given module
     warning: if module has non instaled any package return a empty list
     """
-    list_packages=None
+    list_packages=set()
     try:
         mod = importlib.import_module(m)
-    except Exception as e:
-        return "Module "+m+": "+str(e)
-
-    return None
+    except ImportError as e:
+        list_packages.add(str(e).split("No module named ")[1])
+        #print(e)
+    except:
+        pass
+    return list_packages
 
 def get_modules(pkgs):
     """
@@ -84,7 +87,6 @@ def module_packages_not_found(modules):
 
 # _modules is a list of all sensors and services in pyro4bot
 _modules=get_modules(("node.services","node.sensors"))
-_modules_errors=[get_packages_not_found(x) for x in _modules if get_packages_not_found(x) is not None]
 # it is a list of all modules in system pyro4bot
 _modules_node=get_modules("node")
 
