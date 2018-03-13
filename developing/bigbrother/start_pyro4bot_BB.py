@@ -128,7 +128,7 @@ class bigbrother(object):
         return self.private_pyro4ns.list()
 
     @Pyro4.expose
-    def lookup(self, name, return_metadata=False):
+    def lookup(self, obj, return_metadata=False, async=False):
         """Look up a single name registration and return the uri.
 
         Returns the URI associated with the last name as argument.
@@ -140,13 +140,36 @@ class bigbrother(object):
                 If you set it to True, you will get back tuples instead:
                 (uri, set-of-metadata-tags):
         """
-        print "Lookup:", name, return_metadata
+        print "Lookup:", obj, return_metadata, async
         _return_metadata = return_metadata
-        try:
-            uri = self.private_pyro4ns.lookup(name, return_metadata=_return_metadata)
-        except Pyro4.errors.NamingError:
-            uri = None
+        # try:
+        #     uri = self.private_pyro4ns.lookup(name, return_metadata=_return_metadata)
+        # except Pyro4.errors.NamingError:
+        #     uri = None
         return uri
+        target = obj.split(".")
+        self.update()
+        try:
+            all_proxys = []
+            if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
+                for x in self.robots[target[0]].iteritems():
+
+                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
+                return all_proxys
+            elif (not target[0] and target[1]):  # .sensor
+                for x in self.sensors[target[1]].iteritems():
+                    return utils.get_pyro4proxy(x, target[0])
+            elif (target[0].count("*") == 1 and target[1] and
+                    target[1].count("*") == 0):  # *.sensor
+                for x in self.sensors[target[1]].iteritems():
+                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
+                return all_proxys
+            elif (target[0].count("*") == 1 and target[0].count("*")):
+                print target, "obj7" # TODO regex
+            else:
+                print "Objeto no valido"
+        except Exception:
+            print "Error al acceder a", target
 
     @Pyro4.expose
     def ping(self):
@@ -223,14 +246,6 @@ class bigbrother(object):
                 print "Objeto no valido"
         except Exception:
             print "Error al acceder a", target
-
-    # TODO
-    @Pyro4.expose
-    def request(self, name):
-        try:
-            return Pyro4.Proxy(self.private_pyro4ns.lookup(name))
-        except Exception:
-            return None
 
     @Pyro4.expose
     def ready(self):
