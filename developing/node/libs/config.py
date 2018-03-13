@@ -4,7 +4,8 @@
 import os.path
 import utils
 import myjson
-from inspection import _modules, module_class, import_module
+from inspection import _modules,_modules_errors, module_class, import_module
+from termcolor import colored
 
 def get_field(search_dict, field, enable=True):
     """
@@ -89,7 +90,13 @@ class Config:
             if "-->" in self.services[n]:
                 self.services[n]["_locals"],self.services[n]["_remotes"] = self.local_remote(self.services,n)
         for n in self.sensors:
-            self.sensors[n]["module"]=module_class(self.sensors[n]["cls"],_modules)
+            if module_class(self.sensors[n]["cls"],_modules) is not None:
+                self.sensors[n]["module"]=module_class(self.sensors[n]["cls"],_modules)
+            else:
+                print(colored("ERROR: Class {} not found or error in Modules".format(self.sensors[n]["cls"]),"red"))
+                for er in _modules_errors:
+                    print("  "+er)
+                exit()
             self.sensors[n]["_services"]=list(self.services)
             if ("-->") in self.sensors[n]:
                 sp = [self.node["name"] + "." +

@@ -18,7 +18,7 @@ JSON_DOCUMENTATION
 {m} enable : true
 END_JSON_DOCUMENTATION
 """
-jhj
+
 class laser (control.Control):
     __REQUIRED = ["usbserial","LASER"]
     @control.load_config
