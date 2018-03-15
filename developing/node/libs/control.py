@@ -41,7 +41,7 @@ def load_config(in_function):
             injects = {}
             for deps in _self.__dict__["_remotes"]:
                 injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
+                    1]] = _self.__dict__["uriresolver"].get_proxy(deps) # TODO: Check
             _self.__dict__.update(injects)
         if "_services" in _self.__dict__:
             injects = {}

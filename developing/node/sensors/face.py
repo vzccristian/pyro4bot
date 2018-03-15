@@ -11,6 +11,8 @@ class face(control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         self.init_workers(self.worker)
+        print self.__dict__
+        print self.suelo.get__ir()
 
     def worker(self):
         while self.worker_run:
