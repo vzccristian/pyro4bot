@@ -197,6 +197,7 @@ class NODERB (object):
             if uri is None:
                 check_remote = "ERROR"
                 break
+            print("REMOTE-URI:{} , COMP:{}".format(uri, d))
             if uri == d:
                 obj["_remote_trys"] -= 1
                 if obj["_remote_trys"] < 0:
@@ -229,7 +230,7 @@ class NODERB (object):
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
             obj["uriresolver"] = self.URI_resolv
-            #print(obj)
+
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))

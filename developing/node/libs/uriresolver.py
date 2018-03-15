@@ -26,7 +26,7 @@ class uriresolver(control.Control):
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
         print("")
-        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________","yellow"))
+        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
         self.URIS = {}
 
         # NameServer
@@ -204,7 +204,6 @@ class uriresolver(control.Control):
     def get_proxy(self, obj, passw=None):
         if (self.get_ns()):
             try:
-                # PYRO:simplebot.infrared@192.168.10.67:6001
                 if (obj.count('PYRO:') == 1 and obj.count('@') == 1 and
                         obj.count(":") == 2 and obj.count(".") in range(3, 5)):
                     (name, _, _) = utils.uri_split(obj)
@@ -227,8 +226,8 @@ class uriresolver(control.Control):
         else:
             ip = self.ip
 
-        port_node = utils.get_free_port(self.port, interval=10)
-        start_port = utils.get_free_port(self.start_port)
+        port_node = utils.get_free_port(self.port, interval=10, ip=ip)
+        start_port = utils.get_free_port(self.start_port, ip=ip)
 
         if name.find(self.botName) > -1:
             if name != self.botName:
@@ -287,17 +286,23 @@ class uriresolver(control.Control):
             return None
         while not connect and trys > -1:
             try:
-                getbot = self.nameserver.lookup(name[0:name.find(".")])
-                proxy = Pyro4.Proxy(getbot)
-                proxy._pyroHmacKey = bytes(password)
-                remoteuri, status = proxy.get_name_uri(name)
-                connect = (remoteuri != None and status not in [
-                           "down", "wait"])
-            except:
-                # print "error remote"
+                if (self.usingBB):  # Big BigBrother
+                    bot_uri = self.nameserver.lookup(name)
+                else:
+                    bot_uri = self.nameserver.lookup(name.split(".")[0])
+                try:
+                    bot_proxy = utils.get_pyro4proxy(bot_uri, name.split(".")[0])
+                    if (bot_proxy):
+                        remoteuri, status = bot_proxy.get_name_uri(name)
+                        connect = (remoteuri is not None and status not in [ "down", "wait"])
+                except Exception:
+                    print("ERROR: Unable to obtain list of robot sensors: \
+                         \n-->[URI]: %s \n-->[NAME]: %s" % (bot_uri, name))
+
+            except Exception:
                 pass
             trys -= 1
-            time.sleep(0.05)
+            time.sleep(0.2)
         if trys < 0:
             return name
         if connect:

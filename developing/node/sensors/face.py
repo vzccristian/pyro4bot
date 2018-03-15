@@ -6,7 +6,6 @@ import time
 from node.libs import control
 import Pyro4
 
-dfd
 @Pyro4.expose
 class face(control.Control):
     @control.load_config

@@ -8,6 +8,7 @@ from termcolor import colored
 import signal
 import subprocess
 import os
+import random
 sys.path.append("../node/libs")
 import utils
 import myjson
@@ -85,9 +86,9 @@ class bigbrother(object):
             except Exception:
                 print("Error connecting to: %s " % value)
                 self.remove(key)
-        if self.robots:
-            print "ROBOTS:", self.robots
-            print "SENSORS:", self.sensors
+        # if self.robots:
+        #     print "ROBOTS:", self.robots
+        #     print "SENSORS:", self.sensors
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -140,36 +141,40 @@ class bigbrother(object):
                 If you set it to True, you will get back tuples instead:
                 (uri, set-of-metadata-tags):
         """
-        print "Lookup:", obj, return_metadata, async
+        # print "Lookup:", obj, return_metadata, async
         _return_metadata = return_metadata
-        # try:
-        #     uri = self.private_pyro4ns.lookup(name, return_metadata=_return_metadata)
-        # except Pyro4.errors.NamingError:
-        #     uri = None
-        return uri
-        target = obj.split(".")
         self.update()
+        uris = []
         try:
-            all_proxys = []
-            if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
-                for x in self.robots[target[0]].iteritems():
-
-                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
-                return all_proxys
-            elif (not target[0] and target[1]):  # .sensor
-                for x in self.sensors[target[1]].iteritems():
-                    return utils.get_pyro4proxy(x, target[0])
-            elif (target[0].count("*") == 1 and target[1] and
-                    target[1].count("*") == 0):  # *.sensor
-                for x in self.sensors[target[1]].iteritems():
-                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
-                return all_proxys
-            elif (target[0].count("*") == 1 and target[0].count("*")):
-                print target, "obj7" # TODO regex
+            target = obj.split(".")
+            if ("." in obj):
+                if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
+                    # print("#1")
+                    for x in self.robots[target[0]]:
+                        uris.append(x)
+                elif (target[0] == "?" and target[1]):  # ?.sensor
+                    # print("#2")
+                    if target[1] in self.sensors:
+                        uris.append(random.choice(self.sensors[target[1]]))
+                elif (target[0].count("*") == 1 and target[1] and
+                        target[1].count("*") == 0):  # *.sensor
+                    # print("#3")
+                    if target[1] in self.sensors:
+                        for x in self.sensors[target[1]]:
+                            uris.append(x)
+                elif target[0] and target[1]:
+                    # print("#4")
+                    if target[0] in self.robots:
+                        return [x for x in self.robots[target[0]] if (target[1] in x)]
+                else:
+                    print "Objeto no valido"
             else:
-                print "Objeto no valido"
+                for x in self.robots[target[0]]:
+                    uris.append(x)
         except Exception:
-            print "Error al acceder a", target
+            print "Error al acceder a", obj
+            return False
+        return uris
 
     @Pyro4.expose
     def ping(self):
@@ -225,28 +230,13 @@ class bigbrother(object):
 
     @Pyro4.expose
     def proxy(self, obj, passw=None):
-        target = obj.split(".")
-        try:
-            all_proxys = []
-            if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
-                for x in self.robots[target[0]].iteritems():
-                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
-                return all_proxys
-            elif (not target[0] and target[1]):  # .sensor
-                for x in self.sensors[target[1]].iteritems():
-                    return utils.get_pyro4proxy(x, target[0])
-            elif (target[0].count("*") == 1 and target[1] and
-                    target[1].count("*") == 0):  # *.sensor
-                for x in self.sensors[target[1]].iteritems():
-                    all_proxys.append(utils.get_pyro4proxy(x, target[0]))
-                return all_proxys
-            elif (target[0].count("*") == 1 and target[0].count("*")):
-                print target, "obj7" # TODO regex
-            else:
-                print "Objeto no valido"
-        except Exception:
-            print "Error al acceder a", target
-
+        all_proxys = []
+        for x in self.lookup(obj):
+            if (passw is None):
+                passw = obj.split(".")[0]
+            all_proxys.append(utils.get_pyro4proxy(x, passw))
+        return all_proxys
+        
     @Pyro4.expose
     def ready(self):
         if self.private_pyro4ns is not None:
