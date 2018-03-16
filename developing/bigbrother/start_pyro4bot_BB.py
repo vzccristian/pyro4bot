@@ -1,14 +1,16 @@
-import Pyro4
-import Pyro4.naming as nm
+import os
+import random
+import sched
+import signal
+import subprocess
 import sys
 import threading
 import time
-import sched
+
+import Pyro4
+import Pyro4.naming as nm
 from termcolor import colored
-import signal
-import subprocess
-import os
-import random
+
 sys.path.append("../node/libs")
 import utils
 import myjson
@@ -86,9 +88,9 @@ class bigbrother(object):
             except Exception:
                 print("Error connecting to: %s " % value)
                 self.remove(key)
-        # if self.robots:
-        #     print "ROBOTS:", self.robots
-        #     print "SENSORS:", self.sensors
+        if self.robots:
+            print "ROBOTS:", self.robots
+            print "SENSORS:", self.sensors
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -147,12 +149,12 @@ class bigbrother(object):
         uris = []
         try:
             target = obj.split(".")
-            if ("." in obj):
+            if "." in obj:
                 if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
                     # print("#1")
                     for x in self.robots[target[0]]:
                         uris.append(x)
-                elif (target[0] == "?" and target[1]):  # ?.sensor
+                elif target[0] == "?" and target[1]:  # ?.sensor
                     # print("#2")
                     if target[1] in self.sensors:
                         uris.append(random.choice(self.sensors[target[1]]))
@@ -215,11 +217,9 @@ class bigbrother(object):
         _name = name
         _prefix = prefix
         _regex = regex
-        for uri in self.robots:
-            uri = self.robots[name]
-            self.sensors = {key: value for key, value in self.sensors.items()
-                            if value != uri}
-        del self.robots[name]
+
+        self.sensors = {key: list_sensors for key, list_sensors in self.sensors.items() for s in list_sensors if s in self.robots[name]}
+        self.robots.pop(name, None)
 
         self.private_pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
         threading.Thread(target=self.update, args=()).start()
@@ -236,7 +236,7 @@ class bigbrother(object):
                 passw = obj.split(".")[0]
             all_proxys.append(utils.get_pyro4proxy(x, passw))
         return all_proxys
-        
+
     @Pyro4.expose
     def ready(self):
         if self.private_pyro4ns is not None:

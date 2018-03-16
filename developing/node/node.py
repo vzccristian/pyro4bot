@@ -16,6 +16,7 @@ import Pyro4.naming as nm
 from termcolor import colored
 
 
+
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
 _LOCAL_TRAYS = 5
