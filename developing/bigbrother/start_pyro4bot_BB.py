@@ -6,7 +6,7 @@ import subprocess
 import sys
 import threading
 import time
-
+from threading import Lock
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
@@ -37,6 +37,7 @@ class bigbrother(object):
             config : dict obtaneid from json file
         """
         self.config = config
+        self.mutex = Lock()
 
         self.private_pyro4ns = _priv_pyro4ns  # Private Pyro4NS location
         self.public_pyro4ns = _pub_pyro4ns  # Public Pyro4NS location
@@ -79,12 +80,14 @@ class bigbrother(object):
                 self.robots[key] = robot_uris
                 for u in robot_uris:
                     currentSensor = u.split(".")[1].split("@")[0]
-                    if type(self.sensors.get(currentSensor)) is not list:
-                        self.sensors[currentSensor] = []
-                        self.sensors.get(currentSensor).append(u)
-                    else:
-                        if not (u in self.sensors.get(currentSensor)):
-                            self.sensors.get(currentSensor).append(u)
+                    self.sensors[currentSensor] = []
+                    self.sensors.get(currentSensor).append(u)
+                    # if type(self.sensors.get(currentSensor)) is not list:
+                    #     self.sensors[currentSensor] = []
+                    #     self.sensors.get(currentSensor).append(u)
+                    # else:
+                    #     if not (u in self.sensors.get(currentSensor)):
+                    #         self.sensors.get(currentSensor).append(u)
             except Exception:
                 print("Error connecting to: %s " % value)
                 self.remove(key)
@@ -213,16 +216,20 @@ class bigbrother(object):
 
         Remove a nameserver robot according to its name
         """
-        print "Removing:", name, prefix, regex
-        _name = name
-        _prefix = prefix
-        _regex = regex
+        self.mutex.acquire()
+        try:
+            print "---> Removing:", name, prefix, regex
+            _name = name
+            _prefix = prefix
+            _regex = regex
+            #
+            # self.sensors = {key: list_sensors for key, list_sensors in self.sensors.items() for s in list_sensors if s in self.robots[name]}
+            # self.robots.pop(name, None)
 
-        self.sensors = {key: list_sensors for key, list_sensors in self.sensors.items() for s in list_sensors if s in self.robots[name]}
-        self.robots.pop(name, None)
+            self.private_pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
+        finally:
+            self.mutex.release()
 
-        self.private_pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
-        threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
     def set_metadata(self, name, metadata):

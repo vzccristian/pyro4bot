@@ -14,5 +14,6 @@ try:
     nod = nodo.NODERB(filename=jsonbot)
 except IOError:
     print("The file can not be found: %s" % jsonbot)
+    raise
 except (KeyboardInterrupt, SystemExit):
     os._exit(0)
