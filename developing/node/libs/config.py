@@ -74,14 +74,22 @@ class Config:
                 v["mode"] = "public"
             if "frec" not in v:
                 v["frec"] = self.conf["NODE"]["def_frec"]
+            v["docstring"] = {}
+            v["exposed"] = {}
         newservices = {}
         for n in self.services:
-            #print(module_class(self.services[n]["cls"],_modules))
-            self.services[n]["module"]=module_class(self.services[n]["cls"],_modules).lstrip("node.")
-            if "." not in n:
-                newservices[self.node["name"] + "." + n] = self.services[n]
+            if module_class(self.services[n]["cls"],_modules) is not None:
+                self.services[n]["module"]=module_class(self.services[n]["cls"],_modules).lstrip("node.")
+                if "." not in n:
+                    newservices[self.node["name"] + "." + n] = self.services[n]
+                else:
+                    newservices[n] = self.services[n]
             else:
-                newservices[n] = self.services[n]
+                print(colored("ERROR: Class {} not found or error in Modules".format(self.services[n]["cls"]),"red"))
+                for er in _modules_errors:
+                    print("  "+er)
+                exit()
+
         self.services = newservices
         newrobot = {}
         for n in self.services:

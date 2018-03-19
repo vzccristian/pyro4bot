@@ -7,22 +7,12 @@ import time
 from node.libs import control
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : laser
-{c} cls : laser
-{d} --> : ["usbsimulator"]
-{m} LASER : [0,0,0]
-{m} frec : 0.02
-{m} worker_run : true
-{m} enable : true
-END_JSON_DOCUMENTATION
-"""
+
 
 class laser (control.Control):
     __REQUIRED = ["usbserial","LASER"]
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    def __init__(self):
         self.init_workers(self.worker)
         self.send_subscripcion(self.usbserial, "LASER")
 

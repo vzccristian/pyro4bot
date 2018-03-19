@@ -11,8 +11,8 @@ import RPi.GPIO as GPIO
 
 @Pyro4.expose
 class gpioinfrared(control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    def __init__(self):
         self.init_workers(self.worker)
 
     def worker(self):

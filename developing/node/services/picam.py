@@ -36,9 +36,7 @@ END_JSON_DOCUMENTATION
 """
 
 class picam(control.Control):
-    """
-    REQUIRED:IN1,IN2,IN3,IN4,ENA,ENB
-    """
+    __REQUIRED = ["width","height"]
     width=640
     @control.load_config
     def __init__(self, data, **kwargs):

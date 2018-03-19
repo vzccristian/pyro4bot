@@ -10,10 +10,10 @@ import spidev
 
 @Pyro4.expose
 class spiservice (control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
-        # this line is the last line in constructor method
-        super(spiservice, self).__init__()
+    __REQUIRED = ["gpioservice"]
+
+    def __init__(self):
+
         self.init_workers()
 
     def worker(self):

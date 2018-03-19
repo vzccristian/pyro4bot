@@ -22,11 +22,11 @@ END_JSON_DOCUMENTATION
 @Pyro4.expose
 class basemotion(control.Control):
     __REQUIRED = ["usbserial","BASE"]
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    def __init__(self):
         # print self.__dict__
         self.send_subscripcion(self.usbserial, "BASE")
-        # self.init_workers(self.worker)
+        self.init_workers(self.worker)
 
     def worker(self):
         while self.worker_run:

@@ -10,13 +10,10 @@ import RPi.GPIO as GPIO
 
 @Pyro4.expose
 class l298n(control.Control):
-    """
-    REQUIRED:IN1,IN2,IN3,IN4,ENA,ENB
-    """
-    IN1=1
 
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED:[IN1,IN2,IN3,IN4,ENA,ENB,gpioservice]
+
+    def __init__(self):
 
         self.gpioservice.setup(
             [self.IN1, self.IN2, self.IN3, self.IN4], GPIO.OUT, self.pyro4id)

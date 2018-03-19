@@ -7,7 +7,6 @@ import token
 
 
 # decoradores para las clases generales
-
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
         init superclass control """
@@ -18,52 +17,29 @@ def load_config(in_function):
         except Exception:
             pass
         _self.__dict__.update(kwargs)
-        if "name" in _self.__dict__:
-            _self.__dict__["botname"] = _self.__dict__["name"].split(".")[0]
-        if "uriresolver" in _self.__dict__:
-            _self.__dict__["uriresolver"] = utils.get_pyro4proxy(
-                _self.__dict__["uriresolver"], _self.__dict__["name"].split(".")[0])
-        if "nr_remote" in _self.__dict__:
-            injects = {}
-            for d in _self.__dict__["nr_remote"]:
-                injects[d] = _self.__dict__["uriresolver"].get_proxy(d)
-                # if not injects[d]:
-                #     print("Can not connect to %s" % d)
-                _self.__dict__.update(injects)
-            # print _self.__dict__["nr_remote"]
-        if "_locals" in _self.__dict__:
-            injects = {}
-            for deps in _self.__dict__["_locals"]:
-                injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
-            _self.__dict__.update(injects)
-        if "_remotes" in _self.__dict__:
-            injects = {}
-            for deps in _self.__dict__["_remotes"]:
-                injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
-            _self.__dict__.update(injects)
-        if "_services" in _self.__dict__:
-            injects = {}
-            for deps in _self.__dict__["_services"]:
-                injects[utils.get_uri_name(deps).split(".")[
-                    1]] = utils.get_pyro4proxy(deps, _self.__dict__["name"].split(".")[0])
-            _self.__dict__.update(injects)
-        if "-->" in _self.__dict__:
-            del(_self.__dict__["-->"])
-        _self.__dict__["docstring"] = {}
-        _self.__dict__["exposed"] = {}
-
-        # print     _self.__dict__
         super(_self.__class__.__mro__[0], _self).__init__()
         in_function(*args, **kwargs)
-
     return out_function
+
+
+def Pyro4bot_Loader(cls,kwargs):
+    """ Decorator for load Json options in Pyro4bot objects
+        init superclass control
+    """
+    original_init = cls.__init__
+    def init(self):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        super(cls,self).__init__()
+        original_init(self)
+    cls.__init__ = init
+    return cls
 
 
 def load_node(in_function):
     """this Decorator load all parameter defined in Json configuration in node object """
     def out_function(*args, **kwargs):
+
         _self = args[0]
         _self.__dict__.update(kwargs)
         in_function(*args, **kwargs)
@@ -74,15 +50,13 @@ class Control(object):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
 
-    def __init__(self, *k, **kw):
-        self.threadpublisher = False
-        self.workers = []
-        self.token_data = None
-        self.subscriptors = {}
+    def __init__(self):
         self.mutex = threading.Lock()
+        self.workers = []
 
     def init_workers(self, fn):
         """ start all workers daemon"""
+
         if type(fn) not in (list, tuple):
             fn = (fn,)
         if self.worker_run:
@@ -94,6 +68,9 @@ class Control(object):
 
     def init_publisher(self, token_data, frec=0.01):
         """ start publisher daemon"""
+        self.threadpublisher = False
+        self.token_data = None
+        self.subscriptors = {}
         if isinstance(token_data, token.Token):
             self.threadpublisher = True
             t = threading.Thread(target=self.thread_publisher,

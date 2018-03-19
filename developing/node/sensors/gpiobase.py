@@ -11,8 +11,8 @@ import RPi.GPIO as GPIO
 
 @Pyro4.expose
 class gpiobase(control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    def __init__(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         self.IN1 = self.setup[0]

@@ -20,9 +20,10 @@ END_JSON_DOCUMENTATION
 
 @Pyro4.expose
 class pantilt(control.Control):
+
     __REQUIRED = ["usbserial","PT"]
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    def __init__(self):
         self.send_subscripcion(self.usbserial, "PT")
         self.bar = False
         self.ptblock = False

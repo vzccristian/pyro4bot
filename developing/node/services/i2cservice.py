@@ -12,8 +12,9 @@ BUS = 1
 
 @Pyro4.expose
 class i2cservice (control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["gpioservice"]
+
+    def __init__(self):
         self.bus = smbus.SMBus(BUS)
         self.gpioservice.i2c_setup(self.pyro4id)
         self.addr = {}

@@ -131,8 +131,9 @@ class NODERB (object):
                 del(parts[k]["_local_trys"])
                 del(parts[k]["nr_service"])
                 del(parts[k]["_services_trys"])
+                del(parts[k]["_remote_trys"])
+                parts[k].pop("-->",None)
                 if st_remote == "OK":
-                    del(parts[k]["_remote_trys"])
                     del(parts[k]["nr_remote"])
                 parts[k]["_REMOTE_STATUS"] = st_remote
                 self.start__object(k, parts[k])
@@ -256,9 +257,11 @@ class NODERB (object):
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
+            d = utils.prepare_proxys(d,ROBOT_PASSWORD)
 
-            # Sensor object
-            new_object = eval(d["cls"])(data=[], **d)
+            # Preparing class for pyro4
+            pyro4bot_class = control.Pyro4bot_Loader(globals()[d["cls"]],d)
+            new_object = pyro4bot_class()
 
             # Associate object to the daemon
             uri = daemon.register(new_object, objectId=name_ob)

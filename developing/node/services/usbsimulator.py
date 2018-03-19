@@ -10,27 +10,23 @@ import simplejson as json
 import Pyro4
 
 
-@Pyro4.expose
 class usbsimulator(control.Control):
 
     __REQUIRED = ["comPort","comPortBaud"]
 
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    def __init__(self):
         self.buffer = token.Token()
         self.available = 0
         self.lock = 1
         self.IR = [0, 1, 1]
         self.LASER = [0, 0]
         self.init_workers(self.worker_reader)
-        #self.init_publisher(self.buffer,)
+        self.init_publisher(self.buffer,)
 
     def worker_reader(self):
         while self.worker_run:
             self.IR[0]=self.IR[0]+1
             self.LASER[1]=self.LASER[1]+1
-            #self.buffer.update_from_dict(self.IR)
-            #self.buffer.update_from_dict(self.LASER)
             time.sleep(self.frec)
 
 

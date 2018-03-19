@@ -105,6 +105,9 @@ def get_uri_name(uri):
     """Return name from Pyro4 URI."""
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
+def get_uri_base(uri):
+    """ return base sensor from Pyro4 URI """
+    return get_uri_name(uri).split(".")[1]
 
 def format_exception(e):
     """Representation of exceptions."""
@@ -145,3 +148,27 @@ def get_pyro4proxy(uri, password):
     proxy = Pyro4.Proxy(uri)
     proxy._pyroHmacKey = bytes(password)
     return proxy
+
+def get_con_proxy(uri,password):
+    return get_uri_base(uri) , get_pyro4proxy(uri,password)
+
+def prepare_proxys(part,password):
+    injects = {}
+    if "name" in part:
+        part["botname"],part["name"] = part["name"].split(".")
+    if "uriresolver" in part:
+        part["uriresolver"] =get_pyro4proxy(part["uriresolver"],password)
+        resolver = part["uriresolver"]
+    for d in part.get("nr_remote",[]):
+        injects[d] = resolver.get_proxy(d)
+        part[d]=injects[d]
+    for d in part.get("_locals",[]):
+        con,proxy =get_con_proxy(d,password)
+        injects[con] = proxy
+    for d in part.get("_remotes",[]):
+        injects[d] =get_pyro4proxy(d, password)
+    for d in part.get("_services",[]):
+        con,proxy =get_con_proxy(d,password)
+        injects[con] = proxy
+    part.update(injects)
+    return part
