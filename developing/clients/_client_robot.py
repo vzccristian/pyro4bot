@@ -84,6 +84,7 @@ class ClientRobot(object):
                 bb_uri = ns.lookup("bigbrother")
                 bb = utils.get_pyro4proxy(bb_uri, self.bigbrother_passw)
                 robot_uri = bb.lookup(self.name)
+                print robot_uri
             except Pyro4.errors.NamingError:  # Busco en NS de robot anonimo
                 robot_uri = ns.lookup(self.name)
             try:

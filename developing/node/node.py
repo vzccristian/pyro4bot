@@ -21,27 +21,28 @@ ROBOT_PASSWORD = "default"
 _LOCAL_TRAYS = 5
 _REMOTE_TRAYS = 10
 
-def import_class(services,sensors):
+
+def import_class(services, sensors):
     """ Import necesary packages for robot"""
     print("")
     print(colored("____________IMPORTING CLASS FOR ROBOT______________________",
-                      'yellow'))
+                  'yellow'))
     print(" SERVICES:")
-    for module,cls in services:
+    for module, cls in services:
         try:
-            print(colored("      FROM {} IMPORT {}".format(module,cls), "cyan"))
-            exec("from {} import {}".format(module,cls),globals())
+            print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
+            exec("from {} import {}".format(module, cls), globals())
         except Exception:
-            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls,module))
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
             exit(0)
     print(" SENSORS:")
-    for module,cls in sensors:
+    for module, cls in sensors:
         try:
-            print(colored("      FROM {} IMPORT {}".format(module,cls), "cyan"))
-            exec("from {} import {}".format(module,cls),globals())
+            print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
+            exec("from {} import {}".format(module, cls), globals())
         except Exception:
-            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls,module))
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
             exit(0)
 
@@ -64,10 +65,10 @@ class NODERB (object):
         self.URI_object = self.load_uri_resolver()  # Object resolver location
         print("")
         print(colored("_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
-        self.load_objects(self.services,self.N_conf.services_order)
+        self.load_objects(self.services, self.N_conf.services_order)
         print("")
         print(colored("_________STARTING PYRO4BOT PLUGINS___________________", "yellow"))
-        self.load_objects(self.sensors,self.N_conf.sensors_order)
+        self.load_objects(self.sensors, self.N_conf.sensors_order)
 
         self.create_server_node()
 
@@ -76,9 +77,10 @@ class NODERB (object):
         global ROBOT_PASSWORD
         ROBOT_PASSWORD = self.name
         print("")
-        print(colored("_________STARTING PYRO4BOT SYSTEM__________","yellow"))
-        print("  Ethernet device {} IP: {}".format(colored(self.ethernet,"cyan"),colored(self.ip,"cyan")))
-        print("  Password: {}".format(colored(ROBOT_PASSWORD,"cyan")))
+        print(colored("_________STARTING PYRO4BOT SYSTEM__________", "yellow"))
+        print("  Ethernet device {} IP: {}".format(
+            colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
+        print("  Password: {}".format(colored(ROBOT_PASSWORD, "cyan")))
         print("  Filename: {}".format(colored(self.filename, 'cyan')))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
@@ -90,22 +92,22 @@ class NODERB (object):
         self.URI_resolv, self.URI = uri_r.register_uriresolver()
         return uri_r
 
-    def load_objects(self,parts,order):
+    def load_objects(self, parts, order):
         object_robot = order
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRAYS
             parts[k]["_remote_trys"] = _REMOTE_TRAYS
             parts[k]["_services_trys"] = _LOCAL_TRAYS
-            parts[k]["nr_local"] = list(parts[k].get("_locals",[]))
-            parts[k]["nr_remote"] = list(parts[k].get("_remotes",[]))
-            parts[k]["nr_service"] = list(parts[k].get("_services",[]))
+            parts[k]["nr_local"] = list(parts[k].get("_locals", []))
+            parts[k]["nr_remote"] = list(parts[k].get("_remotes", []))
+            parts[k]["nr_service"] = list(parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
-        errors=False
+        errors = False
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print(colored("ERROR: class {} require {} for {}  ".
-                              format(parts[k]["cls"],parts[k]["_non_required"],k),"red"))
-                errors=True
+                              format(parts[k]["cls"], parts[k]["_non_required"], k), "red"))
+                errors = True
         if errors:
             exit()
 
@@ -126,7 +128,7 @@ class NODERB (object):
                 object_robot.append(k)
                 continue
 
-            if st_local == "OK" and st_service =="OK":
+            if st_local == "OK" and st_service == "OK":
                 del(parts[k]["nr_local"])
                 del(parts[k]["_local_trys"])
                 del(parts[k]["nr_service"])
@@ -138,7 +140,7 @@ class NODERB (object):
                 parts[k]["_REMOTE_STATUS"] = st_remote
                 self.start__object(k, parts[k])
 
-    def get_class_REQUIRED(self,cls):
+    def get_class_REQUIRED(self, cls):
         """ return a list of requeriments if cls has __REQUIRED class attribute"""
         try:
             dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
@@ -146,17 +148,17 @@ class NODERB (object):
         except:
             return []
 
-    def check_requireds(self,obj):
+    def check_requireds(self, obj):
         """
         for a given obj this method calc requeriments class and
         get unfulfilled requeriments for an obj
         inside _service and _local find on left side string
         """
-        requireds=self.get_class_REQUIRED(obj["cls"])
-        connectors = obj.get("_services",[])+obj.get("_locals",[])
-        keys = list(obj.keys())+obj.get("_remotes",[])
+        requireds = self.get_class_REQUIRED(obj["cls"])
+        connectors = obj.get("_services", []) + obj.get("_locals", [])
+        keys = list(obj.keys()) + obj.get("_remotes", [])
         unfulfilled = [x for x in requireds if x not in
-                       map(lambda x:x.split(".")[1],connectors) + keys]
+                       map(lambda x:x.split(".")[1], connectors) + keys]
         return unfulfilled
 
     def check_local_deps(self, obj):
@@ -198,6 +200,7 @@ class NODERB (object):
             if uri is None:
                 check_remote = "ERROR"
                 break
+            print("REMOTE-URI:{} , COMP:{}".format(uri, d))
             if uri == d:
                 obj["_remote_trys"] -= 1
                 if obj["_remote_trys"] < 0:
@@ -210,7 +213,7 @@ class NODERB (object):
                 obj["_remotes"].append(uri)
         return check_remote
 
-    def check_deps(self,obj):
+    def check_deps(self, obj):
         obj["_locals"] = []
         obj["_remotes"] = []
         obj["_services"] = []
@@ -230,7 +233,7 @@ class NODERB (object):
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
             obj["uriresolver"] = self.URI_resolv
-            #print(obj)
+
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))

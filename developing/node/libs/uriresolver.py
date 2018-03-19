@@ -26,7 +26,7 @@ class uriresolver(control.Control):
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
         print("")
-        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________","yellow"))
+        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
         self.URIS = {}
 
         # NameServer
@@ -202,23 +202,26 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_proxy(self, obj, passw=None):
+        if isinstance(obj, basestring):
+            obj = [obj]
         if (self.get_ns()):
-            try:
-                # PYRO:simplebot.infrared@192.168.10.67:6001
-                if (obj.count('PYRO:') == 1 and obj.count('@') == 1 and
-                        obj.count(":") == 2 and obj.count(".") in range(3, 5)):
-                    (name, _, _) = utils.uri_split(obj)
-                    if ("." in name):
-                        name = name.split(".")[0]
-                    if (passw is None):
-                        passw = name
-                    return utils.get_pyro4proxy(obj, passw)
-                elif (obj.count(".") == 1):  # simplebot.sensor
-                    return (self.get_proxy_without_uri(obj, passw))
-                else:
-                    print "Objeto no valido"
-            except Exception:
-                return None
+            for d in obj:
+                try:
+                    if (d.count('PYRO:') == 1 and d.count('@') == 1 and
+                            d.count(":") == 2 and d.count(".") in range(3, 5)):
+                        (name, _, _) = utils.uri_split(d)
+                        if ("." in name):
+                            name = name.split(".")[0]
+                        if (passw is None):
+                            passw = name
+                        print passw
+                        return utils.get_pyro4proxy(d, passw)
+                    elif (d.count(".") == 1):  # simplebot.sensor
+                        return (self.get_proxy_without_uri(d, passw))
+                    else:
+                        print "Objeto no valido"
+                except Exception:
+                    return None
 
     @Pyro4.expose
     def new_uri(self, name, mode="public"):
@@ -227,8 +230,8 @@ class uriresolver(control.Control):
         else:
             ip = self.ip
 
-        port_node = utils.get_free_port(self.port, interval=10)
-        start_port = utils.get_free_port(self.start_port)
+        port_node = utils.get_free_port(self.port, interval=10, ip=ip)
+        start_port = utils.get_free_port(self.start_port, ip=ip)
 
         if name.find(self.botName) > -1:
             if name != self.botName:
@@ -245,7 +248,7 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_uri(self, name):
-        if self.URIS.has_key(name):
+        if name in self.URIS:
             return self.URIS[name]
         else:
             return None
@@ -281,27 +284,45 @@ class uriresolver(control.Control):
             return None
 
     @Pyro4.expose
-    def wait_resolv_remotes(self, name, trys=10):
-        connect = False
+    def wait_resolv_remotes(self, name, trys=10, passw=None):
+        bot_uri = []
+        target = name.split(".")
+
         if not self.nameserver:
             return None
-        while not connect and trys > -1:
-            try:
-                getbot = self.nameserver.lookup(name[0:name.find(".")])
-                proxy = Pyro4.Proxy(getbot)
-                proxy._pyroHmacKey = bytes(password)
-                remoteuri, status = proxy.get_name_uri(name)
-                connect = (remoteuri != None and status not in [
-                           "down", "wait"])
-            except:
-                # print "error remote"
-                pass
+
+        if passw is None:
+            passw = target[0]
+
+        while not bot_uri and trys > -1:
+            if self.usingBB:
+                try:
+                    return self.nameserver.lookup(name)
+                except Exception:
+                    print("ERROR: Wait_resolv_remotes with bigbrother")
+            else:
+                if (target[0] and target[1] and
+                        target[0].count("*") == 0 and
+                        target[1].count("*") == 0):  # robot.comp
+                    bot_uri.add(Pyro4.locateNS().lookup(target[0]))
+                    try:
+                        bot_proxy = utils.get_pyro4proxy(bot_uri, passw)
+                        if bot_proxy:
+                            remoteuri, status = bot_proxy.get_name_uri(name)
+                            if (remoteuri is not None and status not in ["down", "wait"]):
+                                return remoteuri
+                    except Exception:
+                        print("ERROR: Unable to obtain list of robot sensors: \
+                             \n-->[URI]: %s \n-->[NAME]: %s" % (bot_uri, name))
+
+                else:  # Another thing
+                    print "Para usar esta funcionalidad se necesita de BigBrother"
+                    return None
             trys -= 1
-            time.sleep(0.05)
+            time.sleep(0.5)
+
         if trys < 0:
             return name
-        if connect:
-            return remoteuri
 
     @Pyro4.expose
     def register_robot_on_nameserver(self, uri):

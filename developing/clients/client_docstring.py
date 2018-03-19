@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#____________developed by paco andres____________________
 
 import threading
 from _client_robot import ClientRobot
