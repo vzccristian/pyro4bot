@@ -7,11 +7,17 @@ from node.libs import control
 import cv2
 import Pyro4
 
+#TODO: PUBLICATION
 
 @Pyro4.expose
 class usbcam(control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["width", "height"]
+    
+    def __init__(self):
+        if not hasattr(self, 'framerate'):
+                self.framerate = 24
+        if not hasattr(self, 'frec'):
+                self.frec = 0.01
         self.subscriptors = {}
         self.camera = cv2.VideoCapture(0)
         self.camera.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.width)
@@ -19,8 +25,8 @@ class usbcam(control.Control):
         self.buffer = [0, 0]
         self.available = 0
         self.lock = 1
-        self.init_workers(self.worker_read, self.worker_publ)
-        self.init_publisher(self.__dict__)
+        self.init_workers(self.worker_read)
+        # self.init_publisher(self.__dict__)
 
     def worker_read(self):
         while self.worker_run:
@@ -28,18 +34,9 @@ class usbcam(control.Control):
             self.lock, self.available = self.available, self.lock
             time.sleep(self.frec)
 
-    def worker_publ(self):
-        while self.worker_run:
-            try:
-                for k, v in self.subscriptors.iteritems():
-                    v.publication(self.buffer[self.available][k])
-            except:
-                #print("cam dist error")
-                pass
 
     @property
     def image(self):
-        #print ("cam %s" % (self.available))
         return self.buffer[self.available]
 
     def subscribe(self, key, uri):

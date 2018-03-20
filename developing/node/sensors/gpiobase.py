@@ -11,6 +11,7 @@ import RPi.GPIO as GPIO
 
 @Pyro4.expose
 class gpiobase(control.Control):
+    __REQUIRED = ["setup", "BASE", "frec"]
 
     def __init__(self):
         GPIO.setmode(GPIO.BCM)

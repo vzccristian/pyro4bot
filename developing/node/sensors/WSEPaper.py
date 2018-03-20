@@ -17,26 +17,30 @@ from PIL import ImageFont, ImageDraw, Image
 # DC   -> 25
 # RST  -> 17
 # BUSY -> 24
+
+
 @Pyro4.expose
 class WSEPaper(control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["bus", "device", "width", "height"]
+
+    def __init__(self):
         self.EPD_WIDTH = self.width
         self.EPD_HEIGHT = self.height
-        #self.gpioservice.setup(
+        # self.gpioservice.setup(
         #    [self.CS, self.DC, self.RST, self.DIN, self.CLK], GPIO.OUT,
         #    self.pyro4id)
-        #self.gpioservice.setup(
+        # self.gpioservice.setup(
         #    [self.BUSY], GPIO.IN, self, pyro4id)
-        self.disp = EPDDriver.EPDDriver(spi=SPI.SpiDev(self.bus, self.device),x_dot=self.width,y_dot=self.height)
-        #self.canvas is a screen buffer
+        self.disp = EPDDriver.EPDDriver(spi=SPI.SpiDev(
+            self.bus, self.device), x_dot=self.width, y_dot=self.height)
+        # self.canvas is a screen buffer
         self.canvas = Image.new("1", (self.width, self.height))
         self.clear()
         self.disp.delay()
         self.disp.EPD_init_Part()
         self.disp.delay()
         self.font_size = 40
-        self.font_link ="/usr/share/fonts/truetype/freefont/FreeMono.ttf"
+        self.font_link = "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
         self.font = ImageFont.truetype(self.font_link, size=self.font_size)
         self.buffer = []
         self.init_workers(self.worker)
@@ -62,10 +66,10 @@ class WSEPaper(control.Control):
     def transform_image(self, data, size_x=None, size_y=None):
         def center_image(im, size_x, size_y):
             width, height = im.size   # Get dimensions
-            left = (width - size_x)/2
-            top = (height - size_x)/2
-            right = (width + size_y)/2
-            bottom = (height + size_y)/2
+            left = (width - size_x) / 2
+            top = (height - size_x) / 2
+            right = (width + size_y) / 2
+            bottom = (height + size_y) / 2
             return im.crop((left, top, right, bottom))
 
         if None in [size_x, size_y]:
@@ -87,11 +91,13 @@ class WSEPaper(control.Control):
             for x in range(0, im.size[0] / 8):
                 val = 0
                 for x8 in range(0, 8):
-                    if listim[(im.size[1]-y-1)*im.size[0] + x*8 + (7-x8)] > 128:
+                    if listim[(im.size[1] - y - 1) * im.size[0] + x * 8 + (7 - x8)] > 128:
                         val = val | 0x01 << x8
                 listim2.append(val)
         listim2.extend([0] * 1000)
-        self.disp.EPD_Dis_Part(pos_x, pos_x+im.size[0]-1, pos_y, pos_y+im.size[1]-1, listim2) # xStart, xEnd, yStart, yEnd, DisBuffer
+        # xStart, xEnd, yStart, yEnd, DisBuffer
+        self.disp.EPD_Dis_Part(
+            pos_x, pos_x + im.size[0] - 1, pos_y, pos_y + im.size[1] - 1, listim2)
 
     @staticmethod
     def get_size(text, font):
@@ -104,6 +110,6 @@ class WSEPaper(control.Control):
             self.font = ImageFont.truetype(self.font_link, font)
         img = Image.new('RGB', (200, 200), (255, 255, 255))
         d = ImageDraw.Draw(img)
-        d.text((20, 20), text, fill=(255, 0, 0),font=self.font)
+        d.text((20, 20), text, fill=(255, 0, 0), font=self.font)
         img.save("image.jpg")
         self.set_image(open("image.jpg").read())

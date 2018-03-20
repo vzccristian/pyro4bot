@@ -7,8 +7,9 @@ import RPi.GPIO as GPIO
 
 
 class tlc1543ad (control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["CS", "Clock", "Address", "DataOut", "line", "frec"]
+
+    def __init__(self):
         self.gpioservice.setup((self.Clock,self.Address,self.CS),GPIO.OUT,self.pyro4id)
         self.gpioservice.setup(self.DataOut,GPIO.IN,self.pyro4id)
         GPIO.setmode(GPIO.BCM)

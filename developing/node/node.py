@@ -233,7 +233,6 @@ class NODERB (object):
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
             obj["uriresolver"] = self.URI_resolv
-
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))

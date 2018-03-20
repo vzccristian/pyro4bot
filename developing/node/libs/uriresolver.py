@@ -214,7 +214,6 @@ class uriresolver(control.Control):
                             name = name.split(".")[0]
                         if (passw is None):
                             passw = name
-                        print passw
                         return utils.get_pyro4proxy(d, passw)
                     elif (d.count(".") == 1):  # simplebot.sensor
                         return (self.get_proxy_without_uri(d, passw))

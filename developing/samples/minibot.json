@@ -3,7 +3,6 @@
       "name":"minibot",
       "path":"./node",
       "path_cls":["services","sensors"],
-      #"ethernet":"eth0",
       "ethernet":"wlan0",
       "port_ns":9090,
       "port_node":4040,

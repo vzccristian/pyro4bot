@@ -5,8 +5,6 @@
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
       "ethernet":"wlan0",
-      #"ethernet":"enp0s25",
-      #"ethernet":"eth0",
       "name_server":true,
       "port_ns":9090,
       "port_node":4040,
@@ -15,7 +13,7 @@
       "def_worker":true
     },
    "services":{
-        "camara":{"cls":"picam","path":"<path>","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"worker_run":true,"enable":true}
+        "picam":{"cls":"picam","ethernet":"<ethernet>","width":640,"height":480}
    },
    "sensors":{
 

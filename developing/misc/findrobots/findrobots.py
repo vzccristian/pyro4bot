@@ -83,4 +83,6 @@ class Searcher():
 
 
 if __name__ == '__main__':
-    print(Searcher().robots)
+    s = Searcher()
+    for r in s.robots.iteritems():
+        print r

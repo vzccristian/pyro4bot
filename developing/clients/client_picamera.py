@@ -5,15 +5,12 @@
 import threading
 from _client_robot import ClientRobot
 import time
-import Pyro4
 import cv2
-import urllib
 import numpy as np
-from PIL import Image
 import io
 import socket
 import struct
-import time
+import sys
 
 
 class clientCamera(object):
@@ -70,9 +67,20 @@ class clientCamera(object):
 
 
 if __name__ == "__main__":
-    print("Ejecutando cliente de camara...")
-    bot = ClientRobot("learnbot1_stopper")  # nombre del bot en la name no el fichero json
-    camera = clientCamera(bot.picam)
+    try:
+        print("Ejecutando cliente de camara...")
 
-    while True:
-        time.sleep(0.05)
+        ROBOT_NAME = "learnbot1_stopper"
+
+        if len(sys.argv) is 2:
+            ROBOT_NAME = sys.argv[1]
+
+        # nombre del bot en la name no el fichero json
+        bot = ClientRobot(ROBOT_NAME)
+        camera = clientCamera(bot.picam)
+
+        while True:
+            time.sleep(0.05)
+    except (KeyboardInterrupt, SystemExit):
+        print("\nSaliendo...")
+        exit()
