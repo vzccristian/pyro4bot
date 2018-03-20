@@ -10,8 +10,8 @@ import Pyro4
 
 @Pyro4.expose
 class sonar (control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["usbserial"]
+    def __init__(self):
         self.send_subscripcion(self.usbserial, "US")
         self.init_workers(self.worker)
 

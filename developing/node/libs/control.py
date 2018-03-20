@@ -79,7 +79,7 @@ class Control(object):
             t.setDaemon(True)
             t.start()
         else:
-            print("ERROR: Can not publish to object other than token")
+            print("ERROR: Can not publish to object other than token {}".format(token_data))
 
     def thread_publisher(self, token_data, frec):
         """ public data between all subcriptors in list"""

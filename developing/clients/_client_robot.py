@@ -51,9 +51,11 @@ class ClientRobot(object):
                 con = p.split("@")[0].split(".")[1]
                 proxy = utils.get_pyro4proxy(p, self.name)
                 setattr(self, con, proxy)
+        except Pyro4.errors.NamingError:
+            print("Error: Unknown name {}".format(name))
+            exit()
         except Exception:
             print("ERROR: conection")
-            raise
             exit()
 
     def _proxy_robot(self):

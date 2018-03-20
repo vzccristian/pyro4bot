@@ -11,18 +11,12 @@ import scrollphat
 @Pyro4.expose
 class scrollleds (control.Control):
     @control.load_config
-    def __init__(self, data, **kwargs):
+    def __init__(self):
         # this line is the last line in constructor method
         pp=scrollphat.IS31FL3730.IS31FL3730(1)
 
     def worker(self):
-        while self.worker_run:
-
             # write here code for your sensor
 
             time.sleep(self.frec)
 # here your methods
-
-
-if __name__ == "__main__":
-    pass

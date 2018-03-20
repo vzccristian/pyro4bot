@@ -2,64 +2,49 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+#____________developed by cristian vazquez____________________
 import time
-import datetime
 from node.libs import control
 from node.libs import utils
-from picamera.array import PiRGBArray
 from picamera import PiCamera
-import cv2
 from io import BytesIO
 import Pyro4
-import numpy as np
-import io
 import socket
 import struct
-import time
-import random
 import threading
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : camera
-{c} cls : picam
-{c} path : <path>
-{c} ethernet : <ethernet>
-{m} framerate : 25
-{m} width : 640
-{m} height : 480
-{m} frec : 0.02
-{m} worker_run : true
-{m} enable : true
-END_JSON_DOCUMENTATION
-"""
 
 class picam(control.Control):
-    __REQUIRED = ["width","height"]
-    width=640
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    __REQUIRED = ["width", "height", "ethernet"]
+
+    def __init__(self):
         self.camera = PiCamera()
 
         # PiCamera Settings
         self.camera.resolution = (self.width, self.height)
-        self.camera.framerate = 24
-        #self.camera.sharpness = 0
+        if not hasattr(self, 'framerate'):
+            self.framerate = 24
+        if not hasattr(self, 'frec'):
+            self.frec = 0.02
+
+        self.camera.framerate = self.framerate
         self.camera.contrast = 0
         self.camera.brightness = 50
+        self.camera.video_stabilization = True
+        self.camera.image_effect = 'none'
+        self.camera.color_effects = None
+        self.camera.rotation = 0
+
+        self.camera.hflip = True if not hasattr(self, 'hflip') else self.hflip
+        self.camera.vflip = True if not hasattr(self, 'vflip') else self.vflip
+
+        #self.camera.sharpness = 0
         #self.camera.saturation = 0
         #self.camera.ISO = 0
-        self.camera.video_stabilization = True
         #self.camera.sure_compensation = 0
         #self.camera.exposure_mode = 'auto'
         #self.camera.meter_mode = 'average'
         #self.camera.awb_mode = 'auto'
-        self.camera.image_effect = 'none'
-        self.camera.color_effects = None
-        self.camera.rotation = 0
-        self.camera.hflip = True
-        self.camera.vflip = True
         #self.camera.crop = (0.0, 0.0, 1.0, 1.0)
 
         # Stream settings
@@ -95,7 +80,8 @@ class picam(control.Control):
                                         struct.pack('<L', streamPosition))
                                     c.connection.flush()
                             except Exception as e:
-                                closer = threading.Thread(target=self.setAsClosed, args=(c,))
+                                closer = threading.Thread(
+                                    target=self.setAsClosed, args=(c,))
                                 closer.start()
                     self.buffer.seek(0)
                     readBuffer = self.buffer.read()
@@ -105,7 +91,8 @@ class picam(control.Control):
                                 if (c.connection is not 0):
                                     c.connection.write(readBuffer)
                             except Exception as e:
-                                closer = threading.Thread(target=self.setAsClosed, args=(c,))
+                                closer = threading.Thread(
+                                    target=self.setAsClosed, args=(c,))
                                 closer.start()
                     self.buffer.seek(0)
                     self.buffer.truncate()
@@ -166,7 +153,6 @@ class ClientSocket():
         result = 0
         while (result is 0):
             try:
-                print self.port
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 result = sock.connect_ex(('127.0.0.1', self.port))
                 if result is 0:
@@ -181,6 +167,7 @@ class ClientSocket():
     def acceptConnection(self):
         """ Accept conections from servers to clients"""
         if self.connection is 0:
+            print("PICAM-New client: {}".format(self.port))
             self.waitingForConnection = True
             self.connection = self.serverSocket.accept(
             )[0].makefile("rb" + str(self.port))
@@ -191,4 +178,5 @@ class ClientSocket():
 
     def setClosed(self):
         """ Set client as closed """
+        print("PICAM-Client disconnected: {}".format(self.port))
         self.closed = True

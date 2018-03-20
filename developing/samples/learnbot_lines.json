@@ -13,11 +13,11 @@
       "def_worker":true
     },
    "services":{
-        "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.02,"enable":true}
+        "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01}
    },
    "sensors":{
-        "laser":{"cls":"laser","LASER":[0,0,0],"-->":["usbserial"],"enable":true,"frec":0.02,"worker_run":true},
-        "infrared":{"cls":"infrared","IR":[0,0,0,0],"-->":["usbserial"],"enable":true,"frec":0.02,"worker_run":true},
-        "basemotion":{"cls":"basemotion","BASE":[0,0],"-->":["usbserial"],"frec":0.03, "enable":true,"worker_run":true}
+       "laser":{"cls":"laser","LASER":[0,0,0],"frec":0.01},
+       "infrared":{"cls":"infrared","IR":[0,0,0,0],"frec":0.02},
+       "basemotion":{"cls":"basemotion","BASE":[0,0],"frec":0.03}
     }
 }

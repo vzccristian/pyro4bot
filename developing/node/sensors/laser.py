@@ -10,7 +10,7 @@ import Pyro4
 
 
 class laser (control.Control):
-    __REQUIRED = ["usbserial","LASER"]
+    __REQUIRED = ["usbserial","LASER","frec"]
 
     def __init__(self):
         self.init_workers(self.worker)

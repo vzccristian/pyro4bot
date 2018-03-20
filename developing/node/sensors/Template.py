@@ -4,22 +4,9 @@ import time
 from node.libs import control
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : < SENSOR NAME >
-{c} cls : < CLASS NAME >
-{d} --> : [ DEPENDENCIES ]
-{m} ATRIBUTE1 : < VALUE >
-{m} frec : 0.02
-{m} worker_run : true
-{m} enable : true
-END_JSON_DOCUMENTATION
-"""
-
 
 class < CLASS NAME > (control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+    def __init__(self):
         # Atribute example
         self.value = 0
 

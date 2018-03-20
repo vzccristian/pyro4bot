@@ -10,8 +10,7 @@ from node.libs.pyro4bot_gpio import *
 
 @Pyro4.expose
 class l298n(control.Control):
-
-    __REQUIRED = ["IN1","IN2","IN3","IN4","ENA","ENB","gpioservice"]
+    __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA", "ENB", "gpioservice"]
 
     def __init__(self):
         self.GPIO=bot_GPIO(self.gpioservice,self.pyro4id)

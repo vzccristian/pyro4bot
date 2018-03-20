@@ -1,13 +1,10 @@
-#configuracion del nodo
 {
    "NODE":{
       "name":"alphabot",
-      #"path":"/home/pi/pyro4bot/developing/node",
-      #"path":"/home/pi/td/developing/node",
+      "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      #"ethernet":"wlan0",
-      "ethernet":"eth0",
+      "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
       "port_node":4040,
@@ -16,11 +13,11 @@
       "def_worker":true
     },
    "services":{
-        "camera":{"cls":"picamnuevo","framerate":25,"width":320,"height":240,"frec":0.02,"worker_run":true,"enable":true},
-        "gpioservice":{"cls":"gpioservice","mode":11,"frec":0.02,"enable":true,"worker_run":false}
+        "picam":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"vflip":false,"hflip":true},
+        "gpioservice":{"cls":"gpioservice","gpio_mode":11}
    },
    "sensors":{
-        "infrared":{"cls":"gpio_infrared","setup":[16,19],"IR":[0,0],"-->":["gpioservice"],"enable":true,"frec":0.02,"worker_run":true},
-        "basemotion":{"cls":"gpio_base","setup":[12,13,6,20,21,26],"BASE":[0,0],"-->":["gpioservice"],"frec":0.03, "enable":true,"worker_run":true}
+        "infrared":{"cls":"gpioinfrared","setup":[16,19],"IR":[0,0],"frec":0.03},
+        "basemotion":{"cls":"gpiobase","setup":[12,13,6,20,21,26],"BASE":[0,0],"frec":0.03}
     }
 }
