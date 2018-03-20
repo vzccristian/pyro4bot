@@ -89,6 +89,11 @@ class Config:
                 for er in _modules_errors:
                     print("  "+er)
                 exit()
+            if ("-->") in self.services[n]:
+                sp = [self.node["name"] + "." +
+                      x for x in self.services[n]["-->"] if x.find(".") < 0]
+                cp = [x for x in self.services[n]["-->"] if x.find(".") >= 0]
+                self.services[n]["-->"] = sp + cp  #esto se puede simplificar
 
         self.services = newservices
         newrobot = {}
@@ -97,6 +102,8 @@ class Config:
             self.services[n]["_remotes"] = []
             if "-->" in self.services[n]:
                 self.services[n]["_locals"],self.services[n]["_remotes"] = self.local_remote(self.services,n)
+
+
         for n in self.sensors:
             if module_class(self.sensors[n]["cls"],_modules) is not None:
                 self.sensors[n]["module"]=module_class(self.sensors[n]["cls"],_modules)

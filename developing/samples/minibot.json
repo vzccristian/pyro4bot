@@ -12,10 +12,11 @@
       "def_worker":true
     },
     "services":{
- 	       "gpioservice":{"cls":"gpioservice","gpio_mode":11,"frec":0.02}
+ 	       "gpioservice":{"cls":"gpioservice","gpio_mode":11},
+         "i2cservice":{"cls":"i2cservice","-->":["gpioservice"]},
+         "spiservice":{"cls":"spiservice","-->":["gpioservice"]}
     },
     "sensors":{
- 	    "l298n":{"cls":"l298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26},
-       "tlc1543ad":{"cls":"tlc1543ad","CS":5,"Clock":25,"Address":24,"DataOut":23,"line":[0,0,0,0,0]}
+ 	    "base":{"cls":"l298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26}
      }
 }

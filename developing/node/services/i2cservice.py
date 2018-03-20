@@ -7,6 +7,7 @@ import time
 from node.libs import control
 import Pyro4
 import smbus
+
 BUS = 1
 
 
@@ -19,10 +20,7 @@ class i2cservice (control.Control):
         self.gpioservice.i2c_setup(self.pyro4id)
         self.addr = {}
         self.detect_ports()
-        print ("I2C:",self.status())
-
-    def worker(self):
-        pass
+        #print ("I2C:",self.status())
 
     def status(self):
         return self.addr

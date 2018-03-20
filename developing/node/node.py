@@ -65,6 +65,7 @@ class NODERB (object):
         self.URI_object = self.load_uri_resolver()  # Object resolver location
         print("")
         print(colored("_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
+
         self.load_objects(self.services, self.N_conf.services_order)
         print("")
         print(colored("_________STARTING PYRO4BOT PLUGINS___________________", "yellow"))

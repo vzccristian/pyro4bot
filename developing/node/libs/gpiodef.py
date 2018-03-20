@@ -3,6 +3,16 @@
 # lock().acquire()
 #____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
+import RPi.GPIO as GPIO
+
+HIGH = GPIO.HIGH
+LOW = GPIO.LOW
+IN = GPIO.IN
+OUT = GPIO.OUT
+BOARD = GPIO.BOARD
+BCM = GPIO.BCM
+PUD_UP = GPIO.PUD_UP
+RISING = GPIO.RISING
 
 modes = {"Unset":-1,
          "BCM":11,

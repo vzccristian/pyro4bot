@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# lock().acquire()
 #____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
-# import sys
-# import os
-# sys.path.insert(0, os.path.abspath(
-#     os.path.join(os.path.dirname(__file__), "../..")))
+
 import time
-from node.libs import control, gpiodef
+from node.libs import control, gpiodef,utils
 import Pyro4
 import RPi.GPIO as GPIO
 
@@ -23,16 +19,14 @@ def get_function(pin):
 
 @Pyro4.expose
 class gpioservice(control.Control):
-    @control.load_config
-    def __init__(self, data, **kwargs):
+
+    __REQUIRED = ["gpio_mode"]
+
+    def __init__(self):
         self.gpio_mode = gpiodef.modes.get(self.gpio_mode, GPIO.BCM)
         GPIO.setmode(self.gpio_mode)
         GPIO.setwarnings(False)
         self.create_gpio()
-
-
-    def worker(self):
-        pass
 
     def create_gpio(self):
         """ create a new dict for gpi in mode bcm or board. use gpiodef.gpioport definition
@@ -72,6 +66,7 @@ class gpioservice(control.Control):
                 self.gpio[k][3] = proxy
                 if value in (GPIO.IN,GPIO.OUT):
                     GPIO.setup(k, value)
+        return True
 
     def i2c_setup(self,proxy):
         if self.gpio_mode == GPIO.BCM:
@@ -107,21 +102,22 @@ class gpioservice(control.Control):
         except:
             print("Error gpioservice output")
 
-    def pwm_init(self, pin, frec, proxy):
+    def PWM(self, pin, frec, proxy):
         """ create a new pwm object if max_pwm is no exceded"""
         if len(self.pwm) > gpiodef.max_pwm:
-            print "error1"
+            print "GPIO: Error Max PWM exceded"
             return False
-        if pin in self.gpio and self.gpio[pin][3] is None:
+        if pin in self.gpio and self.gpio[pin][3] == proxy:
             GPIO.setup(pin,GPIO.OUT)
             self.pwm[pin]=GPIO.PWM(pin,frec)
-            self.gpio[pin][2]=10
-            self.gpio[pin][3]=proxy
+            self.gpio[pin][2] = 10
+            self.gpio[pin][3] = proxy
+            return True
         else:
-            print "error 2"
+            print "GPIO: Error no pin for PWM or not setup"
             return False
 
-    def pwm_start(self, pins, dc=50):
+    def start(self, pins, dc=50):
         """ init a pwm objects with ids=pins. dc is pulse width between 0 and 100"""
         dc= 100 if dc>100 else dc
         dc= 0 if dc<0 else dc
@@ -131,7 +127,7 @@ class gpioservice(control.Control):
             if pin in self.pwm:
                 self.pwm[pin].start(dc)
 
-    def pwm_stop(self, pins):
+    def stop(self, pins):
         """ stop same pwms objects"""
         if type(pins) not in (list, tuple):
             pins = (pins,)
@@ -139,7 +135,7 @@ class gpioservice(control.Control):
             if pin in self.pwm:
                 self.pwm[pin].stop()
 
-    def pwm_changefrequency(self, pins, freq):
+    def ChangeFrequency(self, pins, freq):
         """to change the frequency where freq is the new frequency in Hz"""
         if type(pins) not in (list, tuple):
             pins = (pins,)
@@ -147,7 +143,7 @@ class gpioservice(control.Control):
             if pin in self.pwm:
                 self.pwm[pin].ChangeFrequency(freq)
 
-    def pwm_changedutycycle(self, pins, dc=50):
+    def ChangeDutyCycle(self, pins, dc=50):
         """ to change pulse width dc is a value between 0 and 100"""
         dc= 100 if dc>100 else dc
         dc= 0 if dc<0 else dc
@@ -157,11 +153,20 @@ class gpioservice(control.Control):
             if pin in self.pwm:
                 self.pwm[pin].ChangeDutyCycle(dc)
 
-    def pwm_remove(self, pin):
+    def remove_pwm(self, pin):
         """ del a pwm object """
         if pin in self.pwm:
             del(self.pwm[pin])
             self.gpio[pin][2]=get_function(pin)
+
+    def add_event_detect(self,pin,pyro4id,when,callback="hello",bouncetime=200):
+        if pin in self.gpio and self.gpio[pin][3] == pyro4id:
+            connector=utils.get_proxy(self.gpio[pin][3],self.botname)
+            #GPIO.add_event_detect(pin,when,callback=None,bouncetime) #revisar conexion
+
+    def remove_event_detect(self,pin,pyro4id):
+        if pin in self.gpio and self.gpio[pin][3] == pyro4id:
+            GPIO.remove_event_detect(pin) #revisar conexion
 
     def __del__(self):
         print "borrando"
@@ -180,18 +185,3 @@ if __name__ == "__main__":
     # di = {"cls": "gpioservice", "mode": "BCM",
     #       "frec": 0.02, "enable": True, "worker_run": False}
     # pru = gpioservice([], **di)
-    #
-    # print pru.status(range(1,13),_str=True)
-    # pru.pwm_init(12,200,"servo")
-    # pru.pwm_init(18,5,"LUZ")
-    # pru.pwm_start((12,18),7.5)
-    # pru.pwm_changedutycycle(12,1.5)
-    # time.sleep(1)
-    # print pru.status((12,18),_str=True)
-    # pru.pwm_changedutycycle(12,18.5)
-    # time.sleep(1)
-    # pru.pwm_changedutycycle(12,7.5)
-    # time.sleep(1)
-    # print pru.status(_str=True)
-    # pru.pwm_stop((12,18))
-    # #GPIO.cleanup()

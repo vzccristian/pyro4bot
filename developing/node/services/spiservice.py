@@ -13,13 +13,10 @@ class spiservice (control.Control):
     __REQUIRED = ["gpioservice"]
 
     def __init__(self):
+        self.spi = spidev.SpiDev()
+        self.spi.open(0, 0)
+        self.spi.max_speed_hz = 7629
 
-        self.init_workers()
-
-    def worker(self):
-        while self.worker_run:
-            time.sleep(self.frec)
-# here your methods
 
 
 if __name__ == "__main__":
