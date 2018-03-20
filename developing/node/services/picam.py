@@ -34,8 +34,9 @@ class picam(control.Control):
         self.camera.image_effect = 'none'
         self.camera.color_effects = None
         self.camera.rotation = 0
-        self.camera.hflip = True
-        self.camera.vflip = True
+
+        self.camera.hflip = True if not hasattr(self, 'hflip') else self.hflip
+        self.camera.vflip = True if not hasattr(self, 'vflip') else self.vflip
 
         #self.camera.sharpness = 0
         #self.camera.saturation = 0

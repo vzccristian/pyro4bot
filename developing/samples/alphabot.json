@@ -14,7 +14,7 @@
     },
    "services":{
         "picam":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"vflip":false,"hflip":true},
-        "gpioservice":{"cls":"gpioservice","mode":11}
+        "gpioservice":{"cls":"gpioservice","gpio_mode":11}
    },
    "sensors":{
         "infrared":{"cls":"gpioinfrared","setup":[16,19],"IR":[0,0],"frec":0.03},

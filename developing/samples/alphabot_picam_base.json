@@ -13,7 +13,7 @@
       "def_worker":true
     },
     "services":{
-        "picam":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"vflip":false,"hflip":true},
+        "picam":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"vflip":false,"hflip":false},
  	      "gpioservice":{"cls":"gpioservice","gpio_mode":11}
     },
     "sensors":{

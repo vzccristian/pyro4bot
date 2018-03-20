@@ -52,7 +52,7 @@ class clientCamera(object):
                     c = cv2.imdecode(data, 1)
                     # centro=[]
                     # centro,img=track(c)
-                    cv2.imshow('learnbot1-' + str(port), c)
+                    cv2.imshow("CAM:" + str(port), c)
                     if cv2.waitKey(1) == 27:
                         exit(0)
             except Exception:
@@ -64,6 +64,7 @@ class clientCamera(object):
         finally:
             print("Exit")
             client_socket.close()
+            exit()
 
 
 if __name__ == "__main__":
