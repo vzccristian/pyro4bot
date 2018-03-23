@@ -14,6 +14,7 @@ class spiservice (control.Control):
 
     def __init__(self):
         self.spi = spidev.SpiDev()
+        self.gpioservice.spi_setup(self.pyro4id)
         self.spi.open(0, 0)
         self.spi.max_speed_hz = 7629
 

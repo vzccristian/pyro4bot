@@ -9,23 +9,30 @@ import Pyro4
 import smbus
 
 BUS = 1
-
+OTHER_BUS = 0 # dtparam=i2c_vc=on PARA ACTIVARLO EN el config de raspaberry
 
 @Pyro4.expose
 class i2cservice (control.Control):
     __REQUIRED = ["gpioservice"]
 
     def __init__(self):
-        self.bus = smbus.SMBus(BUS)
-        self.gpioservice.i2c_setup(self.pyro4id)
+        try:
+            self.bus = smbus.SMBus(BUS)
+            self.gpioservice.i2c_setup(self.pyro4id)
+        except:
+            print("ERROR: no i2c-{} bus located".format(BUS))
         self.addr = {}
         self.detect_ports()
-        #print ("I2C:",self.status())
 
+    @property
     def status(self):
         return self.addr
 
-    def detect_ports(self):
+    @property
+    def BUS(self):
+        return BUS
+
+    def detect_ports(self,bus=BUS):
         for device in range(128):
             try:
                 print self.bus.write_byte(device,0)
@@ -40,6 +47,7 @@ class i2cservice (control.Control):
             return True
         else:
             return False
+
 
     def read_byte(self, address):
         """read a single byte from a device, without specifying a device register"""

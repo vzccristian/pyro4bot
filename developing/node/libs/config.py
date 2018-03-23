@@ -4,7 +4,7 @@
 import os.path
 import utils
 import myjson
-from inspection import _modules,_modules_errors, module_class, import_module
+from inspection import _modules,_modules_errors, _clases, import_module
 from termcolor import colored
 
 def get_field(search_dict, field, enable=True):
@@ -78,16 +78,18 @@ class Config:
             v["exposed"] = {}
         newservices = {}
         for n in self.services:
-            if module_class(self.services[n]["cls"],_modules) is not None:
-                self.services[n]["module"]=module_class(self.services[n]["cls"],_modules).lstrip("node.")
+            if _clases.get(self.services[n]["cls"],None) is not None:
+                if len(_clases[self.services[n]["cls"]])>1:
+                    print("Wargning: there are many modules {} for class {}".format(_clases[self.services[n]["cls"]],self.services[n]["cls"]))
+                self.services[n]["module"]=_clases[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
                     newservices[n] = self.services[n]
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(self.services[n]["cls"]),"red"))
-                for er in _modules_errors:
-                    print("  "+er)
+                for k_error,error in _modules_errors.iteritems():
+                    print("Module {}: {}".format(k_error,error))
                 exit()
             if ("-->") in self.services[n]:
                 sp = [self.node["name"] + "." +
@@ -105,12 +107,14 @@ class Config:
 
 
         for n in self.sensors:
-            if module_class(self.sensors[n]["cls"],_modules) is not None:
-                self.sensors[n]["module"]=module_class(self.sensors[n]["cls"],_modules)
+            if _clases.get(self.sensors[n]["cls"],None) is not None:
+                if len(_clases[self.sensors[n]["cls"]])>1:
+                    print("Wargning: there are many modules {} for class {}".format(_clases[self.sensors[n]["cls"]],self.sensors[n]["cls"]))
+                self.sensors[n]["module"] = _clases[self.sensors[n]["cls"]][0]
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(self.sensors[n]["cls"]),"red"))
-                for er in _modules_errors:
-                    print("  "+er)
+                for k_error,error in _modules_errors.iteritems():
+                    print("Module {}: {}".format(k_error,error))
                 exit()
             self.sensors[n]["_services"]=list(self.services)
             if ("-->") in self.sensors[n]:

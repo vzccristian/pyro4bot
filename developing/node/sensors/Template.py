@@ -6,6 +6,7 @@ import Pyro4
 
 
 class < CLASS NAME > (control.Control):
+    __REQUIRED = []
     def __init__(self):
         # Atribute example
         self.value = 0

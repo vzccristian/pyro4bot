@@ -9,18 +9,18 @@ from node.libs.pyro4bot_gpio import *
 
 
 @Pyro4.expose
-class l298n(control.Control):
+class alphal298n(control.Control):
     __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA", "ENB", "gpioservice"]
 
     def __init__(self):
         self.GPIO=bot_GPIO(self.gpioservice,self.pyro4id)
         self.GPIO.setup([self.IN1,self.IN2,self.IN3,self.IN4,self.ENA,self.ENB],OUT)
-        self.motor_a = self.GPIO.PWM(self.ENA,100)
-        self.motor_b = self.GPIO.PWM(self.ENB,100)
+        self.motor_a = self.GPIO.PWM(self.ENA,500)
+        self.motor_b = self.GPIO.PWM(self.ENB,500)
+        self.motor_a.start(50)
+        self.motor_b.start(50)
         self.stop()
-        self.forward(80,80)
-        time.sleep(2)
-        self.stop()
+
 
     def forward(self, DCA=100, DCB=100):
         self.motor_a.ChangeDutyCycle(DCA)

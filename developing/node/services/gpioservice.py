@@ -51,7 +51,7 @@ class gpioservice(control.Control):
         else:
             return {k: x for (k, x) in self.gpio.items() if k in pins}
 
-    def setup(self, pins, value, proxy):
+    def setup(self, pins, proxy,*value):
         """ set a pin list in service gpio with initial value.
         there are a relationship between proxy id and  pin number
         """
@@ -66,8 +66,8 @@ class gpioservice(control.Control):
             if k in self.gpio:
                 self.gpio[k][2] = value
                 self.gpio[k][3] = proxy
-                if value in (GPIO.IN, GPIO.OUT):
-                    GPIO.setup(k, value)
+                if value in (GPIO.IN, GPIO.OUT,GPIO.PUD_UP,GPIO.PUD_DOWN):
+                    GPIO.setup(k, *value)
         return True
 
     def i2c_setup(self, proxy):
@@ -161,13 +161,13 @@ class gpioservice(control.Control):
             del(self.pwm[pin])
             self.gpio[pin][2] = get_function(pin)
 
-    def add_event_detect(self,pin,pyro4id,when,callback="hello",bouncetime=200):
-        if pin in self.gpio and self.gpio[pin][3] == pyro4id:
+    def add_event_detect(self,pin,when,callback="hello",bouncetime=200):
+        if pin in self.gpio and self.gpio[pin][3] != None:
             connector=utils.get_proxy(self.gpio[pin][3],self.botname)
             #GPIO.add_event_detect(pin,when,callback=None,bouncetime) #revisar conexion
 
-    def remove_event_detect(self,pin,pyro4id):
-        if pin in self.gpio and self.gpio[pin][3] == pyro4id:
+    def remove_event_detect(self,pin):
+        if pin in self.gpio and self.gpio[pin][3] != None:
             GPIO.remove_event_detect(pin) #revisar conexion
 
     def __del__(self):
