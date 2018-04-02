@@ -14,8 +14,9 @@ import traceback
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
+from libs.inspection import _modules_libs_errors, show_warnings
 
-
+show_warnings(_modules_libs_errors)
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
 _LOCAL_TRAYS = 5

@@ -106,14 +106,22 @@ def module_packages_not_found(modules):
 print(colored("INSPECTING MODULES...","yellow"))
 _modules=get_modules(("node.services","node.sensors"))
 _clases,_modules_errors = get_all_class(_modules)
-
-
 # it is a list of all modules in system pyro4bot
-_modules_libs=get_modules("node.libs")
+_modules_libs=get_modules(("node.libs","node.node"))
 _clases_libs,_modules_libs_errors = get_all_class(_modules_libs)
-if _modules_libs_errors:
-    for k,v in _modules_libs_errors.iteritems():
-        print("warning: error in {} --> {}".format(k,v))
+
+def not_finded_modules(modules_error):
+    imports = [x[1].message.split("No module named ")[1] for x
+            in modules_error.items() if type(x[1]) is ImportError]
+    
+    return list(set(imports))
+
+def show_warnings(modules_errors):
+    if modules_errors:
+        for k,v in modules_errors.iteritems():
+            print("warning: error in {} --> {}".format(k,v))
+
+
 if __name__ == "__main__":
     pass
     #print(module_class("face",_modules))

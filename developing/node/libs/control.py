@@ -66,6 +66,16 @@ class Control(object):
                 t.setDaemon(True)
                 t.start()
 
+    def init_thread(self, fn,*args):
+        """ start all workers daemon"""
+
+        if self.worker_run:
+            t = threading.Thread(target=fn, args=args)
+            self.workers.append(t)
+            t.setDaemon(True)
+            t.start()
+
+
     def init_publisher(self, token_data, frec=0.01):
         """ start publisher daemon"""
         self.threadpublisher = False

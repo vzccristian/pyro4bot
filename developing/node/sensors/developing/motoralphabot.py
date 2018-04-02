@@ -5,20 +5,24 @@
 import time
 from node.libs import control
 import Pyro4
-from node.libs.pyro4bot_gpio import *
-
+from node.libs.gpio.GPIO import *
 
 @Pyro4.expose
 class alphal298n(control.Control):
     __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA", "ENB", "gpioservice"]
 
     def __init__(self):
-        self.GPIO=bot_GPIO(self.gpioservice,self.pyro4id)
+        self.GPIO=GPIOCLS(self.gpioservice,self.pyro4id)
         self.GPIO.setup([self.IN1,self.IN2,self.IN3,self.IN4,self.ENA,self.ENB],OUT)
         self.motor_a = self.GPIO.PWM(self.ENA,500)
         self.motor_b = self.GPIO.PWM(self.ENB,500)
         self.motor_a.start(50)
         self.motor_b.start(50)
+        self.stop()
+        self.forward(80,80)
+        time.sleep(3)
+        self.backward(100,100)
+        time.sleep(4)
         self.stop()
 
 

@@ -3,23 +3,22 @@
 import time
 from node.libs import control
 import Pyro4
-from node.libs.pyro4bot_gpio import *
+from node.libs.gpio.GPIO import *
 
 
 class tlc1543ad(control.Control):
     __REQUIRED = ["CS", "Clock", "Address", "DataOut", "line"]
 
     def __init__(self):
-        self.GPIO=bot_GPIO(self.gpioservice,self.pyro4id)
+        self.GPIO=GPIOCLS(self.gpioservice,self.pyro4id)
         self.GPIO.setup((self.Clock,self.Address,self.CS),OUT)
-        self.GPIO.setup(self.DataOut,IN)
-        #self.GPIO.setup(self.DataOut,PUD_UP)
+        self.GPIO.setup(self.DataOut,IN,PUD_UP)
         self.init_workers(self.worker)
-        #print(self.GPIO.STATUS)
 
     def worker(self):
         while self.worker_run:
             self.line=self.AnalogRead()
+            time.sleep(self.frec)
             #print(self.line)
 
     @Pyro4.expose

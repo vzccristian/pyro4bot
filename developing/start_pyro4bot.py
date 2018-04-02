@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """PYRO4BOT Launcher.
 
 Main file

@@ -3,7 +3,7 @@
 import time
 from node.libs import control
 import Pyro4
-from node.libs.pyro4bot_gpio import *
+from node.libs.gpio.pyro4bot_gpio import *
 
 
 class sfline(control.Control):

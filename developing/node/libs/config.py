@@ -76,11 +76,14 @@ class Config:
                 v["frec"] = self.conf["NODE"]["def_frec"]
             v["docstring"] = {}
             v["exposed"] = {}
+        for k,v in self.services.items():
+            v["mode"]="local"
+
         newservices = {}
         for n in self.services:
             if _clases.get(self.services[n]["cls"],None) is not None:
                 if len(_clases[self.services[n]["cls"]])>1:
-                    print("Wargning: there are many modules {} for class {}".format(_clases[self.services[n]["cls"]],self.services[n]["cls"]))
+                    print("Warning: there are many modules {} for class {}".format(_clases[self.services[n]["cls"]],self.services[n]["cls"]))
                 self.services[n]["module"]=_clases[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
@@ -109,7 +112,7 @@ class Config:
         for n in self.sensors:
             if _clases.get(self.sensors[n]["cls"],None) is not None:
                 if len(_clases[self.sensors[n]["cls"]])>1:
-                    print("Wargning: there are many modules {} for class {}".format(_clases[self.sensors[n]["cls"]],self.sensors[n]["cls"]))
+                    print("Warning: there are many modules {} for class {}".format(_clases[self.sensors[n]["cls"]],self.sensors[n]["cls"]))
                 self.sensors[n]["module"] = _clases[self.sensors[n]["cls"]][0]
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(self.sensors[n]["cls"]),"red"))
