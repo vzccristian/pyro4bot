@@ -4,27 +4,18 @@ import time
 from node.libs import control
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : remote_camera
-{c} cls : RemoteCamera
-{d} --> : [picambot.camera]
-{m} frec : 0.02
-{m} worker_run : true
-{m} enable : true
-END_JSON_DOCUMENTATION
-"""
 
 class RemoteCamera (control.Control):
-    __REQUIRED = ["picambot.picam"]
+    # __REQUIRED = ["picambot.picam"]
 
     def __init__(self):
-
-        # Atribute example
-        self.value = 0
+        for k, v in self.__dict__.iteritems():
+            print "K:",k
+            print "V:\t",v
 
         # Worker example
         self.init_workers(self.worker)
+
 
         # Subscription example
         #  self.send_subscripcion(self.usbserial, "LASER")
@@ -36,9 +27,14 @@ class RemoteCamera (control.Control):
 
     def worker(self):
         while self.worker_run:
-            # print(self.sensors)
-            print(".")
-            time.sleep(self.frec * 10)
+            while self._REMOTE_STATUS != "OK":
+                self._REMOTE_STATUS
+                time.sleep(10)
+            print "----------------------------------------------------"
+            for k in self.deps.keys():
+                print self.deps[k]
+            print "----------------------------------------------------"
+            time.sleep(self.frec * 500)
             # write here code for your sensor thread
 
     # here your methods

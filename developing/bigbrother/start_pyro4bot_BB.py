@@ -39,6 +39,7 @@ class bigbrother(object):
         self.config = config
         self.mutex = Lock()
 
+
         self.private_pyro4ns = _priv_pyro4ns  # Private Pyro4NS location
         self.public_pyro4ns = _pub_pyro4ns  # Public Pyro4NS location
 
@@ -57,6 +58,8 @@ class bigbrother(object):
         # Data treatment
         self.robots = {}
         self.sensors = {}
+        self.async_waitings = {}
+        self.claimant_list = []
 
     def updater(self):
         self.update()
@@ -92,8 +95,11 @@ class bigbrother(object):
                 print("Error connecting to: %s " % value)
                 self.remove(key)
         if self.robots:
-            print "ROBOTS:", self.robots
-            print "SENSORS:", self.sensors
+            print "----------------------------------------"
+            print "ROBOTS:\n", self.robots
+            print "SENSORS:\n", self.sensors
+            print "ASYNC_WAITINGS:\n", self.async_waitings
+            print "CLAIMANT_LIST:\n", self.claimant_list
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -134,52 +140,95 @@ class bigbrother(object):
         return self.private_pyro4ns.list()
 
     @Pyro4.expose
-    def lookup(self, obj, return_metadata=False, async=False):
-        """Look up a single name registration and return the uri.
+    def request(self, obj, claimant):
+        if (obj is not None and claimant is not None):
+            t = threading.Thread(target=self.request_loop, args=(obj,))
+            self.async_waitings[obj] = {
+                "target_type": -1,
+                "call": t,
+                "claimant": claimant,
+            }
+            self.claimant_list.append(claimant)
+            self.async_waitings[obj]["call"].start()
+            print("REQUEST:\n{}".format(self.async_waitings[obj]))
 
-        Returns the URI associated with the last name as argument.
+    def request_loop(self, obj):
+        uris = []
+        trys = 10
+        while((not uris or self.async_waitings[obj]["target_type"] == 3) and self.async_waitings[obj]["claimant"] in self.claimant_list):
+            uris, tt = self.lookup(obj, target_type=True)
+            self.async_waitings[obj]["target_type"] = tt
+            time.sleep(5)
+        print("URI Obtained: {}".format(uris))
+        claimant = self.async_waitings[obj]["claimant"]
+        name, comp = claimant.split(".")
+        try:
+            for robots in self.sensors.get(comp):
+                (name, _, _) = utils.uri_split(robots)
+                if (name == self.async_waitings[obj]["claimant"]):
+                    while (trys > 0):
+                        try:
+                            p = utils.get_pyro4proxy(robots, name.split(".")[0])
+                            p.add_resolved_remote_dep({obj: uris})
+                            break
+                        except Exception:
+                            trys -= 1
+                            time.sleep(3)
+                            raise
+                break
+        except Exception:
+            print(colored("Imposible realizar callback a {}".format(claimant), 'red'))
 
-        Args:
-            name (str): Object name
-            return_metadata (boolean, optional) : By default it is False,
-                and you just get back the registered URI (lookup).
-                If you set it to True, you will get back tuples instead:
-                (uri, set-of-metadata-tags):
-        """
-        # print "Lookup:", obj, return_metadata, async
-        _return_metadata = return_metadata
+        if claimant in self.claimant_list: self.claimant_list.remove(claimant)
+        self.async_waitings.pop(obj, None)  # Remove if exists
+
+
+    @Pyro4.expose
+    def lookup(self, obj, return_metadata=False, target_type=False):
+        #TODO: Check client compatiblity
+
+        print "Lookup:", obj, return_metadata
+        # _return_metadata = return_metadata
+
         self.update()
+        target_type_info = -1
         uris = []
         try:
             target = obj.split(".")
             if "." in obj:
-                if (target[0] and (not target[1] or target[1].count("*") == 1)):  # simplebot. o simplebot.*
-                    # print("#1")
+                # simplebot. o simplebot.*
+                if (target[0] and (not target[1] or target[1].count("*") == 1)):
+                    target_type_info = 1
                     for x in self.robots[target[0]]:
                         uris.append(x)
                 elif target[0] == "?" and target[1]:  # ?.sensor
-                    # print("#2")
+                    target_type_info = 2
                     if target[1] in self.sensors:
                         uris.append(random.choice(self.sensors[target[1]]))
                 elif (target[0].count("*") == 1 and target[1] and
                         target[1].count("*") == 0):  # *.sensor
-                    # print("#3")
+                    target_type_info = 3
                     if target[1] in self.sensors:
                         for x in self.sensors[target[1]]:
                             uris.append(x)
                 elif target[0] and target[1]:
-                    # print("#4")
+                    target_type_info = 4
                     if target[0] in self.robots:
-                        return [x for x in self.robots[target[0]] if (target[1] in x)]
+                        uris = [x for x in self.robots[target[0]]
+                                if (target[1] in x)]
                 else:
                     print "Objeto no valido"
             else:
+                target_type_info = 5
                 for x in self.robots[target[0]]:
                     uris.append(x)
         except Exception:
             print "Error al acceder a", obj
             return False
-        return uris
+        if (target_type):
+            return uris, target_type_info
+        else:
+            return uris
 
     @Pyro4.expose
     def ping(self):
@@ -207,7 +256,8 @@ class bigbrother(object):
         print "Registering: ", name, uri, safe, metadata
         _safe = safe
         _metadata = metadata
-        self.private_pyro4ns.register(name, uri, safe=_safe, metadata=_metadata)
+        self.private_pyro4ns.register(
+            name, uri, safe=_safe, metadata=_metadata)
         threading.Thread(target=self.update, args=()).start()
 
     @Pyro4.expose
@@ -222,14 +272,15 @@ class bigbrother(object):
             _name = name
             _prefix = prefix
             _regex = regex
-            #
+
             # self.sensors = {key: list_sensors for key, list_sensors in self.sensors.items() for s in list_sensors if s in self.robots[name]}
             # self.robots.pop(name, None)
 
-            self.private_pyro4ns.remove(name=_name, prefix=_prefix, regex=_regex)
+            if name in self.claimant_list: self.claimant_list.remove(name)
+            self.private_pyro4ns.remove(
+                name=_name, prefix=_prefix, regex=_regex)
         finally:
             self.mutex.release()
-
 
     @Pyro4.expose
     def set_metadata(self, name, metadata):
@@ -255,7 +306,8 @@ class bigbrother(object):
 class nameServer(object):
     def __init__(self, config):
         self.config = config
-        Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
+        Pyro4.config.SERIALIZERS_ACCEPTED = [
+            "json", "marshal", "serpent", "pickle"]
         # Public NS
         self.public_pyro4ns = None  # Public Nameserver location
         self.pub_nameserver = None  # Object Name server for Thread-1
@@ -323,16 +375,6 @@ class nameServer(object):
         except Exception:
             print "Error name-server"
             raise
-
-    # TODO
-    def listprefix(self, _prefix):
-        entries = self.private_pyro4ns.list(prefix=_prefix)
-        return entries
-
-    # TODO
-    def listregex(self, _regex):
-        entries = self.private_pyro4ns.list(regex=_regex)
-        return entries
 
     """Get URI for a determinate pyro4object"""
 

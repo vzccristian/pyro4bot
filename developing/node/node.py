@@ -3,16 +3,15 @@
 # ____________developed by paco andres____________________
 # ________in collaboration with cristian vazquez _________
 
-import sys
 import os
 import time
-import pprint
 from libs import config, control, utils, uriresolver
 from libs.exceptions import Errornode
 from multiprocessing import Process, Pipe, Queue
+import multiprocessing
+import threading
 import traceback
 import Pyro4
-import Pyro4.naming as nm
 from termcolor import colored
 from libs.inspection import _modules_libs_errors, show_warnings
 
@@ -20,13 +19,12 @@ show_warnings(_modules_libs_errors)
 BIGBROTHER_PASSWORD = "PyRobot"
 ROBOT_PASSWORD = "default"
 _LOCAL_TRAYS = 5
-_REMOTE_TRAYS = 10
+_REMOTE_TRAYS = 5
 
 
 def import_class(services, sensors):
     """ Import necesary packages for robot"""
-    print("")
-    print(colored("____________IMPORTING CLASS FOR ROBOT______________________",
+    print(colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
                   'yellow'))
     print(" SERVICES:")
     for module, cls in services:
@@ -64,12 +62,10 @@ class NODERB (object):
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
-        print("")
-        print(colored("_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
+        print(colored("\n_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
 
         self.load_objects(self.services, self.N_conf.services_order)
-        print("")
-        print(colored("_________STARTING PYRO4BOT PLUGINS___________________", "yellow"))
+        print(colored("\n_________STARTING PYRO4BOT COMPONENTS___________________", "yellow"))
         self.load_objects(self.sensors, self.N_conf.sensors_order)
 
         self.create_server_node()
@@ -78,8 +74,7 @@ class NODERB (object):
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
         ROBOT_PASSWORD = self.name
-        print("")
-        print(colored("_________STARTING PYRO4BOT SYSTEM__________", "yellow"))
+        print(colored("\n_________STARTING PYRO4BOT SYSTEM__________", "yellow"))
         print("  Ethernet device {} IP: {}".format(
             colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
         print("  Password: {}".format(colored(ROBOT_PASSWORD, "cyan")))
@@ -94,15 +89,14 @@ class NODERB (object):
         self.URI_resolv, self.URI = uri_r.register_uriresolver()
         return uri_r
 
-    def load_objects(self, parts, order):
-        object_robot = order
+    def load_objects(self, parts, object_robot):
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRAYS
             parts[k]["_remote_trys"] = _REMOTE_TRAYS
             parts[k]["_services_trys"] = _LOCAL_TRAYS
-            parts[k]["nr_local"] = list(parts[k].get("_locals", []))
-            parts[k]["nr_remote"] = list(parts[k].get("_remotes", []))
-            parts[k]["nr_service"] = list(parts[k].get("_services", []))
+            parts[k]["_unresolved_locals"] = list(parts[k].get("_locals", []))
+            parts[k]["_unr_remote_deps"] = list(parts[k].get("_resolved_remote_deps", []))
+            parts[k]["_unresolved_services"] = list(parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
         errors = False
         for k in object_robot:
@@ -112,18 +106,17 @@ class NODERB (object):
                 errors = True
         if errors:
             exit()
-
         while object_robot != []:
             k = object_robot.pop(0)
-            st_local, st_remote, st_service = self.check_deps(parts[k])
+            st_local, st_remote, st_service = self.check_deps(k, parts[k])
             if st_local == "ERROR":
-                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["nr_local"])
+                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
                 continue
             if st_remote == "ERROR":
-                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["nr_remote"])
+                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["_unr_remote_deps"])
                 continue
             if st_service == "ERROR":
-                print "[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["nr_service"])
+                print "[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
                 continue
 
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
@@ -131,16 +124,14 @@ class NODERB (object):
                 continue
 
             if st_local == "OK" and st_service == "OK":
-                del(parts[k]["nr_local"])
+                del(parts[k]["_unresolved_locals"])
                 del(parts[k]["_local_trys"])
-                del(parts[k]["nr_service"])
+                del(parts[k]["_unresolved_services"])
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
                 parts[k].pop("-->",None)
-                if st_remote == "OK":
-                    del(parts[k]["nr_remote"])
                 parts[k]["_REMOTE_STATUS"] = st_remote
-                self.start__object(k, parts[k])
+                self.start_object(k, parts[k])
 
     def get_class_REQUIRED(self, cls):
         """ return a list of requeriments if cls has __REQUIRED class attribute"""
@@ -158,15 +149,15 @@ class NODERB (object):
         """
         requireds = self.get_class_REQUIRED(obj["cls"])
         connectors = obj.get("_services", []) + obj.get("_locals", [])
-        keys = list(obj.keys()) + obj.get("_remotes", [])
+        keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
         unfulfilled = [x for x in requireds if x not in
                        map(lambda x:x.split(".")[1], connectors) + keys]
         return unfulfilled
 
     def check_local_deps(self, obj):
         check_local = "OK"
-        for d in obj["nr_local"]:
-            uri = self.URI.wait_available(d, ROBOT_PASSWORD)
+        for d in obj["_unresolved_locals"]:
+            uri = self.URI.wait_local_available(d, ROBOT_PASSWORD)
             if uri is not None:
                 obj["_locals"].append(uri)
             else:
@@ -181,8 +172,8 @@ class NODERB (object):
 
     def check_service_deps(self, obj):
         check_service = "OK"
-        for d in obj["nr_service"]:
-            uri = self.URI.wait_available(d, ROBOT_PASSWORD)
+        for d in obj["_unresolved_services"]:
+            uri = self.URI.wait_local_available(d, ROBOT_PASSWORD)
             if uri is not None:
                 obj["_services"].append(uri)
             else:
@@ -195,41 +186,49 @@ class NODERB (object):
                     break
         return check_service
 
-    def check_remote_deps(self, obj):
+    def check_remotes(self, k, obj):
         check_remote = "OK"
-        for d in obj["nr_remote"]:
-            uri = self.URI.wait_resolv_remotes(d)
-            if uri is None:
-                check_remote = "ERROR"
-                break
-            print("REMOTE-URI:{} , COMP:{}".format(uri, d))
-            if uri == d:
+        for d in obj["_unr_remote_deps"]:
+            msg, uri = self.URI.wait_resolv_remotes(d, k)
+            if "WAIT" == msg:
                 obj["_remote_trys"] -= 1
                 if obj["_remote_trys"] < 0:
                     check_remote = "WAITING"
-                    break
                 else:
                     check_remote = "WAIT"
-                    break
+                    time.sleep(1)
+            elif "ERROR" == msg:
+                check_remote = "ERROR"
+                obj["_remote_trys"] = 0
+            elif "SYNC" == msg:
+                print("REMOTE-URI:{} , COMP:{}".format(uri, d))
+                check_remote = "OK"
+                obj["_remote_trys"] = 0
+                obj["_resolved_remote_deps"].append(uri)
+                if d in obj["_unr_remote_deps"]: obj["_unr_remote_deps"].remove(d)
+            elif "ASYNC" == msg:
+                check_remote = "ASYNC"
+                obj["_remote_trys"] = 0
             else:
-                obj["_remotes"].append(uri)
+                check_remote = "UNKNOWN-ERROR"
+                obj["_remote_trys"] = 0
         return check_remote
 
-    def check_deps(self, obj):
+    def check_deps(self, k, obj):
         obj["_locals"] = []
-        obj["_remotes"] = []
+        obj["_resolved_remote_deps"] = []
         obj["_services"] = []
         check_local = self.check_local_deps(obj)
         check_services = self.check_service_deps(obj)
-        check_remote = self.check_remote_deps(obj)
+        check_remote = self.check_remotes(k, obj)
         return check_local, check_remote, check_services
 
-    def start__object(self, name, obj):
+    def start_object(self, name, obj):
         serv_pipe, client_pipe = Pipe()
         if "_locals" not in obj:
             obj["_locals"] = []
-        if "_remotes" not in obj:
-            obj["_remotes"] = []
+        if "_resolved_remote_deps" not in obj:
+            obj["_resolved_remote_deps"] = []
         if name not in self.PROCESS:
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
@@ -237,9 +236,12 @@ class NODERB (object):
             obj["uriresolver"] = self.URI_resolv
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
-                Process(name=name, target=self.pyro4bot__object, args=(obj, client_pipe)))
+                Process(name=name, target=self.pyro4bot_object, args=(obj, client_pipe)))
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
+
+            # TODO: Async recv or timeout
+
             status = serv_pipe.recv()
             self.PROCESS[name].append(status)
             if status == "OK":
@@ -254,17 +256,17 @@ class NODERB (object):
         else:
             print("ERROR: " + name + " is runing")
 
-    def pyro4bot__object(self, d, proc_pipe):
+    def pyro4bot_object(self, d, proc_pipe):
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
             # Daemon proxy for sensor
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
-            d = utils.prepare_proxys(d,ROBOT_PASSWORD)
+            deps = utils.prepare_proxys(d, ROBOT_PASSWORD)
 
             # Preparing class for pyro4
-            pyro4bot_class = control.Pyro4bot_Loader(globals()[d["cls"]],d)
+            pyro4bot_class = control.Pyro4bot_Loader(globals()[d["cls"]], deps)
             new_object = pyro4bot_class()
 
             # Associate object to the daemon
@@ -283,7 +285,7 @@ class NODERB (object):
             # print exposed
             # print new_object.docstring
 
-            if d.has_key("_REMOTE_STATUS") and d["_REMOTE_STATUS"] == "WAITING":
+            if ("_REMOTE_STATUS") in deps and deps["_REMOTE_STATUS"] == "WAITING":
                 proc_pipe.send("WAITING")
             else:
                 proc_pipe.send("OK")
@@ -320,9 +322,8 @@ class NODERB (object):
             self.URI.register_robot_on_nameserver(uri)
 
             # Printing info
-            print("")
             print(colored(
-                "____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
+                "\n____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
             print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
             self.print_process()
             daemon.requestLoop()
@@ -362,7 +363,9 @@ class NODERB (object):
         for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
             for m in exposed[key]:
                 if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
-                    docstring[m] = eval("new_object." + str(m) + ".__doc__")
+                    d = eval("new_object." + str(m) + ".__doc__")
+                    if d and "@type" in d:
+                            docstring[m] = d
         return docstring
 
     @Pyro4.expose

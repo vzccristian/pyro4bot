@@ -21,10 +21,9 @@ END_JSON_DOCUMENTATION
 
 @Pyro4.expose
 class basemotion(control.Control):
-    __REQUIRED = ["usbserial","BASE"]
+    __REQUIRED = ["usbserial", "BASE"]
 
     def __init__(self):
-        # print self.__dict__
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
 
@@ -35,10 +34,12 @@ class basemotion(control.Control):
             time.sleep(self.frec)
 
     @Pyro4.oneway
+    @control.flask("actuator")
     def set__vel(self, mi=1, md=1):
         # print "base " + str(mi) + "," + str(md)
         self.usbserial.command(com="base " + str(mi) + "," + str(md))
 
+    @control.flask("sensor", 2)
     def get_base(self):
         return self.BASE
 

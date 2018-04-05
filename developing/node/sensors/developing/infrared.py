@@ -32,8 +32,8 @@ class infrared (control.Control):
             # print("IR-sal: ",self.IR)
             time.sleep(self.frec)
 
-
     @Pyro4.expose
+    @control.flask("sensor", 4)
     def get__ir(self):
         return self.IR
 

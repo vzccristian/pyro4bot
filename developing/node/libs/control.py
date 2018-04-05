@@ -1,12 +1,13 @@
-import threading
 import Pyro4
 import utils
-import os
 import time
 import token
-
+import threading
+from termcolor import colored
 
 # decoradores para las clases generales
+
+
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
         init superclass control """
@@ -22,15 +23,16 @@ def load_config(in_function):
     return out_function
 
 
-def Pyro4bot_Loader(cls,kwargs):
+def Pyro4bot_Loader(cls, kwargs):
     """ Decorator for load Json options in Pyro4bot objects
         init superclass control
     """
     original_init = cls.__init__
+
     def init(self):
         for k, v in kwargs.items():
             setattr(self, k, v)
-        super(cls,self).__init__()
+        super(cls, self).__init__()
         original_init(self)
     cls.__init__ = init
     return cls
@@ -46,6 +48,30 @@ def load_node(in_function):
     return out_function
 
 
+def flask(*args_decorator):
+    def flask_decorator(func):
+        original_doc = func.__doc__
+        if func.__doc__ is None:
+            original_doc = ""
+        if len(args_decorator) % 2 == 0:  # Tuplas
+            for i in xrange(0, len(args_decorator), 2):
+                original_doc += "\n\t@type:" + \
+                    args_decorator[i] + "\n\t@count:" + \
+                    str(args_decorator[i + 1])
+        elif len(args_decorator) == 1:
+            original_doc += "\n\t@type:" + \
+                args_decorator[0] + "\n\t@count:" + \
+                str(func.__code__.co_argcount - 1)
+        func.__doc__ = original_doc
+        print original_doc
+        def func_wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        func_wrapper.__doc__ = original_doc
+        return func_wrapper
+    return flask_decorator
+
+
 class Control(object):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
@@ -55,8 +81,7 @@ class Control(object):
         self.workers = []
 
     def init_workers(self, fn):
-        """ start all workers daemon"""
-
+        """ Start all workers daemon"""
         if type(fn) not in (list, tuple):
             fn = (fn,)
         if self.worker_run:
@@ -66,18 +91,16 @@ class Control(object):
                 t.setDaemon(True)
                 t.start()
 
-    def init_thread(self, fn,*args):
-        """ start all workers daemon"""
-
-        if self.worker_run:
+    def init_thread(self, fn, *args):
+        """ Start all workers daemon"""
+        if self.worker_runa:
             t = threading.Thread(target=fn, args=args)
             self.workers.append(t)
             t.setDaemon(True)
             t.start()
 
-
     def init_publisher(self, token_data, frec=0.01):
-        """ start publisher daemon"""
+        """ Start publisher daemon"""
         self.threadpublisher = False
         self.token_data = None
         self.subscriptors = {}
@@ -89,7 +112,8 @@ class Control(object):
             t.setDaemon(True)
             t.start()
         else:
-            print("ERROR: Can not publish to object other than token {}".format(token_data))
+            print(
+                "ERROR: Can not publish to object other than token {}".format(token_data))
 
     def thread_publisher(self, token_data, frec):
         """ public data between all subcriptors in list"""
@@ -112,10 +136,9 @@ class Control(object):
                 raise
             time.sleep(frec)
 
-
     @Pyro4.expose
     def send_subscripcion(self, obj, key):
-        """ send a subcripcion request to an object"""
+        """ Send a subcripcion request to an object"""
         try:
             obj.subscribe(key, self.pyro4id)
         except Exception:
@@ -125,7 +148,7 @@ class Control(object):
 
     @Pyro4.expose
     def subscribe(self, key, uri):
-        """ receive a request for subcripcion from an object and save data in dict subcriptors
+        """ Receive a request for subcripcion from an object and save data in dict subcriptors
             Data estructure store one item subcripcion (key) and subcriptors proxy list """
         try:
             if key not in self.subscriptors:
@@ -141,7 +164,7 @@ class Control(object):
     @Pyro4.oneway
     @Pyro4.expose
     def publication(self, key, value):
-        """ is used to public in this object a item value """
+        """ Is used to public in this object a item value """
         try:
             # print("setattr",key,value)
             setattr(self, key, value)
@@ -176,3 +199,37 @@ class Control(object):
     @Pyro4.expose
     def get_class(self):
         return self._dict__[cls]
+
+    @Pyro4.expose
+    @Pyro4.callback
+    def add_resolved_remote_dep(self, dep):
+        if isinstance(dep, dict):
+            print(colored("New remote dep! {}".format(dep), "green"))
+            k = dep.keys()[0]
+            try:
+                for u in dep[k]:
+                    self.deps[k] = utils.get_pyro4proxy(u, k.split(".")[0])
+                self._resolved_remote_deps.append(dep[k])
+                if (self._unr_remote_deps is not None):
+                    if k in self._unr_remote_deps:
+                        self._unr_remote_deps.remove(k)
+            except Exception:
+                pass
+            self.check_remote_deps()
+
+    def check_remote_deps(self):
+        status = True
+        if (self._unr_remote_deps is not None and self._unr_remote_deps):
+            for unr in self._unr_remote_deps:
+                if "*" not in unr:
+                    status = False
+        for k in self.deps.keys():
+            try:
+                if (self.deps[k].echo() != "hello"):
+                    status = False
+            except Exception:
+                status = False
+
+        if (status):
+            self._REMOTE_STATUS = "OK"
+        return self._REMOTE_STATUS

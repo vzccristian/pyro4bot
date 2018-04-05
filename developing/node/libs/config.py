@@ -4,8 +4,9 @@
 import os.path
 import utils
 import myjson
-from inspection import _modules,_modules_errors, _clases, import_module
+from inspection import _modules, _modules_errors, _clases, import_module
 from termcolor import colored
+
 
 def get_field(search_dict, field, enable=True):
     """
@@ -76,55 +77,59 @@ class Config:
                 v["frec"] = self.conf["NODE"]["def_frec"]
             v["docstring"] = {}
             v["exposed"] = {}
-        for k,v in self.services.items():
-            v["mode"]="local"
+        for k, v in self.services.items():
+            v["mode"] = "local"
 
         newservices = {}
         for n in self.services:
-            if _clases.get(self.services[n]["cls"],None) is not None:
-                if len(_clases[self.services[n]["cls"]])>1:
-                    print("Warning: there are many modules {} for class {}".format(_clases[self.services[n]["cls"]],self.services[n]["cls"]))
-                self.services[n]["module"]=_clases[self.services[n]["cls"]][0]
+            if _clases.get(self.services[n]["cls"], None) is not None:
+                if len(_clases[self.services[n]["cls"]]) > 1:
+                    print("Warning: there are many modules {} for class {}".format(
+                        _clases[self.services[n]["cls"]], self.services[n]["cls"]))
+                self.services[n]["module"] = _clases[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
                     newservices[n] = self.services[n]
             else:
-                print(colored("ERROR: Class {} not found or error in Modules".format(self.services[n]["cls"]),"red"))
-                for k_error,error in _modules_errors.iteritems():
-                    print("Module {}: {}".format(k_error,error))
+                print(colored("ERROR: Class {} not found or error in Modules".format(
+                    self.services[n]["cls"]), "red"))
+                for k_error, error in _modules_errors.iteritems():
+                    print("Module {}: {}".format(k_error, error))
                 exit()
             if ("-->") in self.services[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.services[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.services[n]["-->"] if x.find(".") >= 0]
-                self.services[n]["-->"] = sp + cp  #esto se puede simplificar
+                self.services[n]["-->"] = sp + cp  # esto se puede simplificar
 
         self.services = newservices
         newrobot = {}
         for n in self.services:
             self.services[n]["_locals"] = []
-            self.services[n]["_remotes"] = []
+            self.services[n]["_resolved_remote_deps"] = []
             if "-->" in self.services[n]:
-                self.services[n]["_locals"],self.services[n]["_remotes"] = self.local_remote(self.services,n)
-
+                self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
+                    self.services, n)
 
         for n in self.sensors:
-            if _clases.get(self.sensors[n]["cls"],None) is not None:
-                if len(_clases[self.sensors[n]["cls"]])>1:
-                    print("Warning: there are many modules {} for class {}".format(_clases[self.sensors[n]["cls"]],self.sensors[n]["cls"]))
+            if _clases.get(self.sensors[n]["cls"], None) is not None:
+                if len(_clases[self.sensors[n]["cls"]]) > 1:
+                    print("Warning: there are many modules {} for class {}".format(
+                        _clases[self.sensors[n]["cls"]], self.sensors[n]["cls"]))
                 self.sensors[n]["module"] = _clases[self.sensors[n]["cls"]][0]
             else:
-                print(colored("ERROR: Class {} not found or error in Modules".format(self.sensors[n]["cls"]),"red"))
-                for k_error,error in _modules_errors.iteritems():
-                    print("Module {}: {}".format(k_error,error))
+                print(colored("ERROR: Class {} not found or error in Modules".format(
+                    self.sensors[n]["cls"]), "red"))
+                for k_error, error in _modules_errors.iteritems():
+                    print("Module {}: {}".format(k_error, error))
                 exit()
-            self.sensors[n]["_services"]=list(self.services)
+            self.sensors[n]["_services"] = list(self.services)
             if ("-->") in self.sensors[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.sensors[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.sensors[n]["-->"] if x.find(".") >= 0]
-                self.sensors[n]["-->"] = sp + cp  #esto se puede simplificar
+                self.sensors[n]["-->"] = sp + cp  # esto se puede simplificar
             if n.find(".") == -1:
                 newrobot[self.node["name"] + "." + n] = self.sensors[n]
             else:
@@ -132,13 +137,14 @@ class Config:
 
         self.sensors = newrobot
         for n in self.sensors:
-            self.sensors[n]["_locals"]=[]
-            self.sensors[n]["_remotes"]=[]
+            self.sensors[n]["_locals"] = []
+            self.sensors[n]["_resolved_remote_deps"] = []
             if "-->" in self.sensors[n]:
-                self.sensors[n]["_locals"],self.sensors[n]["_remotes"] = self.local_remote(self.sensors,n)
-                #print("REMO:",self.sensors[n]["_remotes"])
+                self.sensors[n]["_locals"], self.sensors[n]["_resolved_remote_deps"] = self.local_remote(
+                    self.sensors, n)
+                # print("REMO:",self.sensors[n]["_resolved_remote_deps"])
 
-    def dependency(self,ser):
+    def dependency(self, ser):
         ser_order = [x for x in ser if not get_field(ser[x], "_locals")]
         condep = [x for x in ser if get_field(ser[x], "_locals")]
         nivel_dep = 0
@@ -163,52 +169,53 @@ class Config:
         Return two lists of tuples, one (module,class) for all services a other
         for sensors
         """
-        services = [(self.services[s]["module"],self.services[s]["cls"]) for s in self.services_order]
-        sensors = [(self.sensors[s]["module"],self.sensors[s]["cls"]) for s in self.sensors_order]
-        return set(services),set(sensors)
+        services = [(self.services[s]["module"], self.services[s]["cls"])
+                    for s in self.services_order]
+        sensors = [(self.sensors[s]["module"], self.sensors[s]["cls"])
+                   for s in self.sensors_order]
+        return set(services), set(sensors)
 
-    def whithout_deps(self,part):
+    def whithout_deps(self, part):
         """
          Return sensors or services whihout dependencies
          part can be sensor or services
         """
         return [x for x in part if not get_field(part[x], "-->")]
 
-    def with_deps(self,part):
+    def with_deps(self, part):
         """
          Return sensors or services whih dependencies.
          part can be sensor or services
         """
         return [x for x in part if get_field(part[x], "-->")]
 
-    def has_remote(self, part,k):
+    def has_remote(self, part, k):
         """
         return true if  k is a remote service or sensor
         """
-        local, remote = self.local_remote(part,k)
+        local, remote = self.local_remote(part, k)
         return bool(remote)
 
-    def has_local(self,part,k):
+    def has_local(self, part, k):
         """
         return true if  k is a local service or sensor
         """
-        local, remote = self.local_remote(part,k)
+        local, remote = self.local_remote(part, k)
         return bool(local)
 
-    def local_remote(self,part,k):
+    def local_remote(self, part, k):
         """
         return two list. services or sensors locals and remotes
         """
         if "-->" in part[k]:
             local = [x for x in part[k]["-->"]
-                 if x.find(self.node["name"] + ".") > -1]
+                     if x.find(self.node["name"] + ".") > -1]
             remote = [x for x in part[k]["-->"]
                       if x.find(self.node["name"] + ".") == -1]
         else:
             local = []
             remote = []
         return local, remote
-
 
     def add_uri_conf(self):
         conf = {}
