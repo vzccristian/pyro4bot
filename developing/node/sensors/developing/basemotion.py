@@ -28,6 +28,8 @@ class basemotion(control.Control):
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
 
+        
+
     def worker(self):
         while self.worker_run:
             # write here code for your sensor

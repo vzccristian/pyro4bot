@@ -4,6 +4,7 @@ import utils
 import os
 import time
 import token
+import loging
 
 
 # decoradores para las clases generales
@@ -46,13 +47,15 @@ def load_node(in_function):
     return out_function
 
 
-class Control(object):
+class Control(loging.Loging):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
 
     def __init__(self):
         self.mutex = threading.Lock()
         self.workers = []
+        if "worker_run" not in self.__dict__:
+            self.worker_run = True
 
     def init_workers(self, fn):
         """ start all workers daemon"""
@@ -65,6 +68,7 @@ class Control(object):
                 self.workers.append(t)
                 t.setDaemon(True)
                 t.start()
+            return t
 
     def init_thread(self, fn,*args):
         """ start all workers daemon"""

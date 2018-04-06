@@ -10,6 +10,7 @@ import pprint
 from libs import config, control, utils, uriresolver
 from libs.exceptions import Errornode
 from multiprocessing import Process, Pipe, Queue
+import threading
 import traceback
 import Pyro4
 import Pyro4.naming as nm
@@ -50,12 +51,12 @@ def import_class(services, sensors):
 # ___________________CLASS NODERB________________________________________
 
 
-class NODERB (object):
+class NODERB (control.Control):
     # revisar la carga posterior de parametros json
     def __init__(self, filename="", json=None):
         if json is None:
             json = {}
-
+        super(NODERB,self).__init__()
         self.filename = filename  # Json file
         self.N_conf = config.Config(
             filename=filename, json=json)  # Config from Json
@@ -64,26 +65,30 @@ class NODERB (object):
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
-        print("")
-        print(colored("_________STARTING PYRO4BOT SERVICES__________________", "yellow"))
+        t = self.init_workers(self.create_server_node)
+        time.sleep(0.8)
+        self.PROCESS[self.name][1]=t
+        print(colored("\t|","yellow"))
+        print(colored("\t|","yellow"))
+        print(colored("\t+-----> SERVICES", "yellow"))
 
         self.load_objects(self.services, self.N_conf.services_order)
-        print("")
-        print(colored("_________STARTING PYRO4BOT PLUGINS___________________", "yellow"))
+        print(colored("\t|","yellow"))
+        print(colored("\t|","yellow"))
+        print(colored("\t+-----> PLUGINS", "yellow"))
         self.load_objects(self.sensors, self.N_conf.sensors_order)
 
-        self.create_server_node()
 
     @control.load_node
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
         ROBOT_PASSWORD = self.name
         print("")
-        print(colored("_________STARTING PYRO4BOT SYSTEM__________", "yellow"))
-        print("  Ethernet device {} IP: {}".format(
+        print(colored("_________PYRO4BOT SYSTEM__________", "yellow"))
+        print("\tEthernet device {} IP: {}".format(
             colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
-        print("  Password: {}".format(colored(ROBOT_PASSWORD, "cyan")))
-        print("  Filename: {}".format(colored(self.filename, 'cyan')))
+        print("\tPassword: {}".format(colored(ROBOT_PASSWORD, "cyan")))
+        print("\tFilename: {}".format(colored(self.filename, 'cyan')))
         self.PROCESS = {}
         self.sensors = self.N_conf.sensors
         self.services = self.N_conf.services
@@ -234,6 +239,7 @@ class NODERB (object):
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI.new_uri(name, obj["mode"])
             obj["name"] = name
+            obj["node"] = self.uri_node
             obj["uriresolver"] = self.URI_resolv
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
@@ -250,7 +256,7 @@ class NODERB (object):
                 st = colored(status, 'red')
             if status == "WAITING":
                 st = colored(status, 'yellow')
-            print "[%s]  STARTING %s" % (st, obj["pyro4id"])
+            print "\t\t[%s]  STARTING %s" % (st, obj["pyro4id"])
         else:
             print("ERROR: " + name + " is runing")
 
@@ -304,7 +310,7 @@ class NODERB (object):
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
 
             # Associate object (node) to the daemon
-            uri = daemon.register(self, objectId=self.name)
+            self.uri_node = daemon.register(self, objectId=self.name)
 
             # Get exposed methods from node
             self.exposed = Pyro4.core.DaemonObject(
@@ -313,20 +319,24 @@ class NODERB (object):
             # Get docstring from exposed methods on node
             self.docstring = self.add_docstring(self, self.exposed)
 
-            # print(self.exposed)
-            # print(self.docstring)
+
 
             # Registering NODE on nameserver
-            self.URI.register_robot_on_nameserver(uri)
-
+            self.URI.register_robot_on_nameserver(self.uri_node)
+            self.PROCESS[self.name] = []
+            self.uri_node=self.URI.new_uri(self.name)
+            self.PROCESS[self.name].append(self.uri_node)
+            self.PROCESS[self.name].append(None)
+            self.PROCESS[self.name].append(os.getpid())
+            self.PROCESS[self.name].append("OK")
+            self.PROCESS[self.name].append(self.docstring)
             # Printing info
             print("")
             print(colored(
-                "____________STARTING PYRO4BOT %s_______________________" % self.name, "yellow"))
-            print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), uri))
-            self.print_process()
+                 "____________STARTING PYRO4BOT NODE %s_______________________" % self.name, "yellow"))
+            print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), self.uri_node))
             daemon.requestLoop()
-            print("[%s] Final shutting %s" % (colored("Down", 'green'), uri))
+            print("[%s] Final shutting %s" % (colored("Down", 'green'), self.uri_node))
             os._exit(0)
         except Exception:
             print("ERROR: create_server_node in node.py")
@@ -345,6 +355,18 @@ class NODERB (object):
             return uri, status
         else:
             return None, "down"
+
+    def shutdown(self):
+        print(colored("____STOPING PYRO4BOT %s_________" % self.name, "yellow"))
+        for k,v in self.PROCESS.items():
+            try:
+                if isinstance(v[1],threading.Thread):
+                    pass
+                else:
+                    v[1].terminate()
+            except:
+                raise
+            print("[{}]  {}".format(colored("Down", 'green'), v[0]))
 
     @Pyro4.expose
     def print_process(self):

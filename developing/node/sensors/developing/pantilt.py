@@ -28,7 +28,7 @@ class pantilt(control.Control):
         self.bar = False
         self.ptblock = False
         self.init_workers(self.worker)
-
+        #print(self.node.get_uris())
     def worker(self):
         while self.worker_run:
             # write here code for your sensor

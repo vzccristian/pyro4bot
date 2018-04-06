@@ -159,6 +159,9 @@ def prepare_proxys(part,password):
     if "uriresolver" in part:
         part["uriresolver"] =get_pyro4proxy(part["uriresolver"],password)
         resolver = part["uriresolver"]
+    if "node" in part:
+        part["node"] =get_pyro4proxy(part["node"],password)
+        resolver = part["uriresolver"]
     for d in part.get("nr_remote",[]):
         injects[d] = resolver.get_proxy(d)
         part[d]=injects[d]
