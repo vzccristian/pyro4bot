@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 import time
 from node.libs import control, utils, token
 from node.libs.bluetooth import bt_RFCOMM

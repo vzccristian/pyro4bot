@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control
@@ -27,7 +28,7 @@ class l298n(control.Control):
         self.GPIO.output(self.IN2, LOW)
         self.GPIO.output(self.IN3, LOW)
         self.GPIO.output(self.IN4, HIGH)
-        
+
     @control.flask("actuator")
     def stop(self):
         self.motor_a.ChangeDutyCycle(0)

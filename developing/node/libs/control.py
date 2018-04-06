@@ -22,6 +22,8 @@ def load_config(in_function):
         in_function(*args, **kwargs)
     return out_function
 
+# TODO: __new__ magic method
+
 
 def Pyro4bot_Loader(cls, kwargs):
     """ Decorator for load Json options in Pyro4bot objects
@@ -55,15 +57,21 @@ def flask(*args_decorator):
             original_doc = ""
         if len(args_decorator) % 2 == 0:  # Tuplas
             for i in xrange(0, len(args_decorator), 2):
-                original_doc += "\n\t@type:" + \
-                    args_decorator[i] + "\n\t@count:" + \
+                original_doc += "\n@type:" + \
+                    args_decorator[i] + "\n@count:" + \
                     str(args_decorator[i + 1])
         elif len(args_decorator) == 1:
-            original_doc += "\n\t@type:" + \
-                args_decorator[0] + "\n\t@count:" + \
+            original_doc += "\n @type:" + \
+                args_decorator[0] + "\n@count:" + \
                 str(func.__code__.co_argcount - 1)
+
+        if "@type:actuator" in original_doc:
+            li = list(func.__code__.co_varnames)
+            del li[0]
+            original_doc += "\n@args_names:" + str(li)
+
         func.__doc__ = original_doc
-        print original_doc
+
         def func_wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 

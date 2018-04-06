@@ -20,10 +20,14 @@ if __name__ == "__main__":
     bot = ClientRobot("robot_lineas")
     # print bot.__dict__
     # print bot.picam.__docstring__()
-    # print bot.basemotion.__docstring__()
+    print "Infrarred DOC"
     print bot.infrared.__docstring__()
+    print "Infrarred EXPOSED"
     print bot.infrared.__exposed__()
+    print "Basemotion DOC"
     print bot.basemotion.__docstring__()
+    print "Basemotion EXPOSED"
+    print bot.basemotion.__exposed__()
     # print bot.picam.__exposed__()
     # print bot.picam.__docstring__()
     # bot.node.__docstring__()

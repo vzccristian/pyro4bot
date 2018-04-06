@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control
@@ -22,8 +23,8 @@ class gpioinfrared(control.Control):
             # self.IR[1]=GPIO.input(self.setup[1])
             # write here code for your sensor
             time.sleep(self.frec)
-# here your methods
 
+    @control.flask("sensor", 2)
     def get_ir(self):
         return self.IR
 

@@ -7,7 +7,7 @@ import os
 import time
 from libs import config, control, utils, uriresolver
 from libs.exceptions import Errornode
-from multiprocessing import Process, Pipe, Queue
+from multiprocessing import Process, Pipe
 import multiprocessing
 import threading
 import traceback
@@ -275,15 +275,17 @@ class NODERB (object):
             # Get and save exposed methods
             exposed = Pyro4.core.DaemonObject(
                 daemon).get_metadata(name_ob, True)
-            new_object.exposed.update(exposed)
+
+            # Hide methods from Control
+            safe_exposed = {}
+            for k in exposed.keys():
+                safe_exposed[k] = list(set(exposed[k]) - set(dir(control.Control)))
+            safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
+            new_object.exposed.update(safe_exposed)
 
             # Save dosctring documentation inside sensor object
             new_object.docstring.update(
-                self.add_docstring(new_object, exposed))
-
-            # print name_ob
-            # print exposed
-            # print new_object.docstring
+                self.add_docstring(new_object, safe_exposed))
 
             if ("_REMOTE_STATUS") in deps and deps["_REMOTE_STATUS"] == "WAITING":
                 proc_pipe.send("WAITING")
@@ -311,12 +313,8 @@ class NODERB (object):
             # Get exposed methods from node
             self.exposed = Pyro4.core.DaemonObject(
                 daemon).get_metadata(self.name, True)
-
             # Get docstring from exposed methods on node
             self.docstring = self.add_docstring(self, self.exposed)
-
-            # print(self.exposed)
-            # print(self.docstring)
 
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(uri)
@@ -356,7 +354,6 @@ class NODERB (object):
             print(status.ljust(17, " ") + pid + name.rjust(50, "."))
             # print(v[-1])
 
-    @Pyro4.expose
     def add_docstring(self, new_object, exposed):
         """Return doc_string documentation in methods_and_docstring"""
         docstring = {}
@@ -364,8 +361,7 @@ class NODERB (object):
             for m in exposed[key]:
                 if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
                     d = eval("new_object." + str(m) + ".__doc__")
-                    if d and "@type" in d:
-                            docstring[m] = d
+                    docstring[m] = d
         return docstring
 
     @Pyro4.expose
