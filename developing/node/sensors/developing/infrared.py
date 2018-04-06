@@ -1,27 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in you code object
 import time
 from node.libs import control
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : infrared
-{c} cls : infrared
-{m} IR : [0,0,0,0]
-{d} --> : ["arduino"]
-{m} enable : true
-{m} worker_run : true
-{m} frec : 0.02
-END_JSON_DOCUMENTATION
-"""
 
 class infrared (control.Control):
-
-    __REQUIRED = ["usbserial","IR"]
+    __REQUIRED = ["usbserial", "IR"]
 
     def __init__(self):
         # self.init_workers(self.worker)
@@ -32,8 +21,8 @@ class infrared (control.Control):
             # print("IR-sal: ",self.IR)
             time.sleep(self.frec)
 
-
     @Pyro4.expose
+    @control.flask("sensor", 4)
     def get__ir(self):
         return self.IR
 

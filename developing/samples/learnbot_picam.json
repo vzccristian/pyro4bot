@@ -13,9 +13,9 @@
       "def_worker":true
     },
    "services":{
-        "picam":{"cls":"picam","ethernet":"<ethernet>","width":640,"height":480}
+
    },
    "sensors":{
-
+     "picam":{"cls":"picam","ethernet":"<ethernet>","width":640,"height":480}
     }
 }

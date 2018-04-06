@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control
@@ -21,11 +22,12 @@ class h206speed(control.Control):
         self.GPIO.add_event_detect(self.MI,RISING,self.pulseMI,20)
         self.init_workers(self.worker)
 
+    @control.flask("actuator")
     def pulseMD(self,channel):
         self.cont_MD = self.cont_MD + 1
         print("MD: {}".format(self.cont_MD))
 
-
+    @control.flask("actuator")
     def pulseMI(self,channel):
         self.cont_MI = self.cont_MI + 1
         print("MI: {}".format(self.cont_MI))
@@ -33,7 +35,3 @@ class h206speed(control.Control):
     def worker(self):
         while self.worker_run:
             time.sleep(self.frec)
-
-
-if __name__ == "__main__":
-    pass

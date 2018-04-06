@@ -6,25 +6,11 @@ import time
 from node.libs import control
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : base
-{c} cls : basemotion
-{m} BASE : [0,0]
-{d} --> : ["arduino"]
-{m} enable : true
-{m} worker_run : true
-{m} frec : 0.03
-END_JSON_DOCUMENTATION
-"""
 
-
-@Pyro4.expose
 class basemotion(control.Control):
-    __REQUIRED = ["usbserial","BASE"]
+    __REQUIRED = ["usbserial", "BASE"]
 
     def __init__(self):
-        # print self.__dict__
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
 
@@ -32,15 +18,18 @@ class basemotion(control.Control):
 
     def worker(self):
         while self.worker_run:
-            # write here code for your sensor
             # print self.usbserial.get__all()
             time.sleep(self.frec)
 
+    @Pyro4.expose
     @Pyro4.oneway
+    @control.flask("actuator")
     def set__vel(self, mi=1, md=1):
         # print "base " + str(mi) + "," + str(md)
         self.usbserial.command(com="base " + str(mi) + "," + str(md))
 
+    @Pyro4.expose
+    @control.flask("sensor", 2)
     def get_base(self):
         return self.BASE
 

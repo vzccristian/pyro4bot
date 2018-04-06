@@ -4,7 +4,7 @@
       "path":"/home/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      "ethernet":"wlxc4e984e024a2",
+      "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
       "port_node":4040,
@@ -16,6 +16,6 @@
 
    },
    "sensors":{
-        "remote_camera":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":0.02}
+        "camara_remota":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":0.02}
     }
 }
