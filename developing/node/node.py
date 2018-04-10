@@ -13,6 +13,7 @@ import traceback
 import Pyro4
 from termcolor import colored
 from libs.inspection import _modules_libs_errors, show_warnings
+import procname
 
 show_warnings(_modules_libs_errors)
 BIGBROTHER_PASSWORD = "PyRobot"
@@ -52,11 +53,12 @@ class NODERB (control.Control):
     def __init__(self, filename="", json=None):
         if json is None:
             json = {}
-        super(NODERB,self).__init__()
+        super(NODERB, self).__init__()
         self.filename = filename  # Json file
         # Config from Json
         N_conf = config.Config(filename=filename, json=json)
         self.node = N_conf.node
+        print(self.node)
         self.services = N_conf.services
         self.sensors = N_conf.sensors
         self.services_order = N_conf.services_order
@@ -68,23 +70,26 @@ class NODERB (control.Control):
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
-        t = self.init_workers(self.create_server_node)
+        t = threading.Thread(target=self.create_server_node, args=())
+        t.setDaemon(True)
+        t.start()
         time.sleep(0.8)
-        self.PROCESS[self.name][1]=t
-        print(colored("\t|","yellow"))
-        print(colored("\t|","yellow"))
+        self.PROCESS[self.name][1] = t
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
         print(colored("\t+-----> SERVICES", "yellow"))
 
-        self.load_objects(self.services, self.services_order)
-        print(colored("\t|","yellow"))
-        print(colored("\t|","yellow"))
+        self.load_objects(self.services, self.N_conf.services_order)
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
         print(colored("\t+-----> PLUGINS", "yellow"))
-        self.load_objects(self.sensors, self.sensors_order)
-
+        self.load_objects(self.sensors, self.N_conf.sensors_order)
 
     @control.load_node
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
+        for k,v in kwargs.items():
+            setattr(self,k,v)
         ROBOT_PASSWORD = self.name
         print("")
         print(colored("_________PYRO4BOT SYSTEM__________", "yellow"))
@@ -92,6 +97,9 @@ class NODERB (control.Control):
             colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
         print("\tPassword: {}".format(colored(ROBOT_PASSWORD, "cyan")))
         print("\tFilename: {}".format(colored(self.filename, 'cyan')))
+        self.PROCESS = {}
+        self.sensors = self.N_conf.sensors
+        self.services = self.N_conf.services
 
 
     def load_uri_resolver(self):
@@ -106,8 +114,10 @@ class NODERB (control.Control):
             parts[k]["_remote_trys"] = _REMOTE_TRAYS
             parts[k]["_services_trys"] = _LOCAL_TRAYS
             parts[k]["_unresolved_locals"] = list(parts[k].get("_locals", []))
-            parts[k]["_unr_remote_deps"] = list(parts[k].get("_resolved_remote_deps", []))
-            parts[k]["_unresolved_services"] = list(parts[k].get("_services", []))
+            parts[k]["_unr_remote_deps"] = list(
+                parts[k].get("_resolved_remote_deps", []))
+            parts[k]["_unresolved_services"] = list(
+                parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
         errors = False
         for k in object_robot:
@@ -121,15 +131,20 @@ class NODERB (control.Control):
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
             if st_local == "ERROR":
-                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
-                continue
-            if st_remote == "ERROR":
-                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["_unr_remote_deps"])
-                continue
-            if st_service == "ERROR":
-                print "[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
+                print "[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
                 continue
 
+            if "ERROR" in st_remote:
+                print "[{}] {} {} --> {}".format(
+                    colored("ERROR", 'red'),
+                    colored("NOT STARTING:", 'red'),
+                    k,
+                    colored("".join(parts[k]["_unr_remote_deps"]), 'red'))
+                continue
+
+            if st_service == "ERROR":
+                print "[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
+                continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
                 continue
@@ -140,7 +155,7 @@ class NODERB (control.Control):
                 del(parts[k]["_unresolved_services"])
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
-                parts[k].pop("-->",None)
+                parts[k].pop("-->", None)
                 parts[k]["_REMOTE_STATUS"] = st_remote
                 self.start_object(k, parts[k])
 
@@ -149,7 +164,7 @@ class NODERB (control.Control):
         try:
             dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
             return dic_cls
-        except:
+        except Exception:
             return []
 
     def check_requireds(self, obj):
@@ -201,23 +216,24 @@ class NODERB (control.Control):
         check_remote = "OK"
         for d in obj["_unr_remote_deps"]:
             msg, uri = self.URI.wait_resolv_remotes(d, k)
-            if "WAIT" == msg:
+            if "WAIT" == msg:  # msg if working with generic ns
                 obj["_remote_trys"] -= 1
                 if obj["_remote_trys"] < 0:
-                    check_remote = "WAITING"
+                    check_remote = "ERROR"
                 else:
                     check_remote = "WAIT"
                     time.sleep(1)
-            elif "ERROR" == msg:
-                check_remote = "ERROR"
+            elif "ERROR" == msg:  # msg if working with generic ns
+                check_remote = (msg + ":" + d) if uri == d else uri
                 obj["_remote_trys"] = 0
-            elif "SYNC" == msg:
+            elif "SYNC" == msg:   # msg if working with generic ns
                 print("REMOTE-URI:{} , COMP:{}".format(uri, d))
                 check_remote = "OK"
                 obj["_remote_trys"] = 0
                 obj["_resolved_remote_deps"].append(uri)
-                if d in obj["_unr_remote_deps"]: obj["_unr_remote_deps"].remove(d)
-            elif "ASYNC" == msg:
+                if d in obj["_unr_remote_deps"]:
+                    obj["_unr_remote_deps"].remove(d)
+            elif "ASYNC" == msg:  # msg if working with bigbrother ns
                 check_remote = "ASYNC"
                 obj["_remote_trys"] = 0
             else:
@@ -236,6 +252,7 @@ class NODERB (control.Control):
 
     def start_object(self, name, obj):
         serv_pipe, client_pipe = Pipe()
+        attemps = 5
         if "_locals" not in obj:
             obj["_locals"] = []
         if "_resolved_remote_deps" not in obj:
@@ -246,25 +263,34 @@ class NODERB (control.Control):
             obj["name"] = name
             obj["node"] = self.uri_node
             obj["uriresolver"] = self.URI_resolv
+            procname.setprocname(obj["pyro4id"])
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.pyro4bot_object, args=(obj, client_pipe)))
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
-
-            # TODO: Async recv or timeout
-
+            self.PROCESS[name].append(obj["_REMOTE_STATUS"])
             status = serv_pipe.recv()
-            self.PROCESS[name].append(status)
+            status = "FAIL"
+            while (attemps > 0):
+                try:
+                    pxy = utils.get_pyro4proxy(obj["pyro4id"], self.name)
+                    status = pxy.get_status()
+                    break
+                except Exception:
+                    attemps -= 1
+                    time.sleep(0.5)
             if status == "OK":
                 st = colored(status, 'green')
-                self.PROCESS[name].append(utils.get_pyro4proxy(
-                    obj["pyro4id"], self.name).__docstring__())
+                self.PROCESS[name].append(pxy.__docstring__())
             if status == "FAIL":
                 st = colored(status, 'red')
             if status == "WAITING":
                 st = colored(status, 'yellow')
-            print "\t\t[%s]  STARTING %s" % (st, obj["pyro4id"])
+            if status == "ASYNC":
+                print "\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow'))
+            else:
+                print "\t\t[%s] STARTING %s" % (st, obj["pyro4id"])
         else:
             print("ERROR: " + name + " is runing")
 
@@ -276,6 +302,8 @@ class NODERB (control.Control):
                 host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
             deps = utils.prepare_proxys(d, ROBOT_PASSWORD)
+
+            proc_pipe.send("CONTINUE")
 
             # Preparing class for pyro4
             pyro4bot_class = control.Pyro4bot_Loader(globals()[d["cls"]], deps)
@@ -291,7 +319,8 @@ class NODERB (control.Control):
             # Hide methods from Control
             safe_exposed = {}
             for k in exposed.keys():
-                safe_exposed[k] = list(set(exposed[k]) - set(dir(control.Control)))
+                safe_exposed[k] = list(
+                    set(exposed[k]) - set(dir(control.Control)))
             safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
             new_object.exposed.update(safe_exposed)
 
@@ -299,10 +328,7 @@ class NODERB (control.Control):
             new_object.docstring.update(
                 self.add_docstring(new_object, safe_exposed))
 
-            if ("_REMOTE_STATUS") in deps and deps["_REMOTE_STATUS"] == "WAITING":
-                proc_pipe.send("WAITING")
-            else:
-                proc_pipe.send("OK")
+
             daemon.requestLoop()
             print("[%s] Shutting %s" %
                   (colored("Down", 'green'), d["pyro4id"]))
@@ -312,7 +338,6 @@ class NODERB (control.Control):
             print utils.format_exception(e)
 
     def create_server_node(self):
-        uri = None
         try:
             # Daemon proxy for node robot
             self.port_node = utils.get_free_port(self.port_node)
@@ -328,12 +353,9 @@ class NODERB (control.Control):
             # Get docstring from exposed methods on node
             self.docstring = self.add_docstring(self, self.exposed)
 
-
-
             # Registering NODE on nameserver
             self.URI.register_robot_on_nameserver(self.uri_node)
             self.PROCESS[self.name] = []
-            self.uri_node=self.URI.new_uri(self.name)
             self.PROCESS[self.name].append(self.uri_node)
             self.PROCESS[self.name].append(None)
             self.PROCESS[self.name].append(os.getpid())
@@ -341,14 +363,54 @@ class NODERB (control.Control):
             self.PROCESS[self.name].append(self.docstring)
             # Printing info
             print(colored(
-                 "____________STARTING PYRO4BOT NODE %s_______________________" % self.name, "yellow"))
-            print("[%s]  PYRO4BOT: %s" % (colored("OK", 'green'), self.uri_node))
+                "____________STARTING PYRO4BOT NODE %s_______________________" % self.name, "yellow"))
+            print("[%s]  PYRO4BOT: %s" %
+                  (colored("OK", 'green'), self.uri_node))
             daemon.requestLoop()
-            print("[%s] Final shutting %s" % (colored("Down", 'green'), self.uri_node))
+            print("[%s] Final shutting %s" %
+                  (colored("Down", 'green'), self.uri_node))
             os._exit(0)
         except Exception:
             print("ERROR: create_server_node in node.py")
             raise
+
+    def shutdown(self):
+        print(colored("____STOPPING PYRO4BOT %s_________" % self.name, "yellow"))
+        for k, v in self.PROCESS.items():
+            try:
+                if isinstance(v[1], threading.Thread):
+                    pass
+                else:
+                    v[1].terminate()
+            except:
+                raise
+            print("[{}]  {}".format(colored("Down", 'green'), v[0]))
+
+    def print_process(self, onlyChanges=False):
+        for k, v in self.PROCESS.iteritems():
+            #  Update status
+            try:
+                old_status = v[3]
+                v[3] = utils.get_pyro4proxy(v[0], self.name).get_status()
+            except Exception:
+                v[3] = "FAIL"
+
+            if ((onlyChanges and v[3] != old_status) or not onlyChanges):
+                if v[3] == "OK": st = colored(v[3], 'green')
+                elif v[3] == "FAIL": st = colored(v[3], 'red')
+                elif v[3] == "WAITING" or v[3] == "ASYNC": st = colored(v[3], 'yellow')
+                print("[{}]\t{} {}".format(st, str(v[2]), str(v[0]).rjust(60, ".")))
+
+
+    def add_docstring(self, new_object, exposed):
+        """Return doc_string documentation in methods_and_docstring"""
+        docstring = {}
+        for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
+            for m in exposed[key]:
+                if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
+                    d = eval("new_object." + str(m) + ".__doc__")
+                    docstring[m] = d
+        return docstring
 
     @Pyro4.expose
     def get_uris(self):
@@ -356,7 +418,6 @@ class NODERB (control.Control):
 
     @Pyro4.expose
     def get_name_uri(self, name):
-        # print self.URI.list_uris()
         if name in self.PROCESS:
             uri = self.URI.get_uri(name)
             status = self.PROCESS[name][3]
@@ -377,28 +438,21 @@ class NODERB (control.Control):
             print("[{}]  {}".format(colored("Down", 'green'), v[0]))
 
     @Pyro4.expose
-    def print_process(self):
-        for k, v in self.PROCESS.iteritems():
-            name = v[0]
-            pid = str(v[2])
-            status = str("[" + colored(v[3], 'green') + "]")
-            print(status.ljust(17, " ") + pid + name.rjust(50, "."))
-            # print(v[-1])
-
-    def add_docstring(self, new_object, exposed):
-        """Return doc_string documentation in methods_and_docstring"""
-        docstring = {}
-        for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
-            for m in exposed[key]:
-                if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
-                    d = eval("new_object." + str(m) + ".__doc__")
-                    docstring[m] = d
-        return docstring
-
-    @Pyro4.expose
     def __exposed__(self):
         return self.exposed
 
     @Pyro4.expose
     def __docstring__(self):
         return self.docstring
+
+    @Pyro4.expose
+    def get_status(self):
+        return "OK"
+
+    # @Pyro4.expose
+    # def change_comp_status(self, name, status):
+    #     print self.PROCESS[name]
+
+    @Pyro4.expose
+    def status_changed(self):
+        self.print_process(onlyChanges=True)

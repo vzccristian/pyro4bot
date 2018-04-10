@@ -87,7 +87,7 @@ class uriresolver(control.Control):
         connect = False
         while not connect:
             try:
-                connect = self.proxy.echo() == "hello"
+                connect = self.proxy._pyroHandshake == "hello"
             except Exception:
                 connect = False
             time.sleep(0.3)
@@ -289,7 +289,7 @@ class uriresolver(control.Control):
         target = name.split(".")
 
         if not self.nameserver:
-            return "ERROR", None
+            return "ERROR", "NOT-NS"
 
         if passw is None:
             passw = target[0]
@@ -298,7 +298,7 @@ class uriresolver(control.Control):
             if self.usingBB:
                 try:
                     self.nameserver.request(name, claimant)
-                    return "ASYNC", None
+                    return "ASYNC", None  # BIG BROTHER RULES
                 except Exception:
                     print("ERROR: Wait_resolv_resolved_remote_deps with bigbrother")
             else:  # Trying to resolv without bigbrother
@@ -310,27 +310,24 @@ class uriresolver(control.Control):
                         bot_proxy = utils.get_pyro4proxy(bot_uri, passw)
                         if bot_proxy:
                             remoteuri, status = bot_proxy.get_name_uri(name)
-                            if (remoteuri is not None and status not in ["down", "wait"]):
-                                return "SYNC", remoteuri
+                            if (remoteuri is not None and status == "OK"):
+                                return "SYNC", remoteuri  # Remote robot OK, comp OK.
                             else:
-                                return "WAIT", None
+                                return "WAIT", None  # Remote robot OK, comp NOT OK.
                     except Exception:
-                        print("ERROR: Unable to obtain list of robot sensors: \
-                             \n-->[URI]: %s \n-->[NAME]: %s" % (bot_uri, name))
-
+                        pass
                 else:  # Another thing
                     print("Para usar esta funcionalidad se necesita de BigBrother")
-                    return "ERROR", None
+                    return "ERROR", "BIG-BROTHER"   # big brother needed
             trys -= 1
             time.sleep(0.5)
         if trys < 0:
-            return "ERROR", name
+            return "ERROR", name  # Remote robot NOT OK
 
     @Pyro4.expose
     def register_robot_on_nameserver(self, uri):
         try:
             if self.nameserver is not None:
-                # print "___________REGISTERING PYRO4BOT ON NAME SERVER_________________"
                 self.URIS[self.botName] = uri
                 print("REGISTERING ROBOT: %s" %
                       (colored(self.URIS[self.botName], 'green')))

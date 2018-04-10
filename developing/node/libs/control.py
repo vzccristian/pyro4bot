@@ -3,10 +3,24 @@ import utils
 import time
 import token
 import threading
+from threading import Thread
 from termcolor import colored
-from loging import loging
+import loging
 
-# decoradores para las clases generales
+
+SECS_TO_CHECK_STATUS = 5
+
+# DECORATORS
+
+
+# Threaded function snippet
+def threaded(fn):
+    """To use as decorator to make a function call threaded."""
+    def wrapper(*args, **kwargs):
+        thread = Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        return thread
+    return wrapper
 
 
 def load_config(in_function):
@@ -44,7 +58,6 @@ def Pyro4bot_Loader(cls, kwargs):
 def load_node(in_function):
     """this Decorator load all parameter defined in Json configuration in node object """
     def out_function(*args, **kwargs):
-
         _self = args[0]
         _self.__dict__.update(kwargs)
         in_function(*args, **kwargs)
@@ -92,8 +105,16 @@ class Control(loging.Loging):
         if "worker_run" not in self.__dict__:
             self.worker_run = True
 
+    def __check_start__(self):
+        while (self._REMOTE_STATUS != "OK" or
+               (self._REMOTE_STATUS == "ASYNC" and
+                not self._resolved_remote_deps)):
+            time.sleep(SECS_TO_CHECK_STATUS)
+
+    @threaded
     def init_workers(self, fn):
         """ Start all workers daemon"""
+        self.__check_start__()
         if type(fn) not in (list, tuple):
             fn = (fn,)
         if self.worker_run:
@@ -104,16 +125,20 @@ class Control(loging.Loging):
                 t.start()
             return t
 
+    @threaded
     def init_thread(self, fn, *args):
         """ Start all workers daemon"""
+        self.__check_start__()
         if self.worker_run:
             t = threading.Thread(target=fn, args=args)
             self.workers.append(t)
             t.setDaemon(True)
             t.start()
 
+    @threaded
     def init_publisher(self, token_data, frec=0.01):
         """ Start publisher daemon"""
+        self.__check_start__()
         self.threadpublisher = False
         self.token_data = None
         self.subscriptors = {}
@@ -141,7 +166,7 @@ class Control(loging.Loging):
                                 # print("publicando",key, d[key])
                                 item.publication(key, d[key])
                     except TypeError:
-                        print "Argumento no esperado."
+                        print("Invalid argument.")
                         raise
                         exit()
             except Exception as e:
@@ -194,10 +219,6 @@ class Control(loging.Loging):
         self.worker_run = False
 
     @Pyro4.expose
-    def echo(self, msg="hello"):
-        return msg
-
-    @Pyro4.expose
     def get_pyroid(self):
         return self.pyro4id
 
@@ -217,7 +238,7 @@ class Control(loging.Loging):
     @Pyro4.callback
     def add_resolved_remote_dep(self, dep):
         if isinstance(dep, dict):
-            print(colored("New remote dep! {}".format(dep), "green"))
+            # print(colored("New remote dep! {}".format(dep), "green"))
             k = dep.keys()[0]
             try:
                 for u in dep[k]:
@@ -238,11 +259,20 @@ class Control(loging.Loging):
                     status = False
         for k in self.deps.keys():
             try:
-                if (self.deps[k].echo() != "hello"):
+                if (self.deps[k]._pyroHandshake != "hello"):
                     status = False
             except Exception:
                 status = False
-
         if (status):
             self._REMOTE_STATUS = "OK"
+            try:
+                p = utils.get_pyro4proxy(self.node, self.botname)
+                # p.change_comp_status(self._pyroId, self._REMOTE_STATUS)
+                p.status_changed()
+            except Exception as e:
+                print str(e)
+        return self._REMOTE_STATUS
+
+    @Pyro4.expose
+    def get_status(self):
         return self._REMOTE_STATUS

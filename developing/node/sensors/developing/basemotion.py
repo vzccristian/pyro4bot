@@ -15,7 +15,6 @@ class basemotion(control.Control):
         self.init_workers(self.worker)
 
 
-
     def worker(self):
         while self.worker_run:
             # print self.usbserial.get__all()

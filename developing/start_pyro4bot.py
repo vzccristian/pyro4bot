@@ -8,6 +8,16 @@ import threading
 import sys
 import time
 import os
+from termcolor import colored
+
+
+def init_thread(fn, *args):
+    """ start  daemon"""
+    t = threading.Thread(target=fn, args=args)
+    t.setDaemon(True)
+    t.start()
+    return t
+
 
 def init_thread( fn,*args):
     """ start  daemon"""
