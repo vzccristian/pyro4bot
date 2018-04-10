@@ -5,7 +5,7 @@ import token
 import threading
 from threading import Thread
 from termcolor import colored
-import loging
+from loging import loging
 
 
 SECS_TO_CHECK_STATUS = 5

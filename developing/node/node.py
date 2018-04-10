@@ -79,11 +79,11 @@ class NODERB (control.Control):
         print(colored("\t|", "yellow"))
         print(colored("\t+-----> SERVICES", "yellow"))
 
-        self.load_objects(self.services, self.N_conf.services_order)
+        self.load_objects(self.services, self.services_order)
         print(colored("\t|", "yellow"))
         print(colored("\t|", "yellow"))
         print(colored("\t+-----> PLUGINS", "yellow"))
-        self.load_objects(self.sensors, self.N_conf.sensors_order)
+        self.load_objects(self.sensors, self.sensors_order)
 
     @control.load_node
     def load_node(self, data, **kwargs):
@@ -97,9 +97,8 @@ class NODERB (control.Control):
             colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
         print("\tPassword: {}".format(colored(ROBOT_PASSWORD, "cyan")))
         print("\tFilename: {}".format(colored(self.filename, 'cyan')))
-        self.PROCESS = {}
-        self.sensors = self.N_conf.sensors
-        self.services = self.N_conf.services
+
+
 
 
     def load_uri_resolver(self):
