@@ -8,13 +8,16 @@ import threading
 import sys
 import time
 import os
+from termcolor import colored
 
-def init_thread( fn,*args):
+
+def init_thread(fn, *args):
     """ start  daemon"""
     t = threading.Thread(target=fn, args=args)
     t.setDaemon(True)
     t.start()
     return t
+
 
 try:
     if len(sys.argv) > 1:
@@ -22,20 +25,20 @@ try:
     else:
         jsonbot = "./samples/simplebot.json"
     NOD = nodo.NODERB(filename=jsonbot)
-    #init_thread(NOD.create_server_node)
+    # init_thread(NOD.create_server_node)
     time.sleep(0.5)
     while True:
-        cad=raw_input("{}: ".format(NOD.name))
+        cad = raw_input("\n{}: ".format(colored(NOD.name,"green")))
 
-        if cad.upper()=="EXIT":
+        if cad.upper() == "EXIT":
             NOD.shutdown()
             exit()
         if cad.upper() == "STATUS":
             NOD.print_process()
         if cad.upper() == "DOC":
-            for k,v in NOD.__docstring__().items():
+            for k, v in NOD.__docstring__().items():
                 print(k)
-                print("\t"+str(v))
+                print("\t" + str(v))
 except IOError:
     print("The file can not be found: %s" % jsonbot)
     raise

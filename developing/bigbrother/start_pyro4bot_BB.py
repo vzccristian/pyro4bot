@@ -156,7 +156,7 @@ class bigbrother(object):
         uris = []
         trys = 10
         while((not uris or self.async_waitings[obj]["target_type"] == 3) and self.async_waitings[obj]["claimant"] in self.claimant_list):
-            uris, tt = self.lookup(obj, target_type=True)
+            uris, tt = self.lookup(obj, target_type=True, returnAsList=True)
             self.async_waitings[obj]["target_type"] = tt
             time.sleep(5)
         print("URI Obtained: {}".format(uris))
@@ -184,12 +184,9 @@ class bigbrother(object):
 
 
     @Pyro4.expose
-    def lookup(self, obj, return_metadata=False, target_type=False):
-        #TODO: Check client compatiblity
-
+    def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
         print "Lookup:", obj, return_metadata
         # _return_metadata = return_metadata
-
         self.update()
         target_type_info = -1
         uris = []
@@ -220,15 +217,22 @@ class bigbrother(object):
                     print "Objeto no valido"
             else:
                 target_type_info = 5
-                for x in self.robots[target[0]]:
-                    uris.append(x)
+                if(returnAsList):
+                    for x in self.robots[target[0]]:
+                        uris.append(x)
+                else:
+                    uris.append(self.private_pyro4ns.lookup(obj))
         except Exception:
             print "Error al acceder a", obj
+            raise
             return False
         if (target_type):
             return uris, target_type_info
+        elif not (returnAsList):
+            return uris[0]
         else:
             return uris
+        print uris
 
     @Pyro4.expose
     def ping(self):

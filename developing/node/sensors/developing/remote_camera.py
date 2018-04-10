@@ -3,19 +3,15 @@
 import time
 from node.libs import control
 import Pyro4
+import threading
 
+# TODO: Prevenir desconexiones remotadas una vez conectado.
 
 class RemoteCamera (control.Control):
-    # __REQUIRED = ["picambot.picam"]
 
     def __init__(self):
-        for k, v in self.__dict__.iteritems():
-            print "K:",k
-            print "V:\t",v
-
         # Worker example
         self.init_workers(self.worker)
-
 
         # Subscription example
         #  self.send_subscripcion(self.usbserial, "LASER")
@@ -26,15 +22,12 @@ class RemoteCamera (control.Control):
         # self.init_publisher(self.buffer)
 
     def worker(self):
+        print("\n\nWorker is running.")
         while self.worker_run:
-            while self._REMOTE_STATUS != "OK":
-                self._REMOTE_STATUS
-                time.sleep(10)
-            print "----------------------------------------------------"
             for k in self.deps.keys():
-                print self.deps[k]
-            print "----------------------------------------------------"
-            time.sleep(self.frec * 500)
+                print("Connected to: {}".format(self.deps[k].get_pyroid()))
+                print("Handshake: {}".format(self.deps[k]._pyroHandshake))
+            time.sleep(self.frec)
             # write here code for your sensor thread
 
     # here your methods
