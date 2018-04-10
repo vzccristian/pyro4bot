@@ -14,7 +14,11 @@ class basemotion(control.Control):
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
 
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> c61fcabd7e40f8ec7e412a05440fd74f5c16fc3f
 
     def worker(self):
         while self.worker_run:

@@ -22,9 +22,18 @@ class alphal298n(control.Control):
         self.motor_a.start(50)
         self.motor_b.start(50)
         self.stop()
+<<<<<<< HEAD
         self.message("[FR]Paco andres: [FB]{}".format(24))
 
 
+=======
+        self.forward(80, 80)
+        time.sleep(3)
+        self.backward(100, 100)
+        time.sleep(4)
+        self.stop()
+
+>>>>>>> c61fcabd7e40f8ec7e412a05440fd74f5c16fc3f
     @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):
         self.motor_a.ChangeDutyCycle(DCA)

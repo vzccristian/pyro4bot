@@ -17,6 +17,7 @@ import time
 
 if __name__ == "__main__":
     print("Ejecutando cliente para docstring...")
+<<<<<<< HEAD
     bot = ClientRobot("robot_lineas")
     # print bot.__dict__
     # print bot.picam.__docstring__()
@@ -28,6 +29,19 @@ if __name__ == "__main__":
     print bot.basemotion.__docstring__()
     print "Basemotion EXPOSED"
     print bot.basemotion.__exposed__()
+=======
+    bot = ClientRobot("picambot")
+    print bot.__dict__
+    # print bot.picam.__docstring__()
+    # print "Infrarred DOC"
+    # print bot.infrared.__docstring__()
+    # print "Infrarred EXPOSED"
+    # print bot.infrared.__exposed__()
+    # print "Basemotion DOC"
+    # print bot.basemotion.__docstring__()
+    # print "Basemotion EXPOSED"
+    # print bot.basemotion.__exposed__()
+>>>>>>> c61fcabd7e40f8ec7e412a05440fd74f5c16fc3f
     # print bot.picam.__exposed__()
     # print bot.picam.__docstring__()
     # bot.node.__docstring__()

@@ -16,6 +16,10 @@
 
    },
    "sensors":{
+<<<<<<< HEAD
         "camara_remota":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":0.02}
+=======
+        "camara_remota":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":5}
+>>>>>>> c61fcabd7e40f8ec7e412a05440fd74f5c16fc3f
     }
 }
