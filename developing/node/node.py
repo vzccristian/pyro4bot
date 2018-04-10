@@ -54,10 +54,17 @@ class NODERB (control.Control):
             json = {}
         super(NODERB,self).__init__()
         self.filename = filename  # Json file
-        self.N_conf = config.Config(
-            filename=filename, json=json)  # Config from Json
-        self.load_node(self, PROCESS={}, **self.N_conf.node)
-        import_class(*self.N_conf.get_imports())
+        # Config from Json
+        N_conf = config.Config(filename=filename, json=json)
+        self.node = N_conf.node
+        self.services = N_conf.services
+        self.sensors = N_conf.sensors
+        self.services_order = N_conf.services_order
+        self.sensors_order = N_conf.sensors_order
+        self.imports = N_conf.get_imports()
+        self.PROCESS = {}
+        import_class(*self.imports)
+        self.load_node(self, PROCESS={}, **self.node)
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
@@ -68,11 +75,11 @@ class NODERB (control.Control):
         print(colored("\t|","yellow"))
         print(colored("\t+-----> SERVICES", "yellow"))
 
-        self.load_objects(self.services, self.N_conf.services_order)
+        self.load_objects(self.services, self.services_order)
         print(colored("\t|","yellow"))
         print(colored("\t|","yellow"))
         print(colored("\t+-----> PLUGINS", "yellow"))
-        self.load_objects(self.sensors, self.N_conf.sensors_order)
+        self.load_objects(self.sensors, self.sensors_order)
 
 
     @control.load_node
@@ -85,12 +92,10 @@ class NODERB (control.Control):
             colored(self.ethernet, "cyan"), colored(self.ip, "cyan")))
         print("\tPassword: {}".format(colored(ROBOT_PASSWORD, "cyan")))
         print("\tFilename: {}".format(colored(self.filename, 'cyan')))
-        self.PROCESS = {}
-        self.sensors = self.N_conf.sensors
-        self.services = self.N_conf.services
+
 
     def load_uri_resolver(self):
-        uri_r = uriresolver.uriresolver(self.N_conf.node,
+        uri_r = uriresolver.uriresolver(self.node,
                                         password=ROBOT_PASSWORD)
         self.URI_resolv, self.URI = uri_r.register_uriresolver()
         return uri_r

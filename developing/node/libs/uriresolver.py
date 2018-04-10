@@ -26,7 +26,8 @@ class uriresolver(control.Control):
         self.start_port = robot["start_port"]
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
-        print(colored("\n_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
+        #print(colored("\n_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
+        self.log("[BW][FB]\n_________FINDING BIGBROTHER OR NAME SERVER__________[BR]")
         self.URIS = {}
 
         # NameServer

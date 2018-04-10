@@ -4,7 +4,7 @@ import time
 import token
 import threading
 from termcolor import colored
-import loging
+from loging import loging
 
 # decoradores para las clases generales
 
@@ -86,6 +86,7 @@ class Control(loging.Loging):
         Init workers Threads and PUB/SUB thread"""
 
     def __init__(self):
+        super(Control,self).__init__()
         self.mutex = threading.Lock()
         self.workers = []
         if "worker_run" not in self.__dict__:
@@ -105,7 +106,7 @@ class Control(loging.Loging):
 
     def init_thread(self, fn, *args):
         """ Start all workers daemon"""
-        if self.worker_runa:
+        if self.worker_run:
             t = threading.Thread(target=fn, args=args)
             self.workers.append(t)
             t.setDaemon(True)

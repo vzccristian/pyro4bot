@@ -24,7 +24,8 @@ try:
     NOD = nodo.NODERB(filename=jsonbot)
     #init_thread(NOD.create_server_node)
     time.sleep(0.5)
-    while True:
+    salir = True
+    while salir:
         cad=raw_input("{}: ".format(NOD.name))
 
         if cad.upper()=="EXIT":
@@ -36,6 +37,9 @@ try:
             for k,v in NOD.__docstring__().items():
                 print(k)
                 print("\t"+str(v))
+        if cad.upper() == "SALIR":
+            salir = False
+            exit()
 except IOError:
     print("The file can not be found: %s" % jsonbot)
     raise
