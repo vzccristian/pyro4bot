@@ -26,8 +26,10 @@ class bt_RFCOMM(object):
         self.Disconnect()
 
     def Connect(self, mac):
-        print(mac)
-        self.btSocket.connect((mac, self.port))
+        try:
+            self.btSocket.connect((mac, self.port))
+        except:
+            print("ERROR bluetooth connects")
 
     def Disconnect(self):
         try:
@@ -77,6 +79,12 @@ class BTClient(object):
         except:
             print("ERROR in BTClient send")
 
+    def DumpDevices(self):
+        self.client.DumpDevices()
+        
+    def Discover(self):
+        self.client.Discover()
+
     def __exit__(self):
         self.client.Disconnect()
 
@@ -121,6 +129,6 @@ if __name__ == "__main__":
     print(mac)
     robot = "B8:27:EB:34:76:BA"
     client = BTClient(robot,"alphabot1",3333)
-
-    for i in range(500):
-        client.sendData("paco"+str(i))
+    client.DumpDevices()
+    # for i in range(500):
+    #     client.sendData("paco"+str(i))

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 import time
 from node.libs import control, utils
 import Pyro4
@@ -28,14 +29,14 @@ class pantilt(control.Control):
         self.bar = False
         self.ptblock = False
         self.init_workers(self.worker)
-
+        #print(self.node.get_uris())
     def worker(self):
         while self.worker_run:
             # write here code for your sensor
-
             time.sleep(self.frec)
 
     @Pyro4.oneway
+    @control.flask("actuator")
     def move(self, pan=90, tilt=90):
         if self.ptblock == False:
             self.usbserial.command("setpt " + str(pan) + "," + str(tilt))
@@ -45,6 +46,7 @@ class pantilt(control.Control):
             self.ptblock = False
 
     @Pyro4.oneway
+    @control.flask("actuator")
     def barrido(self, i, f):
         if not self.bar:
             self.bar = True
@@ -53,8 +55,8 @@ class pantilt(control.Control):
                 time.sleep(0.05)
             self.bar = False
 
+    @control.flask("sensor", 2)
     def get_pantilt(self):
-
         return self.PT
 
 

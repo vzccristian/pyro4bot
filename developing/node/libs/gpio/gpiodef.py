@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 from Platform import HARDWARE
 
 if HARDWARE == "RASPBERRY_PI":

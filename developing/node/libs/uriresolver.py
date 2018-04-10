@@ -5,6 +5,7 @@
 import time
 from node.libs import control, utils
 import Pyro4
+import Pyro4.naming as nm
 from termcolor import colored
 import threading
 import os
@@ -25,8 +26,8 @@ class uriresolver(control.Control):
         self.start_port = robot["start_port"]
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
-        print("")
-        print(colored("_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
+        #print(colored("\n_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
+        self.log("[BW][FB]\n_________FINDING BIGBROTHER OR NAME SERVER__________[BR]")
         self.URIS = {}
 
         # NameServer
@@ -91,9 +92,8 @@ class uriresolver(control.Control):
                 connect = False
             time.sleep(0.3)
         if connect:
-            print("")
             print(
-                colored("___________STARTING RESOLVER URIs___________________",
+                colored("\n___________STARTING RESOLVER URIs___________________",
                         "yellow"))
             print("URI %s" % colored(self.uri.asString(), 'green'))
 
@@ -110,10 +110,12 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_ns(self):
-        default_ns = Pyro4.config.BROADCAST_ADDRS
         if self.nameserver is None:
+            default_ns = Pyro4.config.BROADCAST_ADDRS
             # Looking for Network NameServer
             for x in utils.get_all_ip_address(broadcast=True):
+                if (self.nameserver):
+                    break
                 try:
                     Pyro4.config.BROADCAST_ADDRS = x
                     self.broadcast_ns = x
@@ -144,7 +146,7 @@ class uriresolver(control.Control):
             try:
                 port = utils.get_free_port(self.port_ns, ip=self.ip)
                 self.nsThread = threading.Thread(
-                    target=Pyro4.naming.startNSloop,
+                    target=nm.startNSloop,
                     kwargs={'host': self.ip, 'port': port})
                 self.nsThread.start()
                 time.sleep(1)
@@ -260,21 +262,20 @@ class uriresolver(control.Control):
         return None
 
     @Pyro4.expose
-    def wait_available(self, uri, password, trys=20):
+    def wait_local_available(self, uri, password, trys=20):
         # eso puede ser asinc return
         connect = False
         if uri.find("@") == -1:
             uri = self.get_uri(uri)
         try:
-            p = Pyro4.Proxy(uri)
-            p._pyroHmacKey = bytes(password)
-        except:
+            p = utils.get_pyro4proxy(uri, password)
+        except Exception:
             return None
         while not connect and trys > 0:
             trys = trys - 1
             try:
                 connect = p.echo() == "hello"
-            except:
+            except Exception:
                 connect = False
             time.sleep(0.2)
         if connect:
@@ -283,45 +284,47 @@ class uriresolver(control.Control):
             return None
 
     @Pyro4.expose
-    def wait_resolv_remotes(self, name, trys=10, passw=None):
-        bot_uri = []
+    def wait_resolv_remotes(self, name, claimant, trys=10, passw=None):
+        bot_uri = None
         target = name.split(".")
 
         if not self.nameserver:
-            return None
+            return "ERROR", None
 
         if passw is None:
             passw = target[0]
 
-        while not bot_uri and trys > -1:
+        while (bot_uri is None) and (trys > -1):
             if self.usingBB:
                 try:
-                    return self.nameserver.lookup(name)
+                    self.nameserver.request(name, claimant)
+                    return "ASYNC", None
                 except Exception:
-                    print("ERROR: Wait_resolv_remotes with bigbrother")
-            else:
+                    print("ERROR: Wait_resolv_resolved_remote_deps with bigbrother")
+            else:  # Trying to resolv without bigbrother
                 if (target[0] and target[1] and
                         target[0].count("*") == 0 and
                         target[1].count("*") == 0):  # robot.comp
-                    bot_uri.add(Pyro4.locateNS().lookup(target[0]))
                     try:
+                        bot_uri = Pyro4.locateNS().lookup(target[0])
                         bot_proxy = utils.get_pyro4proxy(bot_uri, passw)
                         if bot_proxy:
                             remoteuri, status = bot_proxy.get_name_uri(name)
                             if (remoteuri is not None and status not in ["down", "wait"]):
-                                return remoteuri
+                                return "SYNC", remoteuri
+                            else:
+                                return "WAIT", None
                     except Exception:
                         print("ERROR: Unable to obtain list of robot sensors: \
                              \n-->[URI]: %s \n-->[NAME]: %s" % (bot_uri, name))
 
                 else:  # Another thing
-                    print "Para usar esta funcionalidad se necesita de BigBrother"
-                    return None
+                    print("Para usar esta funcionalidad se necesita de BigBrother")
+                    return "ERROR", None
             trys -= 1
             time.sleep(0.5)
-
         if trys < 0:
-            return name
+            return "ERROR", name
 
     @Pyro4.expose
     def register_robot_on_nameserver(self, uri):

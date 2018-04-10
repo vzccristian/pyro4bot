@@ -18,7 +18,6 @@
         "milaser":{"cls":"laser","LASER":[0,0]},
         "suelo":{"cls":"infrared","IR":[0,0,0,0]},
         "base":{"cls":"basemotion","MOTORS":[0,0],"BASE":[]},
-        "pantilt":{"cls":"pantilt","PT":[90,90],"-->":["milaser"]},
-        "micara":{"cls":"face","IR":[0,0,0,0],"-->":["base","*.suelo"]}
+        "pantilt":{"cls":"pantilt","PT":[90,90],"-->":["milaser"]}
     }
 }

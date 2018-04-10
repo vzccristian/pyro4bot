@@ -16,10 +16,11 @@ class tlc1543ad(control.Control):
         self.init_workers(self.worker)
 
     def worker(self):
+        x =0
         while self.worker_run:
             self.line=self.AnalogRead()
             time.sleep(self.frec)
-            #print(self.line)
+
 
     @Pyro4.expose
     def get_line(self):

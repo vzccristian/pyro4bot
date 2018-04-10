@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#____________developed by paco andres____________________
+# ____________developed by paco andres____________________
+# _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 import time
 from node.libs import control
@@ -19,7 +20,7 @@ class l298n(control.Control):
         self.motor_b = self.GPIO.PWM(self.ENB,100)
         self.stop()
 
-
+    @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
@@ -28,6 +29,7 @@ class l298n(control.Control):
         self.GPIO.output(self.IN3, LOW)
         self.GPIO.output(self.IN4, HIGH)
 
+    @control.flask("actuator")
     def stop(self):
         self.motor_a.ChangeDutyCycle(0)
         self.motor_b.ChangeDutyCycle(0)
@@ -36,6 +38,7 @@ class l298n(control.Control):
         self.GPIO.output(self.IN3, LOW)
         self.GPIO.output(self.IN4, LOW)
 
+    @control.flask("actuator")
     def backward(self, DCA=100, DCB=100):
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
@@ -44,6 +47,7 @@ class l298n(control.Control):
         self.GPIO.output(self.IN3, HIGH)
         self.GPIO.output(self.IN4, LOW)
 
+    @control.flask("actuator")
     def setvel(self, DCA, DCB):
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
@@ -52,9 +56,11 @@ class l298n(control.Control):
         self.GPIO.output(self.IN3, HIGH)
         self.GPIO.output(self.IN4, LOW)
 
+    @control.flask("actuator")
     def left(self, DC=100):
         self.setvel(0, DC)
 
+    @control.flask("actuator")
     def right(self, DC=100):
         self.setvel(DC, 0)
 
