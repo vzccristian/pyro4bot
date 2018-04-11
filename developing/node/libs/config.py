@@ -217,16 +217,16 @@ class Config:
             remote = []
         return local, remote
 
-    # def add_uri_conf(self):
-    #     conf = {}
-    #     conf["cls"] = "uriresolver"
-    #     conf["ip"] = self.conf["NODE"]["ip"]
-    #     conf["start_port"] = self.conf["NODE"]["start_port"]
-    #     conf["port_node"] = self.conf["NODE"]["port_node"]
-    #     conf["port_ns"] = self.conf["NODE"]["port_ns"]
-    #     conf["mode"] = "local"
-    #     conf["basename"] = self.conf["NODE"]["name"]
-    #     return conf
+    def add_uri_conf(self):
+        conf = {}
+        conf["cls"] = "uriresolver"
+        conf["ip"] = self.conf["NODE"]["ip"]
+        conf["start_port"] = self.conf["NODE"]["start_port"]
+        conf["port_node"] = self.conf["NODE"]["port_node"]
+        conf["port_ns"] = self.conf["NODE"]["port_ns"]
+        conf["mode"] = "local"
+        conf["basename"] = self.conf["NODE"]["name"]
+        return conf
 
     @property
     def njson(self):

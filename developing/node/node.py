@@ -58,7 +58,6 @@ class NODERB (control.Control):
         # Config from Json
         N_conf = config.Config(filename=filename, json=json)
         self.node = N_conf.node
-        print(self.node)
         self.services = N_conf.services
         self.sensors = N_conf.sensors
         self.services_order = N_conf.services_order
@@ -78,14 +77,12 @@ class NODERB (control.Control):
         print(colored("\t|", "yellow"))
         print(colored("\t|", "yellow"))
         print(colored("\t+-----> SERVICES", "yellow"))
-
         self.load_objects(self.services, self.services_order)
         print(colored("\t|", "yellow"))
         print(colored("\t|", "yellow"))
         print(colored("\t+-----> PLUGINS", "yellow"))
         self.load_objects(self.sensors, self.sensors_order)
 
-    @control.load_node
     def load_node(self, data, **kwargs):
         global ROBOT_PASSWORD
         for k,v in kwargs.items():

@@ -217,6 +217,10 @@ class Control(loging.Loging):
 
     def stop(self):
         self.worker_run = False
+        
+    @Pyro4.expose
+    def echo(self, msg="hello"):
+        return msg
 
     @Pyro4.expose
     def get_pyroid(self):
