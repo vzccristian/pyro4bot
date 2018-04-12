@@ -5,7 +5,7 @@
 from coloramadefs import *
 import logging
 
-class Loging(logging.Logger):
+class Logging(logging.Logger):
     def __init__(self):
         pass
 

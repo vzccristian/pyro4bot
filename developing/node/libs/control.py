@@ -5,7 +5,7 @@ import token
 import threading
 from threading import Thread
 from termcolor import colored
-from loging import loging
+from botlogging import botlogging
 
 
 SECS_TO_CHECK_STATUS = 5
@@ -36,8 +36,6 @@ def load_config(in_function):
         super(_self.__class__.__mro__[0], _self).__init__()
         in_function(*args, **kwargs)
     return out_function
-
-# TODO: __new__ magic method
 
 
 def Pyro4bot_Loader(cls, kwargs):
@@ -94,7 +92,7 @@ def flask(*args_decorator):
     return flask_decorator
 
 
-class Control(loging.Loging):
+class Control(botlogging.Logging):
     """ This class provide threading funcionality to all object in node.
         Init workers Threads and PUB/SUB thread"""
 
@@ -217,10 +215,6 @@ class Control(loging.Loging):
 
     def stop(self):
         self.worker_run = False
-        
-    @Pyro4.expose
-    def echo(self, msg="hello"):
-        return msg
 
     @Pyro4.expose
     def get_pyroid(self):
