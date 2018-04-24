@@ -16,7 +16,7 @@ ROUTER_PORT = "6060"
 
 
 class uriresolver(control.Control):
-    @control.load_config
+    #@control.load_config
     def __init__(self, robot, password="default"):
         # Atributes
 
@@ -26,8 +26,7 @@ class uriresolver(control.Control):
         self.start_port = robot["start_port"]
         self.port_ns = robot["port_ns"]
         self.ip = robot["ip"]
-        #print(colored("\n_________FINDING BIGBROTHER OR NAME SERVER__________", "yellow"))
-        self.log("[BW][FB]\n_________FINDING BIGBROTHER OR NAME SERVER__________[BR]")
+        self.log("[BW][FN]\t\tFINDING BIGBROTHER OR NAME SERVER\t\t[BR]")
         self.URIS = {}
 
         # NameServer

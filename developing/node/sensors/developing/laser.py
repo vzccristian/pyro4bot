@@ -15,6 +15,7 @@ class laser(control.Control):
     def __init__(self):
         self.init_workers(self.worker)
         self.send_subscripcion(self.usbserial, "LASER")
+        #print(self.__dict__)
 
     def worker(self):
         while self.worker_run:

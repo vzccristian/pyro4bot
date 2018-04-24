@@ -40,28 +40,28 @@ def load_config(in_function):
 # TODO: __new__ magic method
 
 
-def Pyro4bot_Loader(cls, kwargs):
+def Pyro4bot_Loader(clss, **kwargs):
     """ Decorator for load Json options in Pyro4bot objects
         init superclass control
     """
-    original_init = cls.__init__
+    original_init = clss.__init__
 
     def init(self):
         for k, v in kwargs.items():
             setattr(self, k, v)
-        super(cls, self).__init__()
+        super(clss, self).__init__()
         original_init(self)
-    cls.__init__ = init
-    return cls
+    clss.__init__ = init
+    return clss
 
 
-def load_node(in_function):
-    """this Decorator load all parameter defined in Json configuration in node object """
-    def out_function(*args, **kwargs):
-        _self = args[0]
-        _self.__dict__.update(kwargs)
-        in_function(*args, **kwargs)
-    return out_function
+# def load_node(in_function):
+#     """this Decorator load all parameter defined in Json configuration in node object """
+#     def out_function(*args, **kwargs):
+#         _self = args[0]
+#         _self.__dict__.update(kwargs)
+#         in_function(*args, **kwargs)
+#     return out_function
 
 
 def flask(*args_decorator):
@@ -217,7 +217,7 @@ class Control(loging.Loging):
 
     def stop(self):
         self.worker_run = False
-        
+
     @Pyro4.expose
     def echo(self, msg="hello"):
         return msg

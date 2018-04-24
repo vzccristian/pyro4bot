@@ -44,13 +44,7 @@ class Config:
         self.check_semantic()
         self.services_order = self.dependency(self.services)
         self.sensors_order = self.dependency(self.sensors)
-        # print(self.sensors_order)
-        # print(self.services_order)
-        # print(self.sensors)
-        # print(self.services)
-        # exit()
-        #self.conf["NODE"][self.conf["NODE"]["name"] +
-        #                  ".URI_resolv"] = self.add_uri_conf
+
 
     def disable_lines(self):
         for key in [x for x in self.conf.keys() if x != "NODE"]:
@@ -217,16 +211,16 @@ class Config:
             remote = []
         return local, remote
 
-    def add_uri_conf(self):
-        conf = {}
-        conf["cls"] = "uriresolver"
-        conf["ip"] = self.conf["NODE"]["ip"]
-        conf["start_port"] = self.conf["NODE"]["start_port"]
-        conf["port_node"] = self.conf["NODE"]["port_node"]
-        conf["port_ns"] = self.conf["NODE"]["port_ns"]
-        conf["mode"] = "local"
-        conf["basename"] = self.conf["NODE"]["name"]
-        return conf
+    # def add_uri_conf(self):
+    #     conf = {}
+    #     conf["cls"] = "uriresolver"
+    #     conf["ip"] = self.conf["NODE"]["ip"]
+    #     conf["start_port"] = self.conf["NODE"]["start_port"]
+    #     conf["port_node"] = self.conf["NODE"]["port_node"]
+    #     conf["port_ns"] = self.conf["NODE"]["port_ns"]
+    #     conf["mode"] = "local"
+    #     conf["basename"] = self.conf["NODE"]["name"]
+    #     return conf
 
     @property
     def njson(self):
@@ -243,3 +237,14 @@ class Config:
     @property
     def sensors(self):
         return self.conf["sensors"]
+
+    @property
+    def robot(self):
+        rob={}
+        rob["node"] = self.node
+        rob["services"] = self.services
+        rob["services_order"] = self.services_order
+        rob["sensors"] = self.sensors
+        rob["sensors_order"] = self.sensors_order
+        rob["imports"] = self.get_imports()
+        return rob

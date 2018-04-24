@@ -3,48 +3,35 @@
 
 Main file
 """
-import node.node as nodo
-import threading
+import node.robotstarter as robot
 import sys
 import time
 import os
 from termcolor import colored
-
-
-def init_thread(fn, *args):
-    """ start  daemon"""
-    t = threading.Thread(target=fn, args=args)
-    t.setDaemon(True)
-    t.start()
-    return t
-
-
-def init_thread( fn,*args):
-    """ start  daemon"""
-    t = threading.Thread(target=fn, args=args)
-    t.setDaemon(True)
-    t.start()
-    return t
-
+import setproctitle
+import Pyro4
+from node.libs import utils
 try:
     if len(sys.argv) > 1:
         jsonbot = sys.argv[1]
     else:
         jsonbot = "./samples/simplebot.json"
-    NOD = nodo.NODERB(filename=jsonbot)
-    #init_thread(NOD.create_server_node)
-    time.sleep(0.5)
+    PROCESS = robot.robot_starter(filename=jsonbot)
+    #print(PROCESS)
+    setproctitle.setproctitle(PROCESS[0]+"."+"Console")
+    ROB = utils.get_pyro4proxy(PROCESS[1],PROCESS[0])
     salir = True
     while salir:
-        cad=raw_input("{}: ".format(NOD.name))
+        cad=raw_input("{}: ".format(PROCESS[0]))
 
         if cad.upper()=="EXIT":
-            NOD.shutdown()
+            ROB.shutdown()
+            os.kill(PROCESS[3],9)
             exit()
         if cad.upper() == "STATUS":
-            NOD.print_process()
+            ROB.print_process()
         if cad.upper() == "DOC":
-            for k,v in NOD.__docstring__().items():
+            for k,v in ROB.__docstring__().items():
                 print(k)
                 print("\t"+str(v))
         if cad.upper() == "SALIR":
@@ -54,4 +41,5 @@ except IOError:
     print("The file can not be found: %s" % jsonbot)
     raise
 except (KeyboardInterrupt, SystemExit):
+    # ROB.shutdown()
     os._exit(0)

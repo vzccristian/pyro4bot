@@ -4,9 +4,9 @@
       "path":"./node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      "ethernet":"wlan0",
+      "ethernet":"enp0s25",
       "port_ns":9090,
-      "port_node":4040,
+      "port_node":5040,
       "start_port":6000,
       "def_frec":0.02,
       "def_worker":true
