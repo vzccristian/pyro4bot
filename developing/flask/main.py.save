@@ -1,0 +1,11 @@
+from flask import Flask
+from flask import render_template
+app = Flask(__name__)
+
+@app.route('/')
+@app.route('/<name>')
+def init(name=None):
+    if name != None:
+
+    
+    return render_template('index.html', name=name)

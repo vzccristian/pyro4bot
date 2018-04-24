@@ -273,7 +273,7 @@ class uriresolver(control.Control):
         while not connect and trys > 0:
             trys = trys - 1
             try:
-                connect = p.echo() == "hello"
+                connect = p._pyroHandshake == "hello"
             except Exception:
                 connect = False
             time.sleep(0.2)

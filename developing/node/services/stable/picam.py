@@ -52,15 +52,10 @@ class picam(control.Control):
         self.clients = list()
         self.initPort = 9000
 
-        # Cleaner
-        self.cleaner = threading.Thread(
-            target=self.removeClosedConnections, args=())
-        self.cleaner.setDaemon(True)
-        self.cleaner.start()
-
         self.ip = utils.get_ip_address(self.ethernet)
 
         self.init_workers(self.worker_read)
+        self.init_thread(self.removeClosedConnections)
 
     def worker_read(self):
         """Main worker."""
@@ -68,7 +63,7 @@ class picam(control.Control):
             for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
                 # Si hay clientes a la espera...
                 while (len(self.clients) is 0):
-                    time.sleep(0.5)
+                    time.sleep(2)
                 try:
                     self.acceptConnections()
                     streamPosition = self.buffer.tell()
@@ -123,7 +118,7 @@ class picam(control.Control):
             client.connection.write(struct.pack('<L', 0))
             client.connection.close()
             client.serverSocket.close()
-        except:
+        except Exception:
             pass
         if (exception is not None):
             utils.format_exception(exception)

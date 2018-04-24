@@ -8,7 +8,9 @@ import time
 from node.libs import control
 import Pyro4
 
-
+import sys
+import os
+import threading
 class laser(control.Control):
     __REQUIRED = ["usbserial", "LASER", "frec"]
 

@@ -4,7 +4,7 @@
       "path":"./node",
       "etc":"<path>/etc",
       "path_cls":["services","sensors"],
-      "ethernet":"enp0s25",
+      "ethernet":"wlp8s0",
       "port_ns":9090,
       "port_node":5040,
       "start_port":6000,
