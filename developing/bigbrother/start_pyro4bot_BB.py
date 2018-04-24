@@ -46,12 +46,14 @@ class bigbrother(object):
         self.bigBrother = sched.scheduler(time.time, time.sleep)  # bigBrother
         self.bigBrother.enter(5, 1, self.updater, ())  # bigBrother
         self.thread_bigBrother = threading.Thread(
-            target=self.bigBrother.run, args=())
+            name="BigBrother",
+            target=self.bigBrother.run,
+            args=())
         self.thread_bigBrother.setDaemon(1)
         self.thread_bigBrother.start()
 
         self.thread_proxy = threading.Thread(
-            target=self.create_pyro_proxy, args=())
+            name="Proxy", target=self.create_pyro_proxy, args=())
         self.thread_proxy.setDaemon(1)
         self.thread_proxy.start()
 
@@ -142,7 +144,8 @@ class bigbrother(object):
     @Pyro4.expose
     def request(self, obj, claimant):
         if (obj is not None and claimant is not None):
-            t = threading.Thread(target=self.request_loop, args=(obj,))
+            t = threading.Thread(name="t_" + obj + " " + claimant,
+                                 target=self.request_loop, args=(obj,))
             self.async_waitings[obj] = {
                 "target_type": -1,
                 "call": t,
@@ -262,7 +265,7 @@ class bigbrother(object):
         _metadata = metadata
         self.private_pyro4ns.register(
             name, uri, safe=_safe, metadata=_metadata)
-        threading.Thread(target=self.update, args=()).start()
+        threading.Thread(name="Updater", target=self.update, args=()).start()
 
     @Pyro4.expose
     def remove(self, name, prefix=None, regex=None):
@@ -331,6 +334,7 @@ class nameServer(object):
             print "NameServer already working"
         except Exception:
             self.priv_ns_t = threading.Thread(
+                name="Private NameServer",
                 target=self.create_nameserver,
                 kwargs={'passw': self.config["nameserver_password"]})
             self.priv_ns_t.start()  # Thread-1 started
@@ -341,6 +345,7 @@ class nameServer(object):
 
             ip = utils.get_ip_address(ifname=self.config["interface"])
             self.pub_ns_t = threading.Thread(
+                name="Public NameServer"
                 target=self.create_nameserver,
                 kwargs={'host': ip, })
             self.pub_ns_t.start()

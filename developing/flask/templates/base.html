@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+{% block head %}
+<link rel="stylesheet"  href="{{ url_for('static', filename='css/custom.css') }}">
+{% endblock %}
+</head>
+<body>
+<title>Hello from Flask</title>
+{% if name %}
+  {% if bot %}
+  <h1>Hello {{ name }}!</h1>
+  {% block info %}
+
+  {% endblock %}
+  	<div>
+		<p>{{bot.__dict__}}</p>
+    		<ul>
+    		{% set elems = [] %}
+    		{% set restricted_list = ['node','name','port_robot', 'ip', 'bigbrother_passw', 'ns']%}
+    		{% for elem in bot.__dict__ %}
+    			<li><label>{{ elem }}</label>{{ bot.__dict__[elem] }}</li>
+			{% if elem not in restricted_list %}
+                                {{elem}}
+                                {% do elems.append(elem) %}
+                        {% endif %}			
+    		{% endfor %}
+    		</ul>
+	</div>
+	<div>
+		<ul>
+		{% for e in elems %}
+			<li>{{ bot[e].__docstring__() }} </li>	
+			<li>{{ bot[e].__exposed__() }} </li>
+			{% for f in bot[e].__exposed__()['methods'] %}
+				{% if f !=  '__exposed__' and f != '__docstring__' and bot[e].__docstring__()[f] != None %}
+					{{ f }}
+					
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+		<ul>
+	</div>
+  {% endif %}
+  </div>
+{% else %}
+  <h1>Hello, World!</h1>
+{% endif %}
+</body>
+</html>
