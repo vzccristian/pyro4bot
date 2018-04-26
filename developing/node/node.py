@@ -52,21 +52,24 @@ def import_class(services, sensors):
 class robot(control.Control):
     # revisar la carga posterior de parametros json
     def __init__(self, filename="", json=None):
-        super(robot,self).__init__()
+        super(robot, self).__init__()
         self.PROCESS = {}
         import_class(*self.imports)
         self.URI = None  # URIProxy for internal uri resolver
         self.URI_resolv = None  # Just URI for URI_RESOLV
         self.URI_object = self.load_uri_resolver()  # Object resolver location
+        global ROBOT_PASSWORD
+        ROBOT_PASSWORD = self.name
         time.sleep(1)
-    def start_plugins(self):
-        print(colored("\t|","yellow"))
-        print(colored("\t|","yellow"))
+
+    def start_components(self):
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
         print(colored("\t+-----> SERVICES", "yellow"))
         self.load_objects(self.services, self.services_order)
 
-        print(colored("\t|","yellow"))
-        print(colored("\t|","yellow"))
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
         print(colored("\t+-----> PLUGINS", "yellow"))
         self.load_objects(self.sensors, self.sensors_order)
 
@@ -82,8 +85,10 @@ class robot(control.Control):
             parts[k]["_remote_trys"] = _REMOTE_TRAYS
             parts[k]["_services_trys"] = _LOCAL_TRAYS
             parts[k]["_unresolved_locals"] = list(parts[k].get("_locals", []))
-            parts[k]["_unr_remote_deps"] = list(parts[k].get("_resolved_remote_deps", []))
-            parts[k]["_unresolved_services"] = list(parts[k].get("_services", []))
+            parts[k]["_unr_remote_deps"] = list(
+                parts[k].get("_resolved_remote_deps", []))
+            parts[k]["_unresolved_services"] = list(
+                parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
         errors = False
         for k in object_robot:
@@ -116,7 +121,7 @@ class robot(control.Control):
                 del(parts[k]["_unresolved_services"])
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
-                parts[k].pop("-->",None)
+                parts[k].pop("-->", None)
                 parts[k]["_REMOTE_STATUS"] = st_remote
                 self.start_object(k, parts[k])
 
@@ -192,7 +197,8 @@ class robot(control.Control):
                 check_remote = "OK"
                 obj["_remote_trys"] = 0
                 obj["_resolved_remote_deps"].append(uri)
-                if d in obj["_unr_remote_deps"]: obj["_unr_remote_deps"].remove(d)
+                if d in obj["_unr_remote_deps"]:
+                    obj["_unr_remote_deps"].remove(d)
             elif "ASYNC" == msg:
                 check_remote = "ASYNC"
                 obj["_remote_trys"] = 0
@@ -234,7 +240,7 @@ class robot(control.Control):
             self.PROCESS[name].append(status)
             if status == "OK":
                 st = colored(status, 'green')
-                prox=utils.get_pyro4proxy(obj["pyro4id"], self.name)
+                prox = utils.get_pyro4proxy(obj["pyro4id"], self.name)
                 # print(prox.__docstring__())
                 # #self.PROCESS[name].append(prox.__docstring__())
             if status == "FAIL":
@@ -252,9 +258,11 @@ class robot(control.Control):
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
+            print "pass-----------__>", ROBOT_PASSWORD
             deps = utils.prepare_proxys(d, ROBOT_PASSWORD)
             # Preparing class for pyro4
-            pyro4bot_class = control.Pyro4bot_Loader(globals()[d["cls"]], **deps)
+            pyro4bot_class = control.Pyro4bot_Loader(
+                globals()[d["cls"]], **deps)
             new_object = pyro4bot_class()
 
             # Associate object to the daemon
@@ -267,10 +275,11 @@ class robot(control.Control):
             # Hide methods from Control
             safe_exposed = {}
             for k in exposed.keys():
-                safe_exposed[k] = list(set(exposed[k]) - set(dir(control.Control)))
+                safe_exposed[k] = list(
+                    set(exposed[k]) - set(dir(control.Control)))
             safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
             new_object.exposed.update(safe_exposed)
-            setproctitle.setproctitle(name_ob)
+            setproctitle.setproctitle("PYRO4BOT." + name_ob)
             # Save dosctring documentation inside sensor object
             new_object.docstring.update(
                 self.add_docstring(new_object, safe_exposed))
@@ -287,6 +296,9 @@ class robot(control.Control):
             print("ERROR: creating sensor robot object: " + d["pyro4id"])
             print utils.format_exception(e)
 
+    def register_node(self):
+        # Registering NODE on nameserver
+        self.URI.register_robot_on_nameserver(self.uri_node)
     @Pyro4.expose
     def get_uris(self):
         return self.URI.list_uris()
@@ -304,13 +316,13 @@ class robot(control.Control):
     @Pyro4.expose
     def shutdown(self):
         print(colored("____STOPING PYRO4BOT %s_________" % self.name, "yellow"))
-        for k,v in self.PROCESS.items():
+        for k, v in self.PROCESS.items():
             try:
                 v[1].terminate()
             except:
                 raise
             print("[{}]  {}".format(colored("Down", 'green'), v[0]))
-        #os.kill(self.mypid,9)
+        # os.kill(self.mypid,9)
 
     @Pyro4.expose
     def print_process(self):

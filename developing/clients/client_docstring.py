@@ -18,8 +18,9 @@ import time
 if __name__ == "__main__":
     print("Ejecutando cliente para docstring...")
 
-    bot = ClientRobot("picambot")
+    bot = ClientRobot("fakebot")
     print bot.__dict__
+    print bot.fake.__docstring__()
     # print bot.picam.__docstring__()
     # print "Infrarred DOC"
     # print bot.infrared.__docstring__()

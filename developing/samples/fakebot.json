@@ -1,0 +1,20 @@
+{
+   "NODE":{
+      "name":"fakebot",
+      "path":"./node",
+      "etc":"<path>/etc",
+      "path_cls":["services","sensors"],
+      "ethernet":"wlp8s0",
+      "name_server":true,
+      "port_ns":9090,
+      "port_node":4040,
+      "start_port":5050,
+      "def_frec":0.03,
+      "def_worker":true
+    },
+   "services":{
+   },
+   "sensors":{
+     "fake":{"cls":"fake","frec":1}
+    }
+}

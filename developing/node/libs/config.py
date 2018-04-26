@@ -36,15 +36,12 @@ def get_field(search_dict, field, enable=True):
 
 class Config:
     def __init__(self, filename="", json=None):
-        if json is None:
-            json = {}
         self.conf = json if (filename == "") else myjson.MyJson(
             filename, dependencies=True).json
         self.disable_lines()
         self.check_semantic()
         self.services_order = self.dependency(self.services)
         self.sensors_order = self.dependency(self.sensors)
-
 
     def disable_lines(self):
         for key in [x for x in self.conf.keys() if x != "NODE"]:
@@ -240,7 +237,7 @@ class Config:
 
     @property
     def robot(self):
-        rob={}
+        rob = {}
         rob["node"] = self.node
         rob["services"] = self.services
         rob["services_order"] = self.services_order
