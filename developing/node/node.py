@@ -22,7 +22,7 @@ _LOCAL_TRAYS = 5
 _REMOTE_TRAYS = 5
 
 
-def import_class(services, sensors):
+def import_class(services, components):
     """ Import necesary packages for robot"""
     print(colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
                   'yellow'))
@@ -35,8 +35,8 @@ def import_class(services, sensors):
             print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
             exit(0)
-    print(" SENSORS:")
-    for module, cls in sensors:
+    print(" COMPONENTS:")
+    for module, cls in components:
         try:
             print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
             exec("from {} import {}".format(module, cls), globals())
@@ -70,8 +70,8 @@ class robot(control.Control):
 
         print(colored("\t|", "yellow"))
         print(colored("\t|", "yellow"))
-        print(colored("\t+-----> PLUGINS", "yellow"))
-        self.load_objects(self.sensors, self.sensors_order)
+        print(colored("\t+-----> COMPONENTS", "yellow"))
+        self.load_objects(self.components, self.components_order)
 
     def load_uri_resolver(self):
         uri_r = uriresolver.uriresolver(self.node,
@@ -299,6 +299,8 @@ class robot(control.Control):
     def register_node(self):
         # Registering NODE on nameserver
         self.URI.register_robot_on_nameserver(self.uri_node)
+
+
     @Pyro4.expose
     def get_uris(self):
         return self.URI.list_uris()

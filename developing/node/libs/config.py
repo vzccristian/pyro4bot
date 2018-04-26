@@ -41,7 +41,7 @@ class Config:
         self.disable_lines()
         self.check_semantic()
         self.services_order = self.dependency(self.services)
-        self.sensors_order = self.dependency(self.sensors)
+        self.components_order = self.dependency(self.components)
 
     def disable_lines(self):
         for key in [x for x in self.conf.keys() if x != "NODE"]:
@@ -59,7 +59,7 @@ class Config:
         if "name" not in self.conf["NODE"]:
             self.conf["NODE"]["name"] = "node"
 
-        for k, v in self.sensors.items() + self.services.items():
+        for k, v in self.components.items() + self.services.items():
             if "worker_run" not in v:
                 v["worker_run"] = True
             if "mode" not in v:
@@ -103,37 +103,37 @@ class Config:
                 self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
                     self.services, n)
 
-        for n in self.sensors:
-            if _clases.get(self.sensors[n]["cls"], None) is not None:
-                if len(_clases[self.sensors[n]["cls"]]) > 1:
+        for n in self.components:
+            if _clases.get(self.components[n]["cls"], None) is not None:
+                if len(_clases[self.components[n]["cls"]]) > 1:
                     print("Warning: there are many modules {} for class {}".format(
-                        _clases[self.sensors[n]["cls"]], self.sensors[n]["cls"]))
-                self.sensors[n]["module"] = _clases[self.sensors[n]["cls"]][0]
+                        _clases[self.components[n]["cls"]], self.components[n]["cls"]))
+                self.components[n]["module"] = _clases[self.components[n]["cls"]][0]
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(
-                    self.sensors[n]["cls"]), "red"))
+                    self.components[n]["cls"]), "red"))
                 for k_error, error in _modules_errors.iteritems():
                     print("Module {}: {}".format(k_error, error))
                 exit()
-            self.sensors[n]["_services"] = list(self.services)
-            if ("-->") in self.sensors[n]:
+            self.components[n]["_services"] = list(self.services)
+            if ("-->") in self.components[n]:
                 sp = [self.node["name"] + "." +
-                      x for x in self.sensors[n]["-->"] if x.find(".") < 0]
-                cp = [x for x in self.sensors[n]["-->"] if x.find(".") >= 0]
-                self.sensors[n]["-->"] = sp + cp  # esto se puede simplificar
+                      x for x in self.components[n]["-->"] if x.find(".") < 0]
+                cp = [x for x in self.components[n]["-->"] if x.find(".") >= 0]
+                self.components[n]["-->"] = sp + cp  # esto se puede simplificar
             if n.find(".") == -1:
-                newrobot[self.node["name"] + "." + n] = self.sensors[n]
+                newrobot[self.node["name"] + "." + n] = self.components[n]
             else:
-                newrobot[n] = self.sensors[n]
+                newrobot[n] = self.components[n]
 
-        self.sensors = newrobot
-        for n in self.sensors:
-            self.sensors[n]["_locals"] = []
-            self.sensors[n]["_resolved_remote_deps"] = []
-            if "-->" in self.sensors[n]:
-                self.sensors[n]["_locals"], self.sensors[n]["_resolved_remote_deps"] = self.local_remote(
-                    self.sensors, n)
-                # print("REMO:",self.sensors[n]["_resolved_remote_deps"])
+        self.components = newrobot
+        for n in self.components:
+            self.components[n]["_locals"] = []
+            self.components[n]["_resolved_remote_deps"] = []
+            if "-->" in self.components[n]:
+                self.components[n]["_locals"], self.components[n]["_resolved_remote_deps"] = self.local_remote(
+                    self.components, n)
+                # print("REMO:",self.components[n]["_resolved_remote_deps"])
 
     def dependency(self, ser):
         ser_order = [x for x in ser if not get_field(ser[x], "_locals")]
@@ -158,45 +158,45 @@ class Config:
     def get_imports(self):
         """
         Return two lists of tuples, one (module,class) for all services a other
-        for sensors
+        for components
         """
         services = [(self.services[s]["module"], self.services[s]["cls"])
                     for s in self.services_order]
-        sensors = [(self.sensors[s]["module"], self.sensors[s]["cls"])
-                   for s in self.sensors_order]
-        return set(services), set(sensors)
+        components = [(self.components[s]["module"], self.components[s]["cls"])
+                   for s in self.components_order]
+        return set(services), set(components)
 
     def whithout_deps(self, part):
         """
-         Return sensors or services whihout dependencies
-         part can be sensor or services
+         Return components or services whihout dependencies
+         part can be component or services
         """
         return [x for x in part if not get_field(part[x], "-->")]
 
     def with_deps(self, part):
         """
-         Return sensors or services whih dependencies.
-         part can be sensor or services
+         Return components or services whih dependencies.
+         part can be component or services
         """
         return [x for x in part if get_field(part[x], "-->")]
 
     def has_remote(self, part, k):
         """
-        return true if  k is a remote service or sensor
+        return true if  k is a remote service or component
         """
         local, remote = self.local_remote(part, k)
         return bool(remote)
 
     def has_local(self, part, k):
         """
-        return true if  k is a local service or sensor
+        return true if  k is a local service or component
         """
         local, remote = self.local_remote(part, k)
         return bool(local)
 
     def local_remote(self, part, k):
         """
-        return two list. services or sensors locals and remotes
+        return two list. services or components locals and remotes
         """
         if "-->" in part[k]:
             local = [x for x in part[k]["-->"]
@@ -232,8 +232,8 @@ class Config:
         return self.conf["services"]
 
     @property
-    def sensors(self):
-        return self.conf["sensors"]
+    def components(self):
+        return self.conf["components"]
 
     @property
     def robot(self):
@@ -241,7 +241,7 @@ class Config:
         rob["node"] = self.node
         rob["services"] = self.services
         rob["services_order"] = self.services_order
-        rob["sensors"] = self.sensors
-        rob["sensors_order"] = self.sensors_order
+        rob["components"] = self.components
+        rob["components_order"] = self.components_order
         rob["imports"] = self.get_imports()
         return rob

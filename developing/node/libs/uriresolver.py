@@ -216,7 +216,7 @@ class uriresolver(control.Control):
                         if (passw is None):
                             passw = name
                         return utils.get_pyro4proxy(d, passw)
-                    elif (d.count(".") == 1):  # simplebot.sensor
+                    elif (d.count(".") == 1):  # simplebot.component
                         return (self.get_proxy_without_uri(d, passw))
                     else:
                         print "Objeto no valido"

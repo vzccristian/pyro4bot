@@ -98,7 +98,7 @@ class ClientRobot(object):
                 proxys = self.node.get_uris()
                 # print proxys
             except Exception:
-                print("ERROR: Unable to obtain list of robot sensors: \
+                print("ERROR: Unable to obtain list of robot components: \
                       \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
                 os._exit(0)
                 # raise

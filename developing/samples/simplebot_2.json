@@ -3,7 +3,7 @@
       "name":"simplebot2",
       "path":"./node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "port_ns":9090,
       "port_node":4040,
@@ -14,7 +14,7 @@
    "services":{
         "usbserial":{"cls":"usbsimulator","comPort":"/dev/ttyS0","comPortBaud":115200,"mode":"local"}
    },
-   "sensors":{
+   "components":{
         "milaser":{"cls":"laser","LASER":[0,0]},
         "suelo":{"cls":"infrared","IR":[0,0,0,0]},
         "base":{"cls":"basemotion","MOTORS":[0,0],"BASE":[]}

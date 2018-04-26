@@ -3,7 +3,7 @@
       "name":"robot_lineas",
       "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
@@ -15,7 +15,7 @@
    "services":{
         "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01}
    },
-   "sensors":{
+   "components":{
        "laser":{"cls":"laser","LASER":[0,0,0],"frec":0.01},
        "infrared":{"cls":"infrared","IR":[0,0,0,0],"frec":0.02},
        "basemotion":{"cls":"basemotion","BASE":[0,0],"frec":0.03}

@@ -59,7 +59,7 @@ class bigbrother(object):
 
         # Data treatment
         self.robots = {}
-        self.sensors = {}
+        self.components = {}
         self.async_waitings = {}
         self.claimant_list = []
 
@@ -68,11 +68,11 @@ class bigbrother(object):
         self.bigBrother.enter(10, 1, self.updater, ())
 
     def update(self):
-        """Update the sensor dictionary in each robot.
+        """Update the component dictionary in each robot.
 
         Go through the list of registered robots and save each of the robots
-        in self.sensors. The key of the dictionary is the sensor in question
-        and the value is a list of all the robots that have this sensor.
+        in self.components. The key of the dictionary is the component in question
+        and the value is a list of all the robots that have this component.
         """
         robots = {x: self.private_pyro4ns.list(
         )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
@@ -84,22 +84,22 @@ class bigbrother(object):
                 robot_uris = self.robotProxy.get_uris()  # Return list uris
                 self.robots[key] = robot_uris
                 for u in robot_uris:
-                    currentSensor = u.split(".")[1].split("@")[0]
-                    self.sensors[currentSensor] = []
-                    self.sensors.get(currentSensor).append(u)
-                    # if type(self.sensors.get(currentSensor)) is not list:
-                    #     self.sensors[currentSensor] = []
-                    #     self.sensors.get(currentSensor).append(u)
+                    currentComponent = u.split(".")[1].split("@")[0]
+                    self.components[currentComponent] = []
+                    self.components.get(currentComponent).append(u)
+                    # if type(self.components.get(currentComponent)) is not list:
+                    #     self.components[currentComponent] = []
+                    #     self.components.get(currentComponent).append(u)
                     # else:
-                    #     if not (u in self.sensors.get(currentSensor)):
-                    #         self.sensors.get(currentSensor).append(u)
+                    #     if not (u in self.components.get(currentComponent)):
+                    #         self.components.get(currentComponent).append(u)
             except Exception:
                 print("Error connecting to: %s " % value)
                 self.remove(key)
         if self.robots:
             print "----------------------------------------"
             print "ROBOTS:\n", self.robots
-            print "SENSORS:\n", self.sensors
+            print "COMPONENTS:\n", self.components
             print "ASYNC_WAITINGS:\n", self.async_waitings
             print "CLAIMANT_LIST:\n", self.claimant_list
 
@@ -166,7 +166,7 @@ class bigbrother(object):
         claimant = self.async_waitings[obj]["claimant"]
         name, comp = claimant.split(".")
         try:
-            for robots in self.sensors.get(comp):
+            for robots in self.components.get(comp):
                 (name, _, _) = utils.uri_split(robots)
                 if (name == self.async_waitings[obj]["claimant"]):
                     while (trys > 0):
@@ -201,15 +201,15 @@ class bigbrother(object):
                     target_type_info = 1
                     for x in self.robots[target[0]]:
                         uris.append(x)
-                elif target[0] == "?" and target[1]:  # ?.sensor
+                elif target[0] == "?" and target[1]:  # ?.component
                     target_type_info = 2
-                    if target[1] in self.sensors:
-                        uris.append(random.choice(self.sensors[target[1]]))
+                    if target[1] in self.components:
+                        uris.append(random.choice(self.components[target[1]]))
                 elif (target[0].count("*") == 1 and target[1] and
-                        target[1].count("*") == 0):  # *.sensor
+                        target[1].count("*") == 0):  # *.component
                     target_type_info = 3
-                    if target[1] in self.sensors:
-                        for x in self.sensors[target[1]]:
+                    if target[1] in self.components:
+                        for x in self.components[target[1]]:
                             uris.append(x)
                 elif target[0] and target[1]:
                     target_type_info = 4
@@ -280,7 +280,7 @@ class bigbrother(object):
             _prefix = prefix
             _regex = regex
 
-            # self.sensors = {key: list_sensors for key, list_sensors in self.sensors.items() for s in list_sensors if s in self.robots[name]}
+            # self.components = {key: list_components for key, list_components in self.components.items() for s in list_components if s in self.robots[name]}
             # self.robots.pop(name, None)
 
             if name in self.claimant_list: self.claimant_list.remove(name)

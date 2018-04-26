@@ -3,7 +3,7 @@
       "name":"simplebot1",
       "path":"./node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlp8s0",
       "port_ns":9090,
       "port_node":4040,
@@ -14,7 +14,7 @@
    "services":{
 
    },
-   "sensors":{
+   "components":{
       "fake": {"cls": "fake"}
     }
 }

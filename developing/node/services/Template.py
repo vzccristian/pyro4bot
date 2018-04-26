@@ -21,7 +21,7 @@ class < CLASS_NAME > (control.Control):
     def worker(self):
         while self.worker_run:
 
-            # write here code for your sensor
+            # write here code for your component
 
             time.sleep(self.frec)
 # here your methods

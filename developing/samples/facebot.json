@@ -3,7 +3,7 @@
       "name":"botface",
       "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "port_ns":9090,
       "port_node":4040,
@@ -14,7 +14,7 @@
    "services":{
         "camera":{"cls":"usbcam","framerate":25,"width":640,"height":480}
    },
-   "sensors":{
+   "components":{
         "face":{"cls":"face","frec":0.03}
     }
 }

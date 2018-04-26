@@ -7,18 +7,6 @@ import time
 from node.libs import control, utils
 import Pyro4
 
-"""
-JSON_DOCUMENTATION
-{SENSOR_NAME} : pantilt
-{c} cls : pantilt
-{m} PT : [0,0]
-{d} --> : ["arduino"]
-{m} enable : true
-{m} worker_run : true
-{m} frec : 0.03
-END_JSON_DOCUMENTATION
-"""
-
 @Pyro4.expose
 class pantilt(control.Control):
 
@@ -32,7 +20,7 @@ class pantilt(control.Control):
         #print(self.node.get_uris())
     def worker(self):
         while self.worker_run:
-            # write here code for your sensor
+            # write here code for your component
             time.sleep(self.frec)
 
     @Pyro4.oneway

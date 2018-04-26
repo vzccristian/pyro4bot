@@ -103,9 +103,9 @@ def module_packages_not_found(modules):
         x.update(get_packages_not_found(m))
     return x
 
-# _modules is a list of all sensors and services in pyro4bot
+# _modules is a list of all components and services in pyro4bot
 print(colored("INSPECTING MODULES...","yellow"))
-_modules=get_modules(("node.services","node.sensors"))
+_modules=get_modules(("node.services","node.components"))
 _clases,_modules_errors = get_all_class(_modules)
 # it is a list of all modules in system pyro4bot
 _modules_libs=get_modules(("node.libs","node.node"))
@@ -114,7 +114,7 @@ _clases_libs,_modules_libs_errors = get_all_class(_modules_libs)
 def not_finded_modules(modules_error):
     imports = [x[1].message.split("No module named ")[1] for x
             in modules_error.items() if type(x[1]) is ImportError]
-    
+
     return list(set(imports))
 
 def show_warnings(modules_errors):

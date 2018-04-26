@@ -3,7 +3,7 @@
       "name":"picambot",
       "path":"./node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
@@ -15,7 +15,7 @@
    "services":{
 
    },
-   "sensors":{
+   "components":{
      "picam":{"cls":"picam","ethernet":"<ethernet>","width":640,"height":480}
     }
 }

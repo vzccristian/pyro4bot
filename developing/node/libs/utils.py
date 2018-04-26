@@ -106,7 +106,7 @@ def get_uri_name(uri):
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
 def get_uri_base(uri):
-    """ return base sensor from Pyro4 URI """
+    """ return base component from Pyro4 URI """
     return get_uri_name(uri).split(".")[1]
 
 def format_exception(e):

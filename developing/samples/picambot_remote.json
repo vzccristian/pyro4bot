@@ -3,7 +3,7 @@
       "name":"picambot_remote",
       "path":"/home/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
@@ -15,7 +15,7 @@
    "services":{
 
    },
-   "sensors":{
+   "components":{
         "camara_remota":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":5}
     }
 }

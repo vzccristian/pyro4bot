@@ -21,7 +21,7 @@ class gpioinfrared(control.Control):
         while self.worker_run:
             # self.IR[0]=GPIO.input(self.setup[0])
             # self.IR[1]=GPIO.input(self.setup[1])
-            # write here code for your sensor
+            # write here code for your component
             time.sleep(self.frec)
 
     @control.flask("sensor", 2)

@@ -3,7 +3,7 @@
       "name":"alphabot2",
       "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
       "etc":"<path>/etc",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
@@ -16,7 +16,7 @@
         "picam":{"cls":"picam","ethernet":"<ethernet>","framerate":25,"width":640,"height":480,"frec":0.02,"vflip":false,"hflip":false},
  	      "gpioservice":{"cls":"gpioservice","gpio_mode":11}
     },
-    "sensors":{
+    "components":{
  	      "l298n":{"cls":"l298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26},
         "tlc1543ad":{"cls":"tlc1543ad","CS":5,"Clock":25,"Address":24,"DataOut":23,"line":[0,0,0,0,0],"frec":0.03}
      }

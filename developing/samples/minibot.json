@@ -2,7 +2,7 @@
    "NODE":{
       "name":"minibot",
       "path":"./node",
-      "path_cls":["services","sensors"],
+      "path_cls":["services","components"],
       "ethernet":"wlan0",
       "port_ns":9090,
       "port_node":4040,
@@ -15,7 +15,7 @@
          "i2cservice":{"cls":"i2cservice","-->":["gpioservice"]},
          "bluetooth":{"cls":"bluetooth_serial","Port":3333}
     },
-    "sensors":{
+    "components":{
  	    "base":{"cls":"alphal298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26},
       "receptor":{"cls":"IR_remote_control","IR_receiver":18,"frec":0.02},
       "servos":{"cls":"pca9685","frec":0.02,"enable":false},

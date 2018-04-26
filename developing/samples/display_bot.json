@@ -3,7 +3,7 @@
       "name":"display_bot",
       "path":"/home/pi/pyro4bot/pyro4bot/developing/node",
       "etc":"<path>/etc",
-      "path_cls":["sensors", "services"],
+      "path_cls":["components", "services"],
       "ethernet":"wlan0",
       "name_server":true,
       "port_ns":9090,
@@ -12,7 +12,7 @@
       "def_frec":0.03,
       "def_worker":true
     },
-   "sensors":{
+   "components":{
         "display":{"cls":"WSEPaper","bus":0, "device":0, "width":200, "height":200}
     },
    "services":{
