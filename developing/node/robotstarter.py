@@ -13,106 +13,111 @@ from termcolor import colored
 from libs.inspection import _modules_libs_errors, show_warnings
 import setproctitle
 from node import *
-
-BIGBROTHER_PASSWORD = "PyRobot"
-ROBOT_PASSWORD = "default"
+import pprint
 
 
-# ___________________ROBOT STARTER________________________________________
-def create_server_node(robot, proc_pipe, msg):
-
+def start_node(robot, proc_pipe, msg):
     try:
-        node = robot["node"]
-        for k, v in node.items():
-            robot[k] = v
-
-        setproctitle.setproctitle("PYRO4BOT." + robot["name"] + "." + "ROBOT")
+        # Set process name
+        setproctitle.setproctitle(
+            "PYRO4BOT." + robot["node"]["name"] + "." + "ROBOT")
 
         # Daemon proxy for node robot
-        robot["port_node"] = utils.get_free_port(robot["port_node"])
-        daemon = Pyro4.Daemon(host=robot["ip"], port=robot["port_node"])
-        daemon._pyroHmacKey = bytes(ROBOT_PASSWORD)
+        robot["node"]["port_node"] = utils.get_free_port(
+            robot["node"]["port_node"])
 
-        pyro4bot_class = control.Pyro4bot_Loader(globals()["robot"], **robot)
+        daemon = Pyro4.Daemon(
+            host=robot["node"]["ip"], port=robot["node"]["port_node"])
+        daemon._pyroHmacKey = bytes(robot["node"]["port_node"])
+
+        pyro4bot_class = control.Pyro4bot_Loader(globals()["Robot"], **robot)
         new_object = pyro4bot_class()
 
         # Associate object to the daemon
-        uri_node = daemon.register(new_object, objectId=robot["name"])
+        uri_node = daemon.register(new_object, objectId=robot["node"]["name"])
 
         # Get and save exposed methods
         exposed = Pyro4.core.DaemonObject(
-            daemon).get_metadata(robot["name"], True)
+            daemon).get_metadata(robot["node"]["name"], True)
 
         new_object.mypid = os.getpid()
         new_object.uri_node = uri_node
 
         # Get docstring from exposed methods on node
-        new_object.docstring = new_object.add_docstring(new_object, exposed)
+        new_object.docstring = new_object.get_docstring(new_object, exposed)
 
-        print "-------------------------->", robot
-        print "-------------------------->", node
+        # print "\n---------------------------------------------------------"
+        # pprint.pprint(robot, indent=1)
+        # print "-----------------------------------------------------------\n"
 
         # Printing info
         print(colored(
-            "____________STARTING PYRO4BOT NODE %s_______________________" % robot["name"], "yellow"))
+            "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow"))
         print("[%s]  PYRO4BOT: %s" %
               (colored("OK", 'green'), uri_node))
 
         new_object.start_components()
         msg.put((uri_node, os.getpid()))
-        proc_pipe.send("CONTINUE")
-        
+        proc_pipe.send("OK")
+
         new_object.register_node()
         daemon.requestLoop()
         print("[%s] Final shutting %s" %
               (colored("Down", 'green'), uri_node))
         os._exit(0)
     except Exception:
-        print("ERROR: create_server_node in node.py")
+        print("ERROR: start_node in robotstarter.py")
+        proc_pipe.send("ERROR")
         raise
 
 
-def load_robot(robot):
-    global ROBOT_PASSWORD
+def pre_start_node(robot):
+    # Pipe to wait for node to be ready
     serv_pipe, client_pipe = Pipe()
     msg = Queue()
 
-    ROBOT_PASSWORD = robot["node"]["name"]
+    name = robot["node"]["name"]
 
+    # Information
     print(colored("\n_________PYRO4BOT SYSTEM__________", "yellow"))
     print("\tEthernet device {} IP: {}".format(
         colored(robot["node"]["ethernet"], "cyan"), colored(robot["node"]["ip"], "cyan")))
-    print("\tPassword: {}".format(colored(ROBOT_PASSWORD, "cyan")))
+    print("\tRobot name: {}".format(colored(name, "cyan")))
+    print("\tPassword: {}".format(colored(robot["node"]["password"], "cyan")))
     print("\tFilename: {}".format(colored(robot["filename"], 'cyan')))
     print("")
 
-    name = robot["node"]["name"]
+    # Process for console
     PROCESS = []
     PROCESS.append(name)
     PROCESS.append("pyro4id")
-    proc = Process(name=name, target=create_server_node,
+    proc = Process(name=name, target=start_node,
                    args=(robot, client_pipe, msg,))
     proc.start()
-    PROCESS.append(proc)
-    serv_pipe.recv()  # Bloqueante
 
+    PROCESS.append(proc)
+    status = serv_pipe.recv()  # Bloq until node ready
     uri_node, pid = msg.get()
     PROCESS[1] = uri_node
     PROCESS.append(pid)
-    PROCESS.append("OK")
+    PROCESS.append(status)
     return PROCESS
 
 
 def starter(filename="", json=None):
     if json is None:
         json = {}
+
+    # Read JSON
     N_conf = config.Config(filename=filename, json=json)
 
+    # Object for robot load
     robot = N_conf.robot
-    print robot
-
     robot["filename"] = filename
+
+    # Set process name
     setproctitle.setproctitle(
         "PYRO4BOT." + robot["node"]["name"] + "." + "Starter")
-    PROCESS = load_robot(robot)
+
+    PROCESS = pre_start_node(robot)
     return PROCESS

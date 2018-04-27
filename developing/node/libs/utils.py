@@ -68,6 +68,29 @@ def get_gateway_address(ifname="lo"):
     return ip
 
 
+def get_interface():
+    """Return the name of the first network interface other than loopback."""
+    interface = None
+    loopback = None
+    try:
+        for x in ni.interfaces():
+            try:
+                if ni.ifaddresses(x)[ni.AF_INET][0]['addr'] != "127.0.0.1":
+                    interface = x
+                    break
+                else:
+                    loopback = x
+            except Exception:
+                pass
+    except Exception:
+        raise
+
+    if not interface:
+        interface = loopback
+
+    return interface
+
+
 def free_port(port, ip="127.0.0.1"):
     """Return True if the port is free at a specific IP address, otherwise \
     return False."""
@@ -105,9 +128,11 @@ def get_uri_name(uri):
     """Return name from Pyro4 URI."""
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
+
 def get_uri_base(uri):
     """ return base component from Pyro4 URI """
     return get_uri_name(uri).split(".")[1]
+
 
 def format_exception(e):
     """Representation of exceptions."""

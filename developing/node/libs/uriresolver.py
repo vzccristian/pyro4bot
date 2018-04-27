@@ -102,7 +102,7 @@ class uriresolver(control.Control):
             else:
                 print("NAME SERVER NOT LOCATED. %s" %
                       (colored(" Resolving only LOCAL URIs ", 'green')))
-            return self.uri, self.proxy
+            return self.uri.asString(), self.proxy
         else:
             print("Cant connect with uriresolver")
             return None

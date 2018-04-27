@@ -38,26 +38,60 @@ class Config:
     def __init__(self, filename="", json=None):
         self.conf = json if (filename == "") else myjson.MyJson(
             filename, dependencies=True).json
+
         self.disable_lines()
-        self.check_semantic()
+        self.fix_config()
+
         self.services_order = self.dependency(self.services)
         self.components_order = self.dependency(self.components)
 
     def disable_lines(self):
-        for key in [x for x in self.conf.keys() if x != "NODE"]:
+        for key in [x for x in self.conf.keys() if x != "node"]:
             for k, v in self.conf[key].items():
                 if get_field(v, "enable") == [False]:
                     del(self.conf[key][k])
 
-    def check_semantic(self):
-        if "def_frec" not in self.conf["NODE"]:
-            self.conf["NODE"]["def_frec"] = 0.05
+    def fix_config(self):
+        # Add default frec
+        if "def_frec" not in self.conf["node"]:
+            self.conf["node"]["def_frec"] = 0.05
 
-        if "ip" not in self.conf["NODE"]:
-            self.conf["NODE"]["ip"] = utils.get_ip_address(
-                self.conf["NODE"]["ethernet"])
-        if "name" not in self.conf["NODE"]:
-            self.conf["NODE"]["name"] = "node"
+        # Add ethernet network
+        if "ethernet" not in self.conf["node"]:
+            self.conf["node"]["ethernet"] = utils.get_interface()
+
+        # Add IP address
+        if "ip" not in self.conf["node"]:
+            self.conf["node"]["ip"] = utils.get_ip_address(
+                self.conf["node"]["ethernet"])
+
+        # Add default name
+        if "name" not in self.conf["node"]:
+            self.conf["node"]["name"] = "default_name"
+
+        # Add port_ns
+        if "port_ns" not in self.conf["node"]:
+            self.conf["node"]["port_ns"] = 9090
+
+        # Add port_node
+        if "port_node" not in self.conf["node"]:
+            self.conf["node"]["port_node"] = 4040
+
+        # Add start_port
+        if "start_port" not in self.conf["node"]:
+            self.conf["node"]["start_port"] = 5050
+
+        # Add def_worker
+        if "def_worker" not in self.conf["node"]:
+            self.conf["node"]["def_worker"] = True
+
+        # Add password
+        if "password" not in self.conf["node"]:
+            self.conf["node"]["password"] = self.conf["node"]["name"]
+
+        # Add bigbrother password
+        if "bigbrother-password" not in self.conf["node"]:
+            self.conf["node"]["bigbrother-password"] = "PyRobot"
 
         for k, v in self.components.items() + self.services.items():
             if "worker_run" not in v:
@@ -65,7 +99,7 @@ class Config:
             if "mode" not in v:
                 v["mode"] = "public"
             if "frec" not in v:
-                v["frec"] = self.conf["NODE"]["def_frec"]
+                v["frec"] = self.conf["node"]["def_frec"]
             v["docstring"] = {}
             v["exposed"] = {}
         for k, v in self.services.items():
@@ -211,12 +245,12 @@ class Config:
     # def add_uri_conf(self):
     #     conf = {}
     #     conf["cls"] = "uriresolver"
-    #     conf["ip"] = self.conf["NODE"]["ip"]
-    #     conf["start_port"] = self.conf["NODE"]["start_port"]
-    #     conf["port_node"] = self.conf["NODE"]["port_node"]
-    #     conf["port_ns"] = self.conf["NODE"]["port_ns"]
+    #     conf["ip"] = self.conf["node"]["ip"]
+    #     conf["start_port"] = self.conf["node"]["start_port"]
+    #     conf["port_node"] = self.conf["node"]["port_node"]
+    #     conf["port_ns"] = self.conf["node"]["port_ns"]
     #     conf["mode"] = "local"
-    #     conf["basename"] = self.conf["NODE"]["name"]
+    #     conf["basename"] = self.conf["node"]["name"]
     #     return conf
 
     @property
@@ -225,7 +259,7 @@ class Config:
 
     @property
     def node(self):
-        return self.conf["NODE"]
+        return self.conf["node"]
 
     @property
     def services(self):

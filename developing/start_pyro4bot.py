@@ -16,7 +16,7 @@ try:
         jsonbot = "./samples/simplebot.json"
 
     PROCESS = robot.starter(filename=jsonbot)
-    print(PROCESS)
+    # print(PROCESS)
 
     setproctitle.setproctitle("PYRO4BOT." + PROCESS[0] + "." + "Console")
     ROB = utils.get_pyro4proxy(PROCESS[1], PROCESS[0])
@@ -43,3 +43,5 @@ except IOError:
 except (KeyboardInterrupt, SystemExit):
     # ROB.shutdown()
     os._exit(0)
+except Exception:
+    raise

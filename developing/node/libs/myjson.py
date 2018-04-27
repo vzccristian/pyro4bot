@@ -3,6 +3,10 @@ import re
 import collections
 
 
+def ascii_encode_dict(data):
+    return dict(map(lambda x: x.encode('ascii') if isinstance(x, unicode) else x, pair) for pair in data.items())
+
+
 class MyJson(object):
     def __init__(self, filename, dependencies=False):
         self.json = self.load_json(filename, dependencies)
@@ -12,9 +16,10 @@ class MyJson(object):
             ".json" in filename) else (filename + ".json")
         try:
             data = open(filename).read()
+            data = data.lower()
             data = self.del_coments(data)
             data = self.substitute_params(data)
-            json = simplejson.loads(data)
+            json = simplejson.loads(data, object_hook=ascii_encode_dict)
             json = self.load_dependencies(json) if (dependencies) else json
         except ValueError, e:
             print("ERROR: JSON incorrectly described: " + str(e))
