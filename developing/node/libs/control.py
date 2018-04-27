@@ -12,7 +12,6 @@ SECS_TO_CHECK_STATUS = 5
 
 # DECORATORS
 
-
 # Threaded function snippet
 def threaded(fn):
     """To use as decorator to make a function call threaded."""
@@ -51,15 +50,6 @@ def Pyro4bot_Loader(clss, **kwargs):
         original_init(self)
     clss.__init__ = init
     return clss
-
-
-# def load_node(in_function):
-#     """this Decorator load all parameter defined in Json configuration in node object """
-#     def out_function(*args, **kwargs):
-#         _self = args[0]
-#         _self.__dict__.update(kwargs)
-#         in_function(*args, **kwargs)
-#     return out_function
 
 
 def flask(*args_decorator):

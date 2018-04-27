@@ -232,7 +232,7 @@ class Robot(control.Control):
                 st = colored(status, 'red')
             if status == "WAITING":
                 st = colored(status, 'yellow')
-            print "\t\t[%s]  STARTING %s" % (st, obj["pyro4id"])
+            print "\t\t[%s] STARTED %s" % (st, obj["pyro4id"])
         else:
             print("ERROR: " + name + " is runing")
 

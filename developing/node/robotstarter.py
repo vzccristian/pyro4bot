@@ -4,16 +4,11 @@
 # ________in collaboration with cristian vazquez _________
 
 import os
-
-from libs import config, control, utils, uriresolver
-from libs.exceptions import Errornode
 from multiprocessing import Process, Pipe, Queue
 import Pyro4
 from termcolor import colored
-from libs.inspection import _modules_libs_errors, show_warnings
 import setproctitle
 from node import *
-import pprint
 
 
 def start_node(robot, proc_pipe, msg):
@@ -28,7 +23,7 @@ def start_node(robot, proc_pipe, msg):
 
         daemon = Pyro4.Daemon(
             host=robot["node"]["ip"], port=robot["node"]["port_node"])
-        daemon._pyroHmacKey = bytes(robot["node"]["port_node"])
+        daemon._pyroHmacKey = bytes(robot["node"]["password"])
 
         pyro4bot_class = control.Pyro4bot_Loader(globals()["Robot"], **robot)
         new_object = pyro4bot_class()

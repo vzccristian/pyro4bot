@@ -8,6 +8,8 @@ import sys
 import os
 import setproctitle
 from node.libs import utils
+import time
+from termcolor import colored
 
 try:
     if len(sys.argv) > 1:
@@ -22,8 +24,9 @@ try:
     ROB = utils.get_pyro4proxy(PROCESS[1], PROCESS[0])
 
     salir = True
+    time.sleep(2)
     while salir:
-        cad = raw_input("{}: ".format(PROCESS[0]))
+        cad = raw_input("\n{} ".format(colored(PROCESS[0]+":", 'green')))
 
         if cad.upper() == "EXIT":
             ROB.shutdown()
