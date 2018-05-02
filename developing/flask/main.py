@@ -17,11 +17,10 @@ import socket
 import struct
 import time
 
+bot = {}
 
 def getMethods(bot):
-
 	elems = []
-
 	for elem in bot.__dict__:
 		print elem
 		try:
@@ -47,14 +46,13 @@ def index():
 def init(name=None):
 	if name != None:
 		try:
+			global bot
 			bot = ClientRobot(name)
-
 			methods = getMethods(bot)
 			print bot.__dict__
 			#print bot.milaser.__docstring__()
 			#print bot.suelo.__docstring__()
 			#print bot.milaser.__exposed__()
-
 			return render_template('index.html', name=name, bot = bot )
 
 		except Exception, e:
@@ -66,9 +64,10 @@ def init(name=None):
 
 @app.route('/<name>/<var>/<var2>')
 def getter(name=None,var=None,var2=None):
-	if name != None:
+	global bot
+	if name == bot.name:
 		try:
-			bot = ClientRobot(name)
+			global bot
 			aux2 = eval("bot."+var+"."+var2+"()")
 			return str(json.dumps(aux2))
 		except Exception, e:
@@ -79,9 +78,9 @@ def getter(name=None,var=None,var2=None):
 
 @app.route('/<name>/<var>/<var2>/<var3>')
 def setter(name=None,var=None,var2=None,var3=None):
-	if name != None:
+	global bot
+	if name == bot.name:
 		try:
-			bot = ClientRobot(name)
 			aux2 = eval("bot."+var+"."+var2+"("+var3.replace("-",",")+")")
 			return str(json.dumps(aux2))
 		except Exception, e:
