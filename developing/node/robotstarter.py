@@ -113,9 +113,7 @@ def starter(filename="", json=None):
 
     # Read JSON
     N_conf = config.Config(filename=filename, json=json)
-    print "\n--------------------------NCONF-------------------------------"
-    pprint.pprint(N_conf.__dict__, indent=1)
-    print "-----------------------------------------------------------\n"
+
     # Object for robot load
     robot = N_conf.robot
     robot["filename"] = filename

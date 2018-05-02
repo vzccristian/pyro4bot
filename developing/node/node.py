@@ -266,7 +266,6 @@ class Robot(control.Control):
             daemon._pyroHmacKey = bytes(self.node["password"])
 
             proc_pipe.send("CONTINUE")
-
             deps = utils.prepare_proxys(d, self.node["password"])
 
             # Preparing class for pyro4

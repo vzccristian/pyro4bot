@@ -226,8 +226,8 @@ class Control(botlogging.Logging):
     @Pyro4.expose
     @Pyro4.callback
     def add_resolved_remote_dep(self, dep):
+        # print(colored("New remote dep! {}".format(dep), "green"))
         if isinstance(dep, dict):
-            # print(colored("New remote dep! {}".format(dep), "green"))
             k = dep.keys()[0]
             try:
                 for u in dep[k]:
@@ -237,8 +237,10 @@ class Control(botlogging.Logging):
                     if k in self._unr_remote_deps:
                         self._unr_remote_deps.remove(k)
             except Exception:
-                pass
+                print("Error in control.add_resolved_remote_dep() ", dep)
             self.check_remote_deps()
+        else:
+            print("Error in control.add_resolved_remote_dep(): No dict", dep)
 
     def check_remote_deps(self):
         status = True
@@ -251,15 +253,16 @@ class Control(botlogging.Logging):
                 if (self.deps[k]._pyroHandshake != "hello"):
                     status = False
             except Exception:
+                print("Error connecting to dep. ", k)
                 status = False
+
         if (status):
             self._REMOTE_STATUS = "OK"
             try:
-                p = utils.get_pyro4proxy(self.node, self.botname)
-                # p.change_comp_status(self._pyroId, self._REMOTE_STATUS)
-                p.status_changed()
+                self.node.status_changed()
             except Exception as e:
-                print str(e)
+                print "Error in control.check_remote_deps: "+str(e)
+
         return self._REMOTE_STATUS
 
     @Pyro4.expose

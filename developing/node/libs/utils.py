@@ -188,7 +188,6 @@ def prepare_proxys(part, password):
         part["uriresolver"] = get_pyro4proxy(part["uriresolver"], password)
     if "node" in part:
         part["node"] = get_pyro4proxy(part["node"], password)
-
     for d in part.get("_locals", []):
         con, proxy = get_con_proxy(d, password)
         injects[con] = proxy
