@@ -47,6 +47,8 @@ def import_class(services, components):
 
 
 class Robot(control.Control):
+    """Main class Manage the robot."""
+
     def __init__(self):
         super(Robot, self).__init__()
 
@@ -61,14 +63,15 @@ class Robot(control.Control):
         self.URI_uri = None  # Just URI for
         self.URI_object = self.load_uri_resolver()  # Object resolver location
 
-
     def load_uri_resolver(self):
+        """Load the URIs resolver on main node."""
         uri_r = uriresolver.uriresolver(self.node,
                                         password=self.node["password"])
         self.URI_uri, self.URI_proxy = uri_r.register_uriresolver()
         return uri_r
 
     def start_components(self):
+        """Launcher of node components."""
         # Decoration
         print(colored("\t|", "yellow"))
         print(colored("\t|", "yellow"))
@@ -82,6 +85,7 @@ class Robot(control.Control):
         self.load_objects(self.components, self.components_order)
 
     def load_objects(self, parts, object_robot):
+        """Execute the components of the node."""
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRAYS
             parts[k]["_remote_trys"] = _REMOTE_TRAYS
@@ -97,23 +101,22 @@ class Robot(control.Control):
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print(colored("ERROR: class {} require {} for {}  ".
-                              format(parts[k]["cls"], parts[k]["_non_required"], k), "red"))
+                              format(parts[k]["cls"],
+                                     parts[k]["_non_required"], k), "red"))
                 errors = True
-
         if errors:
             exit()
-
         while object_robot != []:
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
             if st_local == "ERROR":
-                print "[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
+                print("[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"]))
                 continue
             if st_remote == "ERROR":
-                print "[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["_unr_remote_deps"])
+                print("[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["_unr_remote_deps"]))
                 continue
             if st_service == "ERROR":
-                print "[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
+                print("[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"]))
                 continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
@@ -129,6 +132,7 @@ class Robot(control.Control):
                 self.pre_start_pyro4bot_object(k, parts[k])
 
     def check_deps(self, k, obj):
+        """Check the dependencies of the robot."""
         obj["_locals"] = []
         obj["_resolved_remote_deps"] = []
         obj["_services"] = []
@@ -138,6 +142,7 @@ class Robot(control.Control):
         return check_local, check_remote, check_services
 
     def check_local_deps(self, obj):
+        """Check the local dependencies of the robot."""
         check_local = "OK"
         for d in obj["_unresolved_locals"]:
             uri = self.URI_proxy.wait_local_available(d, self.node["password"])
@@ -154,6 +159,7 @@ class Robot(control.Control):
         return check_local
 
     def check_service_deps(self, obj):
+        """Check the services dependencies of the robot."""
         check_service = "OK"
         for d in obj["_unresolved_services"]:
             uri = self.URI_proxy.wait_local_available(d, self.node["password"])
@@ -170,6 +176,7 @@ class Robot(control.Control):
         return check_service
 
     def check_remotes(self, k, obj):
+        """Check the remotes dependencies of the robot."""
         check_remote = "OK"
         for d in obj["_unr_remote_deps"]:
             msg, uri = self.URI_proxy.wait_resolv_remotes(d, k)
@@ -199,6 +206,7 @@ class Robot(control.Control):
         return check_remote
 
     def pre_start_pyro4bot_object(self, name, obj):
+        """Prestarter for component."""
         serv_pipe, client_pipe = Pipe()
 
         if "_locals" not in obj:
@@ -219,14 +227,13 @@ class Robot(control.Control):
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
 
-            # TODO: Async recv or timeout
-
             status = serv_pipe.recv()
             self.PROCESS[name].append(status)
 
             if status == "OK":
                 st = colored(status, 'green')
-                prox = utils.get_pyro4proxy(obj["pyro4id"], self.node["password"])
+                prox = utils.get_pyro4proxy(
+                    obj["pyro4id"], self.node["password"])
                 self.PROCESS[name].append(prox.__docstring__())
             if status == "FAIL":
                 st = colored(status, 'red')
@@ -237,6 +244,7 @@ class Robot(control.Control):
             print("ERROR: " + name + " is runing")
 
     def start_pyro4bot_object(self, d, proc_pipe):
+        """Start PYRO4BOT component."""
         (name_ob, ip, ports) = utils.uri_split(d["pyro4id"])
         try:
             # Daemon proxy for sensor
@@ -264,6 +272,7 @@ class Robot(control.Control):
                     set(exposed[k]) - set(dir(control.Control)))
             safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
             new_object.exposed.update(safe_exposed)
+
             setproctitle.setproctitle("PYRO4BOT." + name_ob)
             # Save dosctring documentation inside sensor object
             new_object.docstring.update(
@@ -286,7 +295,7 @@ class Robot(control.Control):
         docstring = {}
         for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
             for m in exposed[key]:
-                if (m not in ["__docstring__", "__exposed__"]):  # Exclude docstring method
+                if (m not in (dir(control.Control))):  # Exclude docstring method
                     d = eval("new_object." + str(m) + ".__doc__")
                     docstring[m] = d
         return docstring
@@ -313,27 +322,35 @@ class Robot(control.Control):
         return unfulfilled
 
     def register_node(self):
-        # Registering NODE on nameserver
+        """Register main node on nameserver."""
         self.URI_proxy.register_robot_on_nameserver(self.uri_node)
 
     # Exposed methods (Publics)
 
     @Pyro4.expose
     def get_uris(self):
+        """Returns the URI of all the components of the robot."""
         return self.URI_proxy.list_uris()
 
     @Pyro4.expose
     def get_name_uri(self, name):
+        """Return the URI of the given name as a component.
+
+        @name: string.
+                Follow the following format: "robotname.component"
+
+        """
         if name in self.PROCESS:
             uri = self.URI_proxy.get_uri(name)
             status = self.PROCESS[name][3]
             return uri, status
         else:
-            return None, "down"
+            return None, "Not found"
 
     @Pyro4.expose
     def shutdown(self):
-        print(colored("____STOPPING PYRO4BOT %s_________" % self.node["name"], "yellow"))
+        print(colored("____STOPPING PYRO4BOT %s_________" %
+                      self.node["name"], "yellow"))
         for k, v in self.PROCESS.items():
             try:
                 v[1].terminate()
@@ -350,12 +367,3 @@ class Robot(control.Control):
             status = str("[" + colored(v[3], 'green') + "]")
             print(status.ljust(17, " ") + pid + name.rjust(50, "."))
             # print(v[-1])
-
-
-    @Pyro4.expose
-    def __exposed__(self):
-        return self.exposed
-
-    @Pyro4.expose
-    def __docstring__(self):
-        return self.docstring

@@ -26,7 +26,7 @@ try:
     salir = True
     time.sleep(2)
     while salir:
-        cad = raw_input("\n{} ".format(colored(PROCESS[0]+":", 'green')))
+        cad = raw_input("\n{} ".format(colored(PROCESS[0] + ":", 'green')))
 
         if cad.upper() == "EXIT":
             ROB.shutdown()

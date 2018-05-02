@@ -93,14 +93,11 @@ class ClientRobot(object):
         if (self.node):
             try:
                 proxys = self.node.get_uris()
-                print "linea 96", proxys
             except Exception:
                 print("ERROR: Unable to obtain list of robot components: \
                       \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
-                raise
                 # os._exit(0)
                 # raise
         else:
             print("Robot not found.")
-            os._exit(0)
         return proxys

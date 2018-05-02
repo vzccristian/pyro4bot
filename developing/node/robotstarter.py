@@ -12,6 +12,7 @@ from node import *
 
 
 def start_node(robot, proc_pipe, msg):
+    """Start node."""
     try:
         # Set process name
         setproctitle.setproctitle(
@@ -34,6 +35,15 @@ def start_node(robot, proc_pipe, msg):
         # Get and save exposed methods
         exposed = Pyro4.core.DaemonObject(
             daemon).get_metadata(robot["node"]["name"], True)
+
+        # Hide methods from Control
+        safe_exposed = {}
+        for k in exposed.keys():
+            safe_exposed[k] = list(
+                set(exposed[k]) - set(dir(control.Control)))
+        safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
+
+        new_object.exposed = safe_exposed
 
         new_object.mypid = os.getpid()
         new_object.uri_node = uri_node
@@ -67,6 +77,7 @@ def start_node(robot, proc_pipe, msg):
 
 
 def pre_start_node(robot):
+    """Prerequisites to start robot."""
     # Pipe to wait for node to be ready
     serv_pipe, client_pipe = Pipe()
     msg = Queue()
@@ -100,6 +111,7 @@ def pre_start_node(robot):
 
 
 def starter(filename="", json=None):
+    """Get configuration and launch pre_starter."""
     if json is None:
         json = {}
 
