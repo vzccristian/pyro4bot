@@ -197,7 +197,7 @@ class uriresolver(control.Control):
             if (self.usingBB):
                 ns.proxy(target, passw)
             else:
-                print "Para usar esta funcionalidad se necesita de BigBrother"
+                print(colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red"))
                 return None
         return None
 
@@ -316,7 +316,7 @@ class uriresolver(control.Control):
                     except Exception:
                         pass
                 else:  # Another thing
-                    print("Para usar esta funcionalidad se necesita de BigBrother")
+                    print(colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red"))
                     return "ERROR", "BIG-BROTHER"   # big brother needed
             trys -= 1
             time.sleep(0.5)

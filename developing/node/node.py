@@ -97,12 +97,10 @@ class Robot(control.Control):
                 parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
         errors = False
-
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print(colored("ERROR: class {} require {} for {}  ".
-                              format(parts[k]["cls"],
-                                     parts[k]["_non_required"], k), "red"))
+                              format(parts[k]["cls"], parts[k]["_non_required"], k), "red"))
                 errors = True
         if errors:
             exit()
@@ -110,17 +108,24 @@ class Robot(control.Control):
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
             if st_local == "ERROR":
-                print("[%s]  STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"]))
+                print "[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
                 continue
-            if st_remote == "ERROR":
-                print("[%s]  STARTING %s Error in remotes %s" % (colored(st_remote, 'red'), k, parts[k]["_unr_remote_deps"]))
+
+            if "ERROR" in st_remote:
+                print "[{}] {} {} --> {}".format(
+                    colored("ERROR", 'red'),
+                    colored("NOT STARTING:", 'red'),
+                    k,
+                    colored("".join(parts[k]["_unr_remote_deps"]), 'red'))
                 continue
+
             if st_service == "ERROR":
-                print("[%s]  STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"]))
+                print "[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
                 continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
                 continue
+
             if st_local == "OK" and st_service == "OK":
                 del(parts[k]["_unresolved_locals"])
                 del(parts[k]["_local_trys"])
@@ -205,16 +210,15 @@ class Robot(control.Control):
                 obj["_remote_trys"] = 0
         return check_remote
 
+
     def pre_start_pyro4bot_object(self, name, obj):
         """Prestarter for component."""
         serv_pipe, client_pipe = Pipe()
-
+        attemps = 5
         if "_locals" not in obj:
             obj["_locals"] = []
-
         if "_resolved_remote_deps" not in obj:
             obj["_resolved_remote_deps"] = []
-
         if name not in self.PROCESS:
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI_proxy.new_uri(name, obj["mode"])
@@ -226,20 +230,29 @@ class Robot(control.Control):
                 Process(name=name, target=self.start_pyro4bot_object, args=(obj, client_pipe)))
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
-
+            self.PROCESS[name].append(obj["_REMOTE_STATUS"])
             status = serv_pipe.recv()
-            self.PROCESS[name].append(status)
-
+            status = "FAIL"
+            while (attemps > 0):
+                try:
+                    pxy = utils.get_pyro4proxy(obj["pyro4id"], self.node["name"])
+                    status = pxy.get_status()
+                    break
+                except Exception:
+                    attemps -= 1
+                    time.sleep(1)
             if status == "OK":
                 st = colored(status, 'green')
-                prox = utils.get_pyro4proxy(
-                    obj["pyro4id"], self.node["password"])
-                self.PROCESS[name].append(prox.__docstring__())
+                self.PROCESS[name].append(pxy.__docstring__())
+                #TODO: Add method to node to do this
             if status == "FAIL":
                 st = colored(status, 'red')
             if status == "WAITING":
                 st = colored(status, 'yellow')
-            print "\t\t[%s] STARTED %s" % (st, obj["pyro4id"])
+            if status == "ASYNC":
+                print "\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow'))
+            else:
+                print "\t\t[%s] STARTING %s" % (st, obj["pyro4id"])
         else:
             print("ERROR: " + name + " is runing")
 
@@ -251,6 +264,8 @@ class Robot(control.Control):
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
             daemon._pyroHmacKey = bytes(self.node["password"])
+
+            proc_pipe.send("CONTINUE")
 
             deps = utils.prepare_proxys(d, self.node["password"])
             # Preparing class for pyro4
@@ -278,10 +293,6 @@ class Robot(control.Control):
             new_object.docstring.update(
                 self.get_docstring(new_object, safe_exposed))
 
-            if ("_REMOTE_STATUS") in deps and deps["_REMOTE_STATUS"] == "WAITING":
-                proc_pipe.send("WAITING")
-            else:
-                proc_pipe.send("OK")
             daemon.requestLoop()
             print("[%s] Shutting %s" %
                   (colored("Down", 'green'), d["pyro4id"]))
@@ -360,10 +371,20 @@ class Robot(control.Control):
         # os.kill(self.mypid,9)
 
     @Pyro4.expose
-    def print_process(self):
+    def print_process(self, onlyChanges=False):
         for k, v in self.PROCESS.iteritems():
-            name = v[0]
-            pid = str(v[2])
-            status = str("[" + colored(v[3], 'green') + "]")
-            print(status.ljust(17, " ") + pid + name.rjust(50, "."))
-            # print(v[-1])
+            #  Update status
+            try:
+                old_status = v[3]
+                v[3] = utils.get_pyro4proxy(v[0], self.node["name"]).get_status()
+            except Exception:
+                v[3] = "FAIL"
+            if ((onlyChanges and v[3] != old_status) or not onlyChanges):
+                if v[3] == "OK": st = colored(v[3], 'green')
+                elif v[3] == "FAIL": st = colored(v[3], 'red')
+                elif v[3] == "WAITING" or v[3] == "ASYNC": st = colored(v[3], 'yellow')
+                print("[{}]\t{} {}".format(st, str(v[2]), str(v[0]).rjust(60, ".")))
+
+    @Pyro4.expose
+    def status_changed(self):
+        self.print_process(onlyChanges=True)

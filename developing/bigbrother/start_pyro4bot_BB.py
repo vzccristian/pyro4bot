@@ -332,6 +332,7 @@ class nameServer(object):
         try:
             self.private_pyro4ns = Pyro4.locateNS()
             print "NameServer already working"
+            sys.exit(1)
         except Exception:
             self.priv_ns_t = threading.Thread(
                 name="Private NameServer",
@@ -345,7 +346,7 @@ class nameServer(object):
 
             ip = utils.get_ip_address(ifname=self.config["interface"])
             self.pub_ns_t = threading.Thread(
-                name="Public NameServer"
+                name="Public NameServer",
                 target=self.create_nameserver,
                 kwargs={'host': ip, })
             self.pub_ns_t.start()
@@ -466,15 +467,10 @@ if __name__ == "__main__":
                             realCommand()
                         elif (len(command) is 2):
                             uri = realCommand(command[1])
-                            if (uri is not None):
-                                proxy = Pyro4.Proxy(uri)
-                                # proxy.method()
-                                print "URI:", uri, " PROXY: ", proxy
-                                print(proxy.get_uris())
                         elif (len(command) > 2):
                             print(colored("Demasiados argumentos.", "red"))
                     else:
-                        print "Comando no encontrado."
+                        print "Comando no encontrado. "
                 except Exception:
                     print(colored("Comando erroneo", "red"))
             time.sleep(1)

@@ -39,12 +39,18 @@ class Config:
         self.conf = json if (filename == "") else myjson.MyJson(
             filename, dependencies=True).json
 
+        self.set_lower_case()
         self.disable_lines()
         self.fix_config()
 
         self.services_order = self.dependency(self.services)
         self.components_order = self.dependency(self.components)
 
+    def set_lower_case(self):
+        self.conf = {k.lower(): self.conf[k] for k in self.conf.keys()}
+        self.conf["node"] = {k.lower(): self.conf["node"][k] for k in
+                             self.conf["node"].keys()}
+        
     def disable_lines(self):
         for key in [x for x in self.conf.keys() if x != "node"]:
             for k, v in self.conf[key].items():

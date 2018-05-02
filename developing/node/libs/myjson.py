@@ -16,7 +16,6 @@ class MyJson(object):
             ".json" in filename) else (filename + ".json")
         try:
             data = open(filename).read()
-            data = data.lower()
             data = self.del_coments(data)
             data = self.substitute_params(data)
             json = simplejson.loads(data, object_hook=ascii_encode_dict)
