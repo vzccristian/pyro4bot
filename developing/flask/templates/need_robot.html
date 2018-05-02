@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Page Not Found</title>
+    <title>Welcome to PYRO4BOT!</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
 
@@ -53,8 +53,27 @@
     </style>
 </head>
 <body>
-    <h1>Page Not Found</h1>
-    <p>Sorry, but the page you were trying to view does not exist.</p>
+    <h1>¡Hello!</h1>
+    <p>Welcome to PYRO4BOT.</p><br>
+
+    Enter the name of the robot:
+    <input id="robot-location" type="text"/>
+    <button id="robot-button">Open!</button>
+
 </body>
+<script type="text/javascript">
+var input = document.getElementById("robot-location");
+console.log(input);
+document.getElementById("robot-button").onclick = function () {
+    location.href = "/"+input.value;
+};
+
+input.addEventListener("keyup", function(event) {
+  event.preventDefault();
+  if (event.keyCode === 13) {
+    location.href = "/"+input.value;
+  }
+});
+</script>
 </html>
 <!-- IE needs 512+ bytes: http://blogs.msdn.com/b/ieinternals/archive/2010/08/19/http-error-pages-in-internet-explorer.aspx -->

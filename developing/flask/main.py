@@ -40,6 +40,9 @@ app.jinja_env.add_extension('jinja2.ext.do')
 
 
 @app.route('/')
+def index():
+	return render_template('need_robot.html')
+
 @app.route('/<name>')
 def init(name=None):
 	if name != None:
@@ -53,14 +56,14 @@ def init(name=None):
 			#print bot.milaser.__exposed__()
 
 			return render_template('index.html', name=name, bot = bot )
-			
+
 		except Exception, e:
 			print e
 			print Exception
 			return render_template('error.html',error=name)
-		
-	
-	
+
+
+
 @app.route('/<name>/<var>/<var2>')
 def getter(name=None,var=None,var2=None):
 	if name != None:
@@ -73,7 +76,7 @@ def getter(name=None,var=None,var2=None):
 			print Exception
 
 
-	
+
 @app.route('/<name>/<var>/<var2>/<var3>')
 def setter(name=None,var=None,var2=None,var3=None):
 	if name != None:
