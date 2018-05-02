@@ -4,28 +4,28 @@
 # _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 """
-This module find in node all pagakages with ImportError and try to INSTALL
+This module find in node all paCkages with ImportError and try to INSTALL
 with pip module.
-
 """
-from imp import find_module
-from node.libs.inspection import _modules_libs_errors, not_finded_modules
 import pip
+from node.libs.inspection import _modules_libs_errors, not_finded_modules
 
+print("# PYRO4BOT #")
 print("MODULES TO INSTALL:")
 modulestointall = not_finded_modules(_modules_libs_errors)
 for mod in modulestointall:
-    print ("    {}".format(mod))
+    print ("\t{}".format(mod))
 if not modulestointall:
-    print("All pakages are up today")
+    print("All packages are up today.")
     exit()
-question = raw_input("Do you want install pagakages? (Y/N).. ")
+
+question = raw_input("Do you want install packages? (y/n).. ")
 
 if question.upper() == "Y":
     for mod in modulestointall:
         try:
             pip.main(['install', mod])
         except Exception:
-            print("ERROR IN INSTALL")
+            print("ERROR")
 else:
-    print("OPPS... AT ANOTHER MOMENT MAYBE?")
+    print("OPS!... AT ANOTHER MOMENT MAYBE?")

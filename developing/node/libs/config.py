@@ -6,7 +6,7 @@ import utils
 import myjson
 from inspection import _modules, _modules_errors, _clases, import_module
 from termcolor import colored
-
+import pprint
 
 def get_field(search_dict, field, enable=True):
     """
@@ -50,7 +50,7 @@ class Config:
         self.conf = {k.lower(): self.conf[k] for k in self.conf.keys()}
         self.conf["node"] = {k.lower(): self.conf["node"][k] for k in
                              self.conf["node"].keys()}
-        
+
     def disable_lines(self):
         for key in [x for x in self.conf.keys() if x != "node"]:
             for k, v in self.conf[key].items():
@@ -99,6 +99,7 @@ class Config:
         if "bigbrother-password" not in self.conf["node"]:
             self.conf["node"]["bigbrother-password"] = "PyRobot"
 
+        # Services and components config
         for k, v in self.components.items() + self.services.items():
             if "worker_run" not in v:
                 v["worker_run"] = True
@@ -111,6 +112,7 @@ class Config:
         for k, v in self.services.items():
             v["mode"] = "local"
 
+        # Services configuration
         newservices = {}
         for n in self.services:
             if _clases.get(self.services[n]["cls"], None) is not None:
@@ -135,14 +137,15 @@ class Config:
                 self.services[n]["-->"] = sp + cp  # esto se puede simplificar
 
         self.services = newservices
-        newrobot = {}
-        for n in self.services:
-            self.services[n]["_locals"] = []
-            self.services[n]["_resolved_remote_deps"] = []
-            if "-->" in self.services[n]:
-                self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
-                    self.services, n)
 
+        for n in self.services:
+                    self.services[n]["_locals"] = []
+                    self.services[n]["_resolved_remote_deps"] = []
+                    if "-->" in self.services[n]:
+                        self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
+                            self.services, n)
+        newrobot = {}
+        # Components configuration
         for n in self.components:
             if _clases.get(self.components[n]["cls"], None) is not None:
                 if len(_clases[self.components[n]["cls"]]) > 1:
@@ -167,13 +170,14 @@ class Config:
                 newrobot[n] = self.components[n]
 
         self.components = newrobot
+
         for n in self.components:
             self.components[n]["_locals"] = []
+            self.components[n]["_unr_remote_deps"] = []
             self.components[n]["_resolved_remote_deps"] = []
             if "-->" in self.components[n]:
                 self.components[n]["_locals"], self.components[n]["_resolved_remote_deps"] = self.local_remote(
                     self.components, n)
-                # print("REMO:",self.components[n]["_resolved_remote_deps"])
 
     def dependency(self, ser):
         ser_order = [x for x in ser if not get_field(ser[x], "_locals")]
@@ -236,7 +240,7 @@ class Config:
 
     def local_remote(self, part, k):
         """
-        return two list. services or components locals and remotes
+        Return two list. Services or Components locals and remotes.
         """
         if "-->" in part[k]:
             local = [x for x in part[k]["-->"]
@@ -247,17 +251,6 @@ class Config:
             local = []
             remote = []
         return local, remote
-
-    # def add_uri_conf(self):
-    #     conf = {}
-    #     conf["cls"] = "uriresolver"
-    #     conf["ip"] = self.conf["node"]["ip"]
-    #     conf["start_port"] = self.conf["node"]["start_port"]
-    #     conf["port_node"] = self.conf["node"]["port_node"]
-    #     conf["port_ns"] = self.conf["node"]["port_ns"]
-    #     conf["mode"] = "local"
-    #     conf["basename"] = self.conf["node"]["name"]
-    #     return conf
 
     @property
     def njson(self):

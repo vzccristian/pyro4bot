@@ -51,10 +51,6 @@ def start_node(robot, proc_pipe, msg):
         # Get docstring from exposed methods on node
         new_object.docstring = new_object.get_docstring(new_object, exposed)
 
-        # print "\n---------------------------------------------------------"
-        # pprint.pprint(robot, indent=1)
-        # print "-----------------------------------------------------------\n"
-
         # Printing info
         print(colored(
             "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow"))
@@ -117,7 +113,9 @@ def starter(filename="", json=None):
 
     # Read JSON
     N_conf = config.Config(filename=filename, json=json)
-
+    print "\n--------------------------NCONF-------------------------------"
+    pprint.pprint(N_conf.__dict__, indent=1)
+    print "-----------------------------------------------------------\n"
     # Object for robot load
     robot = N_conf.robot
     robot["filename"] = filename

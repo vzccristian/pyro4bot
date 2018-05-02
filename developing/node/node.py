@@ -17,8 +17,8 @@ from libs.inspection import _modules_libs_errors, show_warnings
 import pprint
 
 show_warnings(_modules_libs_errors)
-_LOCAL_TRAYS = 5
-_REMOTE_TRAYS = 5
+_LOCAL_TRYS = 5
+_REMOTE_TRYS = 5
 
 
 def import_class(services, components):
@@ -85,11 +85,11 @@ class Robot(control.Control):
         self.load_objects(self.components, self.components_order)
 
     def load_objects(self, parts, object_robot):
-        """Execute the components of the node."""
+        """Execute the components or services of the node."""
         for k in object_robot:
-            parts[k]["_local_trys"] = _LOCAL_TRAYS
-            parts[k]["_remote_trys"] = _REMOTE_TRAYS
-            parts[k]["_services_trys"] = _LOCAL_TRAYS
+            parts[k]["_local_trys"] = _LOCAL_TRYS
+            parts[k]["_remote_trys"] = _REMOTE_TRYS
+            parts[k]["_services_trys"] = _LOCAL_TRYS
             parts[k]["_unresolved_locals"] = list(parts[k].get("_locals", []))
             parts[k]["_unr_remote_deps"] = list(
                 parts[k].get("_resolved_remote_deps", []))
@@ -107,12 +107,13 @@ class Robot(control.Control):
         while object_robot != []:
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
+
             if st_local == "ERROR":
-                print "[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
+                print "\t\t[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
                 continue
 
             if "ERROR" in st_remote:
-                print "[{}] {} {} --> {}".format(
+                print "\t\t[{}] {} {} --> {}".format(
                     colored("ERROR", 'red'),
                     colored("NOT STARTING:", 'red'),
                     k,
@@ -120,20 +121,20 @@ class Robot(control.Control):
                 continue
 
             if st_service == "ERROR":
-                print "[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
+                print "\t\t[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
                 continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
                 continue
 
             if st_local == "OK" and st_service == "OK":
+                parts[k].pop("-->", None)
+                parts[k]["_REMOTE_STATUS"] = st_remote
                 del(parts[k]["_unresolved_locals"])
                 del(parts[k]["_local_trys"])
                 del(parts[k]["_unresolved_services"])
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
-                parts[k].pop("-->", None)
-                parts[k]["_REMOTE_STATUS"] = st_remote
                 self.pre_start_pyro4bot_object(k, parts[k])
 
     def check_deps(self, k, obj):
@@ -210,7 +211,6 @@ class Robot(control.Control):
                 obj["_remote_trys"] = 0
         return check_remote
 
-
     def pre_start_pyro4bot_object(self, name, obj):
         """Prestarter for component."""
         serv_pipe, client_pipe = Pipe()
@@ -235,7 +235,8 @@ class Robot(control.Control):
             status = "FAIL"
             while (attemps > 0):
                 try:
-                    pxy = utils.get_pyro4proxy(obj["pyro4id"], self.node["name"])
+                    pxy = utils.get_pyro4proxy(
+                        obj["pyro4id"], self.node["name"])
                     status = pxy.get_status()
                     break
                 except Exception:
@@ -244,7 +245,6 @@ class Robot(control.Control):
             if status == "OK":
                 st = colored(status, 'green')
                 self.PROCESS[name].append(pxy.__docstring__())
-                #TODO: Add method to node to do this
             if status == "FAIL":
                 st = colored(status, 'red')
             if status == "WAITING":
@@ -268,6 +268,7 @@ class Robot(control.Control):
             proc_pipe.send("CONTINUE")
 
             deps = utils.prepare_proxys(d, self.node["password"])
+
             # Preparing class for pyro4
             pyro4bot_class = control.Pyro4bot_Loader(
                 globals()[d["cls"]], **deps)
@@ -302,17 +303,17 @@ class Robot(control.Control):
             print utils.format_exception(e)
 
     def get_docstring(self, new_object, exposed):
-        """Return doc_string documentation in methods_and_docstring"""
+        """Return doc_string documentation in methods_and_docstring."""
         docstring = {}
         for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
             for m in exposed[key]:
-                if (m not in (dir(control.Control))):  # Exclude docstring method
+                if (m not in (dir(control.Control))):  # Exclude control methods
                     d = eval("new_object." + str(m) + ".__doc__")
                     docstring[m] = d
         return docstring
 
     def get_class_REQUIRED(self, cls):
-        """ return a list of requeriments if cls has __REQUIRED class attribute"""
+        """Return a list of requeriments if cls has __REQUIRED class attribute."""
         try:
             dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
             return dic_cls
@@ -323,7 +324,7 @@ class Robot(control.Control):
         """
         For a given obj this method calc requeriments class and
         get unfulfilled requeriments for an obj
-        inside _service and _local find on left side string
+        inside _service and _local find on left side string.
         """
         requireds = self.get_class_REQUIRED(obj["cls"])
         connectors = obj.get("_services", []) + obj.get("_locals", [])
@@ -337,10 +338,9 @@ class Robot(control.Control):
         self.URI_proxy.register_robot_on_nameserver(self.uri_node)
 
     # Exposed methods (Publics)
-
     @Pyro4.expose
     def get_uris(self):
-        """Returns the URI of all the components of the robot."""
+        """Return the URI of all the components of the robot."""
         return self.URI_proxy.list_uris()
 
     @Pyro4.expose
@@ -368,7 +368,6 @@ class Robot(control.Control):
             except Exception:
                 raise
             print("[{}]  {}".format(colored("Down", 'green'), v[0]))
-        # os.kill(self.mypid,9)
 
     @Pyro4.expose
     def print_process(self, onlyChanges=False):
@@ -376,14 +375,19 @@ class Robot(control.Control):
             #  Update status
             try:
                 old_status = v[3]
-                v[3] = utils.get_pyro4proxy(v[0], self.node["name"]).get_status()
+                v[3] = utils.get_pyro4proxy(
+                    v[0], self.node["name"]).get_status()
             except Exception:
                 v[3] = "FAIL"
             if ((onlyChanges and v[3] != old_status) or not onlyChanges):
-                if v[3] == "OK": st = colored(v[3], 'green')
-                elif v[3] == "FAIL": st = colored(v[3], 'red')
-                elif v[3] == "WAITING" or v[3] == "ASYNC": st = colored(v[3], 'yellow')
-                print("[{}]\t{} {}".format(st, str(v[2]), str(v[0]).rjust(60, ".")))
+                if v[3] == "OK":
+                    st = colored(v[3], 'green')
+                elif v[3] == "FAIL":
+                    st = colored(v[3], 'red')
+                elif v[3] == "WAITING" or v[3] == "ASYNC":
+                    st = colored(v[3], 'yellow')
+                print("[{}]\t{} {}".format(
+                    st, str(v[2]), str(v[0]).rjust(60, ".")))
 
     @Pyro4.expose
     def status_changed(self):
