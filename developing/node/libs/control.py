@@ -212,7 +212,6 @@ class Control(botlogging.Logging):
 
     @Pyro4.expose
     def __exposed__(self):
-        print "1"
         return self.exposed
 
     @Pyro4.expose

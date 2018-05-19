@@ -179,22 +179,25 @@ def get_con_proxy(uri, password):
     return get_uri_base(uri), get_pyro4proxy(uri, password)
 
 
-def prepare_proxys(part, password):
+def prepare_proxys(part, own_password):
     injects = {}
     part["deps"] = {}
     if "name" in part:
         part["botname"], part["name"] = part["name"].split(".")
     if "uriresolver" in part:
-        part["uriresolver"] = get_pyro4proxy(part["uriresolver"], password)
+        part["uriresolver"] = get_pyro4proxy(part["uriresolver"], own_password)
     if "node" in part:
-        part["node"] = get_pyro4proxy(part["node"], password)
+        part["node"] = get_pyro4proxy(part["node"], own_password)
     for d in part.get("_locals", []):
-        con, proxy = get_con_proxy(d, password)
+        con, proxy = get_con_proxy(d, own_password)
         injects[con] = proxy
     for d in part.get("_resolved_remote_deps", []):
-        part["deps"][d] = get_pyro4proxy(d, password)
+        (name, _, _) = uri_split(d)
+        password = name.split(".")[0] if "." in name else name
+        part["deps"][name] = get_pyro4proxy(d, password)
+
     for d in part.get("_services", []):
-        con, proxy = get_con_proxy(d, password)
+        con, proxy = get_con_proxy(d, own_password)
         injects[con] = proxy
 
     part.update(injects)

@@ -8,7 +8,7 @@ import sys
 import os
 import threading
 import Pyro4
-
+import pprint
 
 @Pyro4.expose
 class fake(control.Control):
@@ -18,6 +18,7 @@ class fake(control.Control):
         self.init_workers(self.worker)
 
     def worker(self):
+        pprint.pprint(self.__dict__)
         while self.worker_run:
             print self.value
             self.value += 1

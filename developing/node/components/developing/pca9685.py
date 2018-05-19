@@ -3,7 +3,7 @@
 import time
 from node.libs import control
 import Pyro4
-from node.libs.gpio.pyro4bot_gpio import *
+from node.libs.gpio import *
 from node.libs.gpio.I2C import *
 import math
 

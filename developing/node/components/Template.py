@@ -5,7 +5,7 @@ from node.libs import control
 import Pyro4
 
 
-class < CLASS NAME > (control.Control):
+class ClassName (control.Control):
     __REQUIRED = []
     def __init__(self):
         # Atribute example

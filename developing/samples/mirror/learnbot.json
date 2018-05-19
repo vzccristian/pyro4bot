@@ -1,0 +1,12 @@
+{
+   "node":{
+      "name":"master",
+      "ethernet":"wlan0"
+    },
+   "services":{
+        "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01}
+   },
+   "components":{
+        "basemotion":{"cls":"basemotion","BASE":[0,0],"frec":0.03}
+    }
+}

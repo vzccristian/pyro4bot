@@ -1,0 +1,13 @@
+{
+   "NODE":{
+      "name":"esclavo",
+      "ethernet":"wlan0"
+    },
+   "services":{
+     "gpioservice":{"cls":"gpioservice","gpio_mode":11}
+   },
+   "components":{
+      "ruedas":{"cls":"l298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26,"frec":0.03},
+      "base":{"cls":"AlphaMirrorBase","-->": ["ruedas","master.basemotion"]}
+    }
+}

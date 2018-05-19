@@ -10,11 +10,11 @@ import Pyro4
 
 
 @Pyro4.expose
-class < CLASS_NAME > (control.Control):
+class ClassName (control.Control):
     @control.load_config
     def __init__(self, data, **kwargs):
         # this line is the last line in constructor method
-        super( < CLASS_NAME > , self).__init__()
+        # super( < CLASS_NAME > , self).__init__()
         #if you want run any worker method
         self.init_workers()
 
