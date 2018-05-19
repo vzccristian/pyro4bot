@@ -11,7 +11,6 @@ class basemotion(control.Control):
     __REQUIRED = ["usbserial", "BASE"]
 
     def __init__(self):
-        print self.__dict__
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
 
