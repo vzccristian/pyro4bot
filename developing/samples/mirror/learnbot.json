@@ -8,6 +8,6 @@
    },
    "components":{
         "base":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
-        "mirror":{"cls":"mirrorbase","-->": ["base","esclavo.ruedas"]}
+        "mirror":{"cls":"mirror","-->": ["base","esclavo.ruedas"]}
     }
 }

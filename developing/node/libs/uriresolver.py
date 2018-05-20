@@ -48,8 +48,7 @@ class uriresolver(control.Control):
     def create_uriresolver_proxy(self):
         try:
             Pyro4.config.HOST = "localhost"
-            Pyro4.config.SERIALIZERS_ACCEPTED = set(
-                ['pickle', 'json', 'marshal', 'serpent'])
+            Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
             self.port = utils.get_free_port(self.port)
             self.daemonproxy = Pyro4.Daemon(
                 host="127.0.0.1", port=self.port)  # Daemon proxy for NODE

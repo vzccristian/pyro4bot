@@ -33,6 +33,7 @@ class ClientRobot(object):
             port_robot (int): (Optional) Port where the robot works.
             bigbrother_passw (str): Bigbrother's password.
         """
+        Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
         if ("@" in name):
             self.name = name[0:name.find("@")]
             self.ip = name[name.find("@") + 1:]
@@ -46,7 +47,6 @@ class ClientRobot(object):
             bigbrother_passw) else DEFAULT_BB_PASSWORD
         try:
             proxys = self._proxy_robot()
-            Pyro4.config.SERIALIZER = "pickle"
             for p in proxys:
                 con = p.split("@")[0].split(".")[1]
                 proxy = utils.get_pyro4proxy(p, self.name)

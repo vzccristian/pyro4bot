@@ -180,6 +180,7 @@ def get_con_proxy(uri, password):
 
 
 def prepare_proxys(part, own_password):
+    Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
     injects = {}
     part["deps"] = {}
     if "name" in part:
