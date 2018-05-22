@@ -116,7 +116,6 @@ class Control(botlogging.Logging):
     @threaded
     def init_thread(self, fn, *args):
         """ Start all workers daemon"""
-        print "---------------_", fn, args
         self.__check_start__()
         if self.worker_run:
             t = threading.Thread(target=fn, args=args)

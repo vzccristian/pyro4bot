@@ -7,7 +7,7 @@ import time
 from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
-
+import pprint
 
 @Pyro4.expose
 class l298n(control.Control):
@@ -19,7 +19,10 @@ class l298n(control.Control):
                          self.IN4, self.ENA, self.ENB], OUT)
         self.motor_a = self.GPIO.PWM(self.ENA, 100)
         self.motor_b = self.GPIO.PWM(self.ENB, 100)
+        self.motor_a.start(100)
+        self.motor_b.start(100)
         self.stop()
+
 
     @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):

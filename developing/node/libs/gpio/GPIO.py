@@ -11,7 +11,6 @@ from  node.libs.gpio.PWM import *
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio
 
-
 class RPiGPIO(object):
     """GPIO implementation for the Raspberry Pi using the RPi.GPIO library."""
 
@@ -24,6 +23,7 @@ class RPiGPIO(object):
         if self.SGPIO is not None:
             mode = self.SGPIO.get_mode()
         self.setmode(mode)
+
 
     def setmode(self,mode):
         if mode == BOARD or mode == BCM:
@@ -61,6 +61,7 @@ class RPiGPIO(object):
         if self.SGPIO is not None:
             self.SGPIO.setup(self.pyro4id,pin,mode,pull_up_down)
         self.rpi_gpio.setup(pin,mode,pull_up_down)
+
 
     def output(self, pin, value):
         """Set the specified pin the provided high/low value.  Value should be

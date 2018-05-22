@@ -7,7 +7,7 @@
         "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01}
    },
    "components":{
-        "base":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
-        "mirror":{"cls":"mirror","-->": ["base","esclavo.ruedas"]}
+        "ruedas":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
+        "mirror":{"cls":"mirror","-->": ["ruedas","esclavo.ruedas"]}
     }
 }

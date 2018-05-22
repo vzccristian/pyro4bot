@@ -5,6 +5,7 @@
 # ____________developed by paco andres____________________
 from node.libs.gpio.GPIO import HARDWARE
 from  node.libs.gpio.gpiodef import *
+
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio
 
