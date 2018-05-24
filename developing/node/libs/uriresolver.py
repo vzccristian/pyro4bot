@@ -143,6 +143,7 @@ class uriresolver(control.Control):
             # Creating a NameServer
             try:
                 port = utils.get_free_port(self.port_ns, ip=self.ip)
+                Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
                 self.nsThread = threading.Thread(
                     target=nm.startNSloop,
                     kwargs={'host': self.ip, 'port': port})

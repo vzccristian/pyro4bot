@@ -229,6 +229,7 @@ class Control(botlogging.Logging):
             k = dep.keys()[0]
             try:
                 for u in dep[k]:
+                    print k
                     self.deps[k] = utils.get_pyro4proxy(u, k.split(".")[0])
                 self._resolved_remote_deps.append(dep[k])
                 if (self._unr_remote_deps is not None):
