@@ -8,6 +8,6 @@
    },
    "components":{
         "ruedas":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
-        "apriltag":{"cls":"apriltag_frames","-->":["pc_apriltag.apriltag_resolver"],"width":320,"height":240, "frec":0.01}
+        "apriltag":{"cls":"apriltag_frames","-->":["pc_apriltag.apriltag_resolver"],"frec":0.01}
     }
 }
