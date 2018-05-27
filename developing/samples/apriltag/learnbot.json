@@ -1,6 +1,6 @@
 {
    "node":{
-      "name":"apriltag_master",
+      "name":"learnbot_apriltag",
       "ethernet":"wlan0"
     },
    "services":{
@@ -8,6 +8,6 @@
    },
    "components":{
         "ruedas":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
-        "apriltag":{"cls":"apriltag_frames","-->":["pc_apriltag.apriltag_resolver"],"frec":0.01}
+        "apriltag":{"cls":"apriltag_frames","-->":["pc_apriltag.apriltag_resolver", "ruedas"],"frec":0.01}
     }
 }

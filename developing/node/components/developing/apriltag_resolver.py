@@ -53,15 +53,15 @@ class apriltag_resolver(control.Control):
 
     def test(self):
         while True:
-            cap = cv2.VideoCapture(1)
+            cap = cv2.VideoCapture(0)
             while True:
                 ret, frame = cap.read()
                 if not ret:
                     break
-                cv2.imshow("TEST", frame)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                detections = self.get_detections(frame, picamera=False)
+                # cv2.imshow("TEST", frame)
+                # if cv2.waitKey(1) & 0xFF == ord('q'):
+                #     break
+                detections = self.get_detections(frame, picamera=False, openWindow=True)
                 for d in detections:
                     print d["tag_family"], d["tag_id"]
                 time.sleep(0.1)

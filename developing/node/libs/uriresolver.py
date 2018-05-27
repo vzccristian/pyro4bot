@@ -328,7 +328,7 @@ class uriresolver(control.Control):
         try:
             if self.nameserver is not None:
                 self.URIS[self.botName] = uri
-                print("ROBOT AVAILABLE: %s" %
+                print("\nROBOT AVAILABLE: %s" %
                       (colored(self.URIS[self.botName], 'green')))
                 if (self.usingBB):
                     self.nameserver.register(

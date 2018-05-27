@@ -27,7 +27,7 @@ if __name__ == "__main__":
         salir = True
         time.sleep(2)
         while salir:
-            print colored("\n----\nComandos disponibles: \n* Doc \n* Status \n* Exit\n----\n", "green")
+            print colored("\n----\nAvailable commands:: \n* Doc \n* Status \n* Exit\n----\n", "green")
             cad = raw_input("{} ".format(colored(PROCESS[0] + ":", 'green')))
             if cad.upper() == "EXIT":
                 ROB.shutdown()

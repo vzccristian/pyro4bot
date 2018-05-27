@@ -453,11 +453,12 @@ if __name__ == "__main__":
         signal.signal(signal.SIGTSTP, ns_Object.handler)  # ctrl+z
         signal.signal(signal.SIGINT, ns_Object.handler)  # ctrl+c
 
+        time.sleep(2)
         while (True):
             if (ns_Object.is_working()):  # NS ready for work
-                print colored("\n----------\nComandos disponibles: \n* List \n* Remove \n* Lookup\n* Exit\n----------\n", "green")
+                print colored("\n----------\nAvailable commands:: \n* List \n* Remove \n* Lookup\n* Exit\n----------\n", "green")
                 command = raw_input(
-                    "\n" + colored("Comando a la espera: ", "yellow"))
+                    "\n" + colored("Enter a new command: ", "yellow"))
                 try:
                     command = command.split()
                     if (command is not None):

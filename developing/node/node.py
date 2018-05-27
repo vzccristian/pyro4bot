@@ -197,7 +197,7 @@ class Robot(control.Control):
                 check_remote = "ERROR"
                 obj["_remote_trys"] = 0
             elif "SYNC" == msg:
-                print("REMOTE-URI:{} , COMP:{}".format(uri, d))
+                print("\t\t" + colored("*REMOTE-URI", 'green') + ":{} for comp:{}".format(uri, d))
                 check_remote = "OK"
                 obj["_remote_trys"] = 0
                 obj["_resolved_remote_deps"].append(uri)
