@@ -4,20 +4,21 @@
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
 import time
-from node.libs import control, utils
+from node.libs import control
 import Pyro4
+
 
 @Pyro4.expose
 class pantilt(control.Control):
 
-    __REQUIRED = ["usbserial","PT"]
+    __REQUIRED = ["usbserial", "PT"]
 
     def __init__(self):
         self.send_subscripcion(self.usbserial, "PT")
         self.bar = False
         self.ptblock = False
-        self.init_workers(self.worker)
-        #print(self.node.get_uris())
+        # self.init_workers(self.worker)
+
     def worker(self):
         while self.worker_run:
             # write here code for your component
@@ -25,11 +26,15 @@ class pantilt(control.Control):
 
     @Pyro4.oneway
     @control.flask("actuator")
-    def move(self, pan=90, tilt=90):
-        if self.ptblock == False:
+    def move(self, pan=30, tilt=90):
+        if pan < 10: pan = 10
+        elif pan > 120: pan = 120
+        if tilt < 15: tilt = 15
+        elif tilt > 140: tilt = 140
+        if self.ptblock is False:
             self.usbserial.command("setpt " + str(pan) + "," + str(tilt))
             while self.PT[0] != pan and self.PT[1] != tilt:
-                print "wait servo"
+                print("waiting for servo...")
                 self.ptblock = True
             self.ptblock = False
 

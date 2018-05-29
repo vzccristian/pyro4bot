@@ -1,7 +1,7 @@
 {
    "node":{
       "name":"pc_apriltag",
-      "ethernet":"wlan0"
+      "ethernet":"wlxc4e984e024a2"
     },
    "services":{
    },
