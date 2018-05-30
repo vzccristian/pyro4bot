@@ -10,6 +10,8 @@ import Pyro4
 
 
 class infrared (control.Control):
+    """Infrared through Arduino."""
+    
     __REQUIRED = ["usbserial", "IR"]
 
     def __init__(self):

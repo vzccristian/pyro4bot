@@ -10,6 +10,7 @@ import Pyro4
 
 @Pyro4.expose
 class pantilt(control.Control):
+    """Control of camera movement through Arduino."""
 
     __REQUIRED = ["usbserial", "PT"]
 
@@ -17,12 +18,6 @@ class pantilt(control.Control):
         self.send_subscripcion(self.usbserial, "PT")
         self.bar = False
         self.ptblock = False
-        # self.init_workers(self.worker)
-
-    def worker(self):
-        while self.worker_run:
-            # write here code for your component
-            time.sleep(self.frec)
 
     @Pyro4.oneway
     @control.flask("actuator")
@@ -51,7 +46,3 @@ class pantilt(control.Control):
     @control.flask("sensor", 2)
     def get_pantilt(self):
         return self.PT
-
-
-if __name__ == "__main__":
-    pass

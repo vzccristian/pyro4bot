@@ -4,19 +4,18 @@
 
 import time
 from node.libs import control
-import pprint
 import Pyro4
 
+
 class mirror(control.Control):
+    """Replicate the command sent to move wheels through Arduino to
+    another bot with another different typology."""
+
     def __init__(self):
         self.init_workers(self.worker)
-        pprint.pprint(self.__dict__)
 
     def worker(self):
         print("MIRROR WORKING")
-        # print(self.deps["esclavo.ruedas"].__docstring__())
-        # while self.worker_run:
-        #     time.sleep(self.frec)
 
     @Pyro4.expose
     @Pyro4.oneway

@@ -7,22 +7,23 @@ import time
 from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
-import pprint
+
 
 @Pyro4.expose
-class l298n(control.Control):
-    __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA", "ENB", "gpioservice"]
+class alphal298n(control.Control):
+    """Control L298N (Alphabot) through GPIO."""
+    
+    __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA","ENB", "gpioservice"]
 
     def __init__(self):
         self.GPIO = GPIOCLS(self.gpioservice, self.pyro4id)
         self.GPIO.setup([self.IN1, self.IN2, self.IN3,
                          self.IN4, self.ENA, self.ENB], OUT)
-        self.motor_a = self.GPIO.PWM(self.ENA, 100)
-        self.motor_b = self.GPIO.PWM(self.ENB, 100)
-        self.motor_a.start(100)
-        self.motor_b.start(100)
+        self.motor_a = self.GPIO.PWM(self.ENA, 500)
+        self.motor_b = self.GPIO.PWM(self.ENB, 500)
+        self.motor_a.start(50)
+        self.motor_b.start(50)
         self.stop()
-
 
     @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):
@@ -52,13 +53,13 @@ class l298n(control.Control):
         self.GPIO.output(self.IN4, LOW)
 
     @control.flask("actuator")
-    def setvel(self, DCA=100, DCB=100):
+    def setvel(self, DCA, DCB):
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
         self.GPIO.output(self.IN1, HIGH)
         self.GPIO.output(self.IN2, LOW)
-        self.GPIO.output(self.IN3, LOW)
-        self.GPIO.output(self.IN4, HIGH)
+        self.GPIO.output(self.IN3, HIGH)
+        self.GPIO.output(self.IN4, LOW)
 
     @control.flask("actuator")
     def left(self, DC=100):
@@ -67,7 +68,3 @@ class l298n(control.Control):
     @control.flask("actuator")
     def right(self, DC=100):
         self.setvel(DC, 0)
-
-
-if __name__ == "__main__":
-    pass

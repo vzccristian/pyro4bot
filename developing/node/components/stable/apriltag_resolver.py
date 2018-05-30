@@ -13,6 +13,8 @@ class apriltag_resolver(control.Control):
 
     def __init__(self):
         self.detector = apriltag.Detector()
+
+        # Uncomment to debug with USB-CAM
         # self.init_workers(self.test)
 
     @Pyro4.expose
@@ -51,16 +53,13 @@ class apriltag_resolver(control.Control):
         if (openWindow):
             cv2.destroyAllWindows()
 
-    def test(self):
+    def test(self, cam_number=0):
         while True:
-            cap = cv2.VideoCapture(0)
+            cap = cv2.VideoCapture(cam_number)
             while True:
                 ret, frame = cap.read()
                 if not ret:
                     break
-                # cv2.imshow("TEST", frame)
-                # if cv2.waitKey(1) & 0xFF == ord('q'):
-                #     break
                 detections = self.get_detections(frame, picamera=False, openWindow=True)
                 for d in detections:
                     print d["tag_family"], d["tag_id"]

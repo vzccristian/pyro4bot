@@ -8,12 +8,13 @@ import Pyro4
 
 
 class basemotion(control.Control):
+    """Movement of wheels through Arduino."""
+
     __REQUIRED = ["usbserial", "BASE"]
 
     def __init__(self):
         self.send_subscripcion(self.usbserial, "BASE")
         self.init_workers(self.worker)
-
 
     def worker(self):
         while self.worker_run:
@@ -31,7 +32,3 @@ class basemotion(control.Control):
     @control.flask("sensor", 2)
     def get_base(self):
         return self.BASE
-
-
-if __name__ == "__main__":
-    pass
