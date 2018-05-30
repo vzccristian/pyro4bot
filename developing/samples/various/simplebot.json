@@ -1,15 +1,7 @@
 {
    "NODE":{
       "name":"simplebot1",
-      "path":"./node",
-      "etc":"<path>/etc",
-      "path_cls":["services","components"],
-      "ethernet":"wlp8s0",
-      "port_ns":9090,
-      "port_node":5040,
-      "start_port":6000,
-      "def_frec":0.02,
-      "def_worker":true
+      "ethernet":"wlp8s0"
     },
    "services":{
         "usbserial":{"cls":"usbsimulator","comPort":"/dev/ttyS0","comPortBaud":115200,"mode":"local"}

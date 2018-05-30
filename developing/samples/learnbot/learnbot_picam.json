@@ -1,0 +1,12 @@
+{
+   "NODE":{
+      "name":"picambot",
+      "ethernet":"wlan0"
+    },
+   "services":{
+
+   },
+   "components":{
+     "picam":{"cls":"picam","ethernet":"<ethernet>","width":640,"height":480}
+    }
+}

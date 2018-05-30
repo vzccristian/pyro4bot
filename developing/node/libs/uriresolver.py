@@ -122,7 +122,6 @@ class uriresolver(control.Control):
                     self.nameserver.ping()
                 except Exception:
                     self.nameserver = None
-
             if (self.nameserver):
                 # ¿BigBrother or Random NS?
                 try:

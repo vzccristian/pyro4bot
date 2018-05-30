@@ -23,7 +23,7 @@ class apriltag_resolver(control.Control):
 
                 if picamera:
                     frame = cv2.imdecode(frame, 1)
-                    
+
                 gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
                 detections, dimg = self.detector.detect(
                     gray, return_image=True)

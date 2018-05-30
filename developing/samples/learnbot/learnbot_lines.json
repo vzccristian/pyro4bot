@@ -1,16 +1,7 @@
 {
    "NODE":{
-      "name":"robot_lineas",
-      "path":"/home/pi/PYRO4DIR/pyro4bot/developing/node",
-      "etc":"<path>/etc",
-      "path_cls":["services","components"],
-      "ethernet":"wlan0",
-      "name_server":true,
-      "port_ns":9090,
-      "port_node":4040,
-      "start_port":5050,
-      "def_frec":0.1,
-      "def_worker":true
+      "name":"learnbot_lines",
+      "ethernet":"wlan0"
     },
    "services":{
         "usbserial":{"cls":"usbserial","comPort":"/dev/ttyS0","comPortBaud":115200,"frec":0.01}
