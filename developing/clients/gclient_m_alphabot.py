@@ -50,16 +50,16 @@ class Mover(QtGui.QWidget):
         self.show()
 
     def bot_forward(self):
-        self.bot.ruedas.backward()
+        self.bot.ruedas.backward(100,100)
 
     def bot_backward(self):
-        self.bot.ruedas.forward()
+        self.bot.ruedas.forward(100,100)
 
     def bot_left(self):
-        self.bot.ruedas.backward(100,50)
+        self.bot.ruedas.backward(100,75)
 
     def bot_right(self):
-        self.bot.ruedas.backward(70,100)
+        self.bot.ruedas.backward(75,100)
 
     def bot_stop(self):
         self.bot.ruedas.stop()

@@ -9,7 +9,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton
 
-class Mover(QtGui.QWidget):
+class Mirror(QtGui.QWidget):
     def __init__(self, bot):
         QtGui.QWidget.__init__(self)
         self.title = 'bot SimpleClient'
@@ -53,19 +53,19 @@ class Mover(QtGui.QWidget):
         self.show()
 
     def bot_forward(self):
-        self.bot.bot.mirror.set__vel(1000, 1000)
+        self.bot.mirror.set__vel(1000, 1000)
 
     def bot_backward(self):
-        self.bot.bot.mirror.set__vel(-1000, -1000)
+        self.bot.mirror.set__vel(-1000, -1000)
 
     def bot_left(self):
-        self.bot.bot.mirror.set__vel(1000, 0)
+        self.bot.mirror.set__vel(0, 1000)
 
     def bot_right(self):
-        self.bot.bot.mirror.set__vel(0, 1000)
+        self.bot.mirror.set__vel(1000, 0)
 
     def bot_stop(self):
-        self.bot.bot.mirror.set__vel(0, 0)
+        self.bot.mirror.set__vel(0, 0)
 
 
 if __name__ == "__main__":
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         bot = ClientRobot(sys.argv[1])
         try:
             app = QtGui.QApplication(sys.argv)
-            ex = Mover(bot)
+            ex = Mirror(bot)
             sys.exit(app.exec_())
         except Exception:
             sys.exit()

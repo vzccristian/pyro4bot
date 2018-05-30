@@ -12,7 +12,7 @@ from node.libs.gpio.GPIO import *
 @Pyro4.expose
 class alphal298n(control.Control):
     """Control L298N (Alphabot) through GPIO."""
-    
+
     __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA","ENB", "gpioservice"]
 
     def __init__(self):
