@@ -18,7 +18,7 @@ class apriltag_resolver(control.Control):
         # self.init_workers(self.test)
 
     @Pyro4.expose
-    def get_detections(self, frame, picamera=True, openWindow=False):
+    def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False):
         if self.worker_run:
             if (frame is not None):
                 list_detections = []
@@ -31,18 +31,20 @@ class apriltag_resolver(control.Control):
                     gray, return_image=True)
 
                 num_detections = len(detections)
-                print 'Detected {} tags.\n'.format(num_detections)
+                if (showInfo):
+                    print 'Detected {} tags.\n'.format(num_detections)
 
                 for i, detection in enumerate(detections):
                     list_detections.append(dict(detection._asdict()))
-                    print 'Detection {} of {}:'.format(i + 1, num_detections)
-                    print
-                    print detection.tostring(indent=2)
-                    print
+                    if (showInfo):
+                        print 'Detection {} of {}:'.format(i + 1, num_detections)
+                        print
+                        print detection.tostring(indent=2)
+                        print
 
                 if (openWindow):
                     # Show image
-                    window = 'Camera'
+                    window = 'AprilTag Resolver '+ str(self.botname)
                     cv2.namedWindow(window)
                     overlay = frame / 2 + dimg[:, :, None] / 2
 

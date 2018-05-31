@@ -16,8 +16,6 @@ class apriltag_frames_ab(control.Control):
         self.time_notags = None
         self.detecteds = {}
 
-
-
         self.init_workers(self.get_frame)
         self.init_workers(self.change_position)
 
@@ -36,11 +34,11 @@ class apriltag_frames_ab(control.Control):
                 Pyro4.config.SERIALIZER = 'pickle'
                 try:
                     self.detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
-                        data, openWindow=True)
+                        data, openWindow=True, showInfo=False)
                     if self.detections:
                         self.deps["ruedas"].setvel(0, 0)
                         for d in self.detections:
-                            self.comunicate(d)
+                            self.saveTag(d)
                     stream.seek(0)
                     stream.truncate()
                     time.sleep(self.frec)
@@ -63,9 +61,9 @@ class apriltag_frames_ab(control.Control):
                     time.sleep(0.5)
                     self.deps["ruedas"].setvel(0, 0)
 
-    def comunicate(self, april):
-        if (april["tag_family"] not in self.detecteds):
-            print("Adquired: ", april["tag_family"])
-            self.detecteds[april["tag_family"]] = april
+    def saveTag(self, april):
+        identificator = str(april["tag_family"])+"."+str(april["tag_id"])
+        if (identificator not in self.detecteds):
+            print("New tag: {}".format(identificator))
+            self.detecteds[identificator] = april
             self.april_detected.update_key_value("aprils", self.detecteds)
-            print "SUBS:", self.subscriptors

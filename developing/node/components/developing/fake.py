@@ -8,6 +8,7 @@ import pprint
 class fake(control.Control):
     __REQUIRED = []
     def __init__(self):
+        self.detections = {}
         self.init_workers(self.worker)
 
         # Publication example
@@ -20,7 +21,6 @@ class fake(control.Control):
     def worker(self):
         while self.worker_run:
             if hasattr(self, 'aprils'):
-                print self.aprils
+                self.detections.update(self.aprils)
+            print self.detections
             time.sleep(10)
-            print "--------------------------------------"
-            # write here code for your component thread

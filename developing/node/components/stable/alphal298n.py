@@ -54,7 +54,6 @@ class alphal298n(control.Control):
 
     @control.flask("actuator")
     def setvel(self, DCA, DCB, forwardA=True, forwardB=True):
-        print DCA, DCB, forwardA, forwardB
         if DCA > 100: DCA = 100
         elif DCA < 0: DCA = 0
         if DCB > 100: DCB = 100
