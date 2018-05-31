@@ -15,7 +15,7 @@ class ClassName (control.Control):
         self.init_workers(self.worker)
 
         # Subscription example
-        #  self.send_subscripcion(self.usbserial, "LASER")
+        #  self.send_subscription("usbserial", "LASER")
 
         # Publication example
         # self.buffer = token.Token()
@@ -24,11 +24,10 @@ class ClassName (control.Control):
 
     def worker(self):
         while self.worker_run:
-            print(".")
             # write here code for your component thread
 
-    # here your methods
-    # Expose your method to exterior with decorator @Pyro4.expose
+    #  here your methods
+    #  Expose your method to exterior with decorator @Pyro4.expose
     @Pyro4.expose
     def get_value(self):
         return self.value

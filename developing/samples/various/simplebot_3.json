@@ -1,15 +1,7 @@
 {
    "NODE":{
-      "name":"simplebot2",
-      "path":"./node",
-      "etc":"<path>/etc",
-      "path_cls":["services","components"],
-      "ethernet":"wlan0",
-      "port_ns":9090,
-      "port_node":4040,
-      "start_port":6000,
-      "def_frec":0.02,
-      "def_worker":true
+      "name":"simplebot3",
+      "ethernet":"wlan0"
     },
    "services":{
         "usbserial":{"cls":"usbsimulator","comPort":"/dev/ttyS0","comPortBaud":115200,"mode":"local"}

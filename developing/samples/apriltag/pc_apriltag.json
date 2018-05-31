@@ -6,6 +6,7 @@
    "services":{
    },
    "components":{
-        "apriltag_resolver":{"cls":"apriltag_resolver","frec":0.01}
+        "apriltag_resolver":{"cls":"apriltag_resolver","frec":0.01},
+        "fake":{"cls": "fake","-->":["alphabot_apriltag.apriltag"], "frec":0.01 }
     }
 }

@@ -16,7 +16,7 @@ class usbserial(control.Control):
     __REQUIRED = ["comPort", "comPortBaud"]
 
     def __init__(self):
-        self.subscriptors = {}
+        # self.subscriptors = {}
         self.buffer = token.Token()
         self.writer = []
         self.json = ""

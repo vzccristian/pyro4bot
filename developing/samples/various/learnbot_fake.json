@@ -1,0 +1,11 @@
+{
+   "NODE":{
+      "name":"fakebot",
+      "ethernet":"wlp8s0"
+    },
+   "services":{
+   },
+   "components":{
+     "fake":{"cls":"fake","frec":1}
+    }
+}

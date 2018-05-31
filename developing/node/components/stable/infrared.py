@@ -10,11 +10,13 @@ import Pyro4
 
 
 class infrared (control.Control):
+    """Infrared through Arduino."""
+
     __REQUIRED = ["usbserial", "IR"]
 
     def __init__(self):
         # self.init_workers(self.worker)
-        self.send_subscripcion(self.usbserial, "IR")
+        self.send_subscription("usbserial", "IR")
 
     def worker(self):
         while self.worker_run:

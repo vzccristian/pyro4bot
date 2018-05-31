@@ -7,6 +7,7 @@ import time
 from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
+#import RPi.GPIO as GPIO
 
 
 @Pyro4.expose
@@ -14,25 +15,47 @@ class alphapantilt(control.Control):
     __REQUIRED = ["PAN", "TILT", "gpioservice"]
 
     def __init__(self):
-        self.GPIO = GPIOCLS(self.gpioservice, self.pyro4id)
-        self.GPIO.setup([self.PAN, self.TILT], OUT)
-        self.cpan = self.GPIO.PWM(self.PAN, 60)
-        self.ctilt = self.GPIO.PWM(self.TILT, 60)
-        self.set_angle(self.PAN, self.cpan, 180)
-        self.set_angle(self.TILT, self.ctilt, 180)
+        # TODO: With service
+        # self.GPIO = GPIOCLS(self.gpioservice, self.pyro4id)
+        # self.GPIO.setup(self.TILT, OUT)
+        # self.GPIO.setup(self.PAN, OUT)
+        # self.cpan = self.GPIO.PWM(self.PAN, 50)
+        # self.ctilt = self.GPIO.PWM(self.TILT, 50)
+        # self.cpan.start(50)
+        # self.ctilt.start(50)
+        # self.set_pantilt(50,120)
 
-        print("HECHO")
+        # self.set_angle(self.PAN, self.cpan, 180)
+        # self.set_angle(self.TILT, self.ctilt, 180)
+
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        GPIO.setup(self.PAN, GPIO.OUT)
+        GPIO.setup(self.TILT, GPIO.OUT)
+
+        self.cpan = GPIO.PWM(self.PAN, 50)
+        self.cpan.start(50)
+        self.ctilt = GPIO.PWM(self.TILT, 50)
+        self.ctilt.start(50)
+
+        self.pan_a = 100
+        self.tilt_a = 108
+
+        self.set_pantilt(self.pan_a, self.tilt_a)
 
     @control.flask("actuator")
-    def set_angle(self, pin, pwm, angle):
-        duty_cycle = (float(angle) / 24.0) + 2.5
-        # activate the servo pin
-        self.GPIO.output(pin, HIGH)
-        # change the duty cycle to calculated value
-        pwm.start(duty_cycle, 60)
-        # send signal 0.5 seconds
-        time.sleep(0.5)
-        # deactivate the servo pin
-        GPIO.output(pin, LOW)
-        # change the duty cycle to 0
-        pwm.stop()
+    @Pyro4.oneway
+    @Pyro4.expose
+    def set_pantilt(self, pan, tilt):
+        self.pan_a = pan
+        self.tilt_a = tilt
+        self.ctilt.start(50)
+        self.cpan.start(50)
+        self.cpan.ChangeDutyCycle(12.5 - 10.0 * float(self.pan_a) / 180)
+        self.ctilt.ChangeDutyCycle(12.5 - 10.0 * float(self.tilt_a) / 180)
+        time.sleep(1)
+        self.cpan.stop()
+        self.ctilt.stop()
+
+    def get_pantilt(self):
+        return (self.pan_a, self.tilt_a)

@@ -1,0 +1,13 @@
+{
+   "NODE":{
+      "name":"alphabot",
+      "ethernet":"wlan0"
+    },
+    "services":{
+ 	      "gpioservice":{"cls":"gpioservice","gpio_mode":11}
+    },
+    "components":{
+ 	      "ruedas":{"cls":"alphal298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26},
+        "infrarojos":{"cls":"tlc1543ad","CS":5,"Clock":25,"Address":24,"DataOut":23,"line":[0,0,0,0,0],"frec":0.03}
+     }
+}

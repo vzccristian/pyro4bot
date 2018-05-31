@@ -15,6 +15,8 @@ import threading
 
 
 class picam(control.Control):
+    """Set a connection socket to the camera."""
+
     __REQUIRED = ["width", "height", "ethernet"]
 
     def __init__(self):

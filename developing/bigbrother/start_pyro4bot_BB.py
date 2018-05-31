@@ -96,12 +96,14 @@ class bigbrother(object):
             except Exception:
                 print("Error connecting to: %s " % value)
                 self.remove(key)
+        print "----------------------------------------"
         if self.robots:
-            print "----------------------------------------"
             print "ROBOTS:\n", self.robots
             print "COMPONENTS:\n", self.components
             print "ASYNC_WAITINGS:\n", self.async_waitings
             print "CLAIMANT_LIST:\n", self.claimant_list
+        else:
+            print "There is no registered robot."
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -144,16 +146,17 @@ class bigbrother(object):
     @Pyro4.expose
     def request(self, obj, claimant):
         if (obj is not None and claimant is not None):
-            t = threading.Thread(name="t_" + obj + " " + claimant,
-                                 target=self.request_loop, args=(obj,))
-            self.async_waitings[obj] = {
-                "target_type": -1,
-                "call": t,
-                "claimant": claimant,
-            }
-            self.claimant_list.append(claimant)
-            self.async_waitings[obj]["call"].start()
-            print("REQUEST:\n{}".format(self.async_waitings[obj]))
+            if (claimant not in self.claimant_list):
+                t = threading.Thread(name="t_" + obj + " " + claimant,
+                                     target=self.request_loop, args=(obj,))
+                self.async_waitings[obj] = {
+                    "target_type": -1,
+                    "call": t,
+                    "claimant": claimant,
+                }
+                self.claimant_list.append(claimant)
+                self.async_waitings[obj]["call"].start()
+                print("REQUEST:\n{}".format(self.async_waitings[obj]))
 
     def request_loop(self, obj):
         uris = []
@@ -286,6 +289,7 @@ class bigbrother(object):
             if name in self.claimant_list: self.claimant_list.remove(name)
             self.private_pyro4ns.remove(
                 name=_name, prefix=_prefix, regex=_regex)
+
         finally:
             self.mutex.release()
 
@@ -442,9 +446,8 @@ if __name__ == "__main__":
         else:
             print "Demasiados argumentos."
             exit(0)
-
-        print(colored("Starting BigBrother...", 'green'))
-
+        intfc = colored(json_file["interface"], "yellow")
+        print(colored("Starting BigBrother in : {}".format(intfc), 'green'))
         ns_Object = nameServer(json_file)
         bb = bigbrother(ns_Object.get_priv_pyro4ns(),
                         ns_Object.get_pub_pyro4ns(),

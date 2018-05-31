@@ -8,20 +8,20 @@ import time
 from node.libs import control
 import Pyro4
 
-import sys
-import os
-import threading
+
 class laser(control.Control):
+    """Ultrasound sensors through Arduino."""
+
     __REQUIRED = ["usbserial", "LASER", "frec"]
 
     def __init__(self):
         self.init_workers(self.worker)
-        self.send_subscripcion(self.usbserial, "LASER")
-        #print(self.__dict__)
+        self.send_subscription("usbserial", "LASER")
+
 
     def worker(self):
         while self.worker_run:
-            # print("LASER-sal:", self.LASER)
+            print("LASER-sal:", self.LASER)
             time.sleep(self.frec)
 
     @Pyro4.expose

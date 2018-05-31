@@ -1,0 +1,12 @@
+{
+   "NODE":{
+      "name":"picambot_remote",
+      "ethernet":"wlan0"
+    },
+   "services":{
+
+   },
+   "components":{
+        "camara_remota":{"cls":"RemoteCamera","-->":["picambot.picam"],"frec":5}
+    }
+}

@@ -14,7 +14,7 @@ class pantilt(control.Control):
     __REQUIRED = ["usbserial", "PT"]
 
     def __init__(self):
-        self.send_subscripcion(self.usbserial, "PT")
+        self.send_subscription("usbserial", "PT")
         self.bar = False
         self.ptblock = False
         # self.init_workers(self.worker)
