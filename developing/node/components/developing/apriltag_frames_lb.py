@@ -8,7 +8,8 @@ import io
 import picamera
 from random import randint
 
-class apriltag_frames(control.Control):
+class apriltag_frames_lb(control.Control):
+    """Send frames to PiCamera (learnbot)."""
     __REQUIRED = []
 
     def __init__(self):
@@ -64,8 +65,8 @@ class apriltag_frames(control.Control):
                             if (dist_x < (max(camera.resolution.width, camera.resolution.height) / 4.5) ):
                                 # print "LEJOS"
                                 self.deps["ruedas"].set__vel(mi=1000, md=1000)
-                                if dist_x < 80: time.sleep(1.2)
-                                elif dist_x < 110: time.sleep(0.8)
+                                if dist_x < 80: time.sleep(2)
+                                elif dist_x < 110: time.sleep(1)
                                 else: time.sleep(0.5)
                                 self.deps["ruedas"].set__vel(mi=0, md=0)
                             # else:
@@ -85,7 +86,7 @@ class apriltag_frames(control.Control):
                 now = time.time()
                 if (now - self.time_notags > 5):
                     self.time_notags = None
-                    ranvalue = randint(1, 2)
+                    ranvalue = randint(3, 5)
                     self.deps["ruedas"].set__vel(mi=1000, md=0)
                     time.sleep(ranvalue)
                     self.deps["ruedas"].set__vel(mi=0, md=0)
