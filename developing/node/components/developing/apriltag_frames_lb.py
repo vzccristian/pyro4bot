@@ -8,7 +8,8 @@ import io
 import picamera
 from random import randint
 
-class apriltag_frames(control.Control):
+class apriltag_frames_lb(control.Control):
+    """Send frames to PiCamera (learnbot)."""
     __REQUIRED = []
 
     def __init__(self):

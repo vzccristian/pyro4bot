@@ -9,7 +9,7 @@
    "components":{
         "ruedas":{"cls":"basemotion","BASE":[0,0],"frec":0.03,"mode":"local"},
         "pantilt":{"cls":"pantilt","PT":[90,90],"frec":0.03},
-        "apriltag":{"cls":"apriltag_frames","-->":["pc_apriltag.apriltag_resolver", "ruedas", "pantilt"],"frec":0.01}
+        "apriltag":{"cls":"apriltag_frames_lb","-->":["pc_apriltag.apriltag_resolver", "ruedas", "pantilt"],"frec":0.01}
 
     }
 }

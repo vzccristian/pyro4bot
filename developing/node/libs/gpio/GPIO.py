@@ -6,15 +6,16 @@
 
 from Platform import HARDWARE
 import Pyro4
-from  node.libs.gpio.gpiodef import *
-from  node.libs.gpio.PWM import *
+from node.libs.gpio.gpiodef import *
+from node.libs.gpio.PWM import *
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio
+
 
 class RPiGPIO(object):
     """GPIO implementation for the Raspberry Pi using the RPi.GPIO library."""
 
-    def __init__(self, service=None, pyro4id=None,mode=None,):
+    def __init__(self, service=None, pyro4id=None, mode=None):
         self.rpi_gpio = rpi_gpio
         self.SGPIO = service
         self.pyro4id = pyro4id
@@ -24,12 +25,12 @@ class RPiGPIO(object):
             mode = self.SGPIO.get_mode()
         self.setmode(mode)
 
-
-    def setmode(self,mode):
+    def setmode(self, mode):
         if mode == BOARD or mode == BCM:
             self.rpi_gpio.setmode(mode)
         elif mode is not None:
-            raise ValueError('Unexpected value for mode.  Must be BOARD or BCM.')
+            raise ValueError(
+                'Unexpected value for mode.  Must be BOARD or BCM.')
         else:
             # Default to BCM numbering if not told otherwise.
             self.rpi_gpio.setmode(BCM)
@@ -37,7 +38,7 @@ class RPiGPIO(object):
     def getmode(self):
         return self.rpi_gpio.getmode()
 
-    def setwarnings(self,act=False):
+    def setwarnings(self, act=False):
         self.rpi_gpio.setwarnings(act)
 
     def status(self):
@@ -46,8 +47,7 @@ class RPiGPIO(object):
         else:
             print("GPIO status not available")
 
-
-    def get_function(self,pin):
+    def get_function(self, pin):
         """ return gpio_function trapping errors"""
         try:
             return self.rpi_gpio.gpio_function(pin)
@@ -59,9 +59,8 @@ class RPiGPIO(object):
         either OUTPUT or INPUT.
         """
         if self.SGPIO is not None:
-            self.SGPIO.setup(self.pyro4id,pin,mode,pull_up_down)
-        self.rpi_gpio.setup(pin,mode,pull_up_down)
-
+            self.SGPIO.setup(self.pyro4id, pin, mode, pull_up_down)
+        self.rpi_gpio.setup(pin, mode, pull_up_down)
 
     def output(self, pin, value):
         """Set the specified pin the provided high/low value.  Value should be
@@ -82,13 +81,13 @@ class RPiGPIO(object):
         # maybe rpi has a mass read...  it would be more efficient to use it if it exists
         return [self.rpi_gpio.input(pin) for pin in pins]
 
-    def PWM(self,pin,frec):
+    def PWM(self, pin, frec):
         if self.SGPIO is not None:
-            doit = self.SGPIO.PWM(pin,frec,self.pyro4id)
+            doit = self.SGPIO.PWM(pin, frec, self.pyro4id)
         else:
-            doit=True
+            doit = True
         if doit:
-            return PWMCLS(self.rpi_gpio,self.pyro4id,pin,frec)
+            return PWMCLS(self.rpi_gpio, self.pyro4id, pin, frec)
         else:
             return None
 
@@ -100,9 +99,9 @@ class RPiGPIO(object):
         """
         kwargs = {}
         if callback:
-            kwargs['callback']=callback
+            kwargs['callback'] = callback
         if bouncetime > 0:
-            kwargs['bouncetime']=bouncetime
+            kwargs['bouncetime'] = bouncetime
         self.rpi_gpio.add_event_detect(pin, edge, **kwargs)
 
     def remove_event_detect(self, pin):
@@ -138,6 +137,7 @@ class RPiGPIO(object):
             self.rpi_gpio.cleanup()
         else:
             self.rpi_gpio.cleanup(pin)
+
 
 if HARDWARE == "RASPBERRY_PI":
     GPIOCLS = RPiGPIO

@@ -21,7 +21,7 @@ class alphal298n(control.Control):
                          self.IN4, self.ENA, self.ENB], OUT)
         self.motor_a = self.GPIO.PWM(self.ENA, 500)
         self.motor_b = self.GPIO.PWM(self.ENB, 500)
-        self.motor_a.start(50)
+        self.motor_a.start(20)
         self.motor_b.start(50)
         self.stop()
 
@@ -53,13 +53,29 @@ class alphal298n(control.Control):
         self.GPIO.output(self.IN4, LOW)
 
     @control.flask("actuator")
-    def setvel(self, DCA, DCB):
+    def setvel(self, DCA, DCB, forwardA=True, forwardB=True):
+        print DCA, DCB, forwardA, forwardB
+        if DCA > 100: DCA = 100
+        elif DCA < 0: DCA = 0
+        if DCB > 100: DCB = 100
+        elif DCB < 0: DCB = 0
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
-        self.GPIO.output(self.IN1, HIGH)
-        self.GPIO.output(self.IN2, LOW)
-        self.GPIO.output(self.IN3, HIGH)
-        self.GPIO.output(self.IN4, LOW)
+        if (forwardA):
+            self.GPIO.output(self.IN1, HIGH)
+            self.GPIO.output(self.IN2, LOW)
+        else:
+            self.GPIO.output(self.IN1, LOW)
+            self.GPIO.output(self.IN2, HIGH)
+
+        if (forwardB):
+            self.GPIO.output(self.IN3, LOW)
+            self.GPIO.output(self.IN4, HIGH)
+        else:
+            self.GPIO.output(self.IN3, HIGH)
+            self.GPIO.output(self.IN4, LOW)
+
+
 
     @control.flask("actuator")
     def left(self, DC=100):

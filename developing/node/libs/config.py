@@ -195,7 +195,7 @@ class Config:
                     condep.remove(i)
             nivel_dep += 1
         if nivel_dep == 20:
-            print "ERROR:there are unresolved services dependencies", condep, "-->", dep_imcump
+            print "ERROR:there are unresolved dependencies", condep, "-->", dep_imcump
             exit()
         return ser_order
 

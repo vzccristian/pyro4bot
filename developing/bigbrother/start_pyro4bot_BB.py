@@ -144,16 +144,17 @@ class bigbrother(object):
     @Pyro4.expose
     def request(self, obj, claimant):
         if (obj is not None and claimant is not None):
-            t = threading.Thread(name="t_" + obj + " " + claimant,
-                                 target=self.request_loop, args=(obj,))
-            self.async_waitings[obj] = {
-                "target_type": -1,
-                "call": t,
-                "claimant": claimant,
-            }
-            self.claimant_list.append(claimant)
-            self.async_waitings[obj]["call"].start()
-            print("REQUEST:\n{}".format(self.async_waitings[obj]))
+            if (claimant not in self.claimant_list):
+                t = threading.Thread(name="t_" + obj + " " + claimant,
+                                     target=self.request_loop, args=(obj,))
+                self.async_waitings[obj] = {
+                    "target_type": -1,
+                    "call": t,
+                    "claimant": claimant,
+                }
+                self.claimant_list.append(claimant)
+                self.async_waitings[obj]["call"].start()
+                print("REQUEST:\n{}".format(self.async_waitings[obj]))
 
     def request_loop(self, obj):
         uris = []
@@ -442,9 +443,8 @@ if __name__ == "__main__":
         else:
             print "Demasiados argumentos."
             exit(0)
-
-        print(colored("Starting BigBrother...", 'green'))
-
+        intfc = colored(json_file["interface"], "yellow")
+        print(colored("Starting BigBrother in : {}".format(intfc), 'green'))
         ns_Object = nameServer(json_file)
         bb = bigbrother(ns_Object.get_priv_pyro4ns(),
                         ns_Object.get_pub_pyro4ns(),

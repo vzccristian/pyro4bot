@@ -118,8 +118,8 @@ class uriresolver(control.Control):
                     Pyro4.config.BROADCAST_ADDRS = x
                     self.broadcast_ns = x
                     self.nameserver = Pyro4.locateNS()
-                    printInfo("NameServer located.")
                     self.nameserver.ping()
+                    printInfo("NameServer located.")
                 except Exception:
                     self.nameserver = None
             if (self.nameserver):
