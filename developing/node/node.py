@@ -268,6 +268,9 @@ class Robot(control.Control):
             proc_pipe.send("CONTINUE")
             deps = utils.prepare_proxys(d, self.node["password"])
 
+            # Proxy
+            d["node"] = utils.get_pyro4proxy(d["node"],d["botname"])
+
             # Preparing class for pyro4
             pyro4bot_class = control.Pyro4bot_Loader(
                 globals()[d["cls"]], **deps)

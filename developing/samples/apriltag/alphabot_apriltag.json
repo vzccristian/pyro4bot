@@ -12,6 +12,6 @@
       "obstaculos":{"cls":"alphainfrarredobs","RIGHT":16, "LEFT": 19,"frec":0.01},
       "alphaultrasound":{"cls":"alphaultrasound","TRIG":17, "ECHO":5, "frec": 0.2},
       "apriltag":{"cls":"apriltag_frames_ab","-->":["pc_apriltag.apriltag_resolver", "alphapantilt","alphaultrasound", "obstaculos", "ruedas"],"numero_marcas":4, "frec":0.001},
-      "apriltag_controller": {"cls": "apriltag_subscripter", "-->":["apriltag"], "subscribeTo1":"apriltag", "subscribeTo2":"learnbot_apriltag.apriltag", "frec":0.5}
+      "apriltag_controller": {"cls": "apriltag_subscripter", "-->":["apriltag", "learnbot_apriltag.apriltag"], "subscribeTo1":"apriltag", "subscribeTo2":"learnbot_apriltag.apriltag", "frec":0.5}
     }
 }

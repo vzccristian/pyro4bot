@@ -40,9 +40,6 @@ class alphapantilt(control.Control):
         self.tilt_a = 105
 
         self.set_pantilt(self.pan_a, self.tilt_a)
-        self.aprils = {}
-        self.init_workers(self.worker)
-
 
     @control.flask("actuator")
     @Pyro4.oneway
@@ -63,7 +60,3 @@ class alphapantilt(control.Control):
 
     def get_pantilt(self):
         return (self.pan_a, self.tilt_a)
-
-    def worker(self):
-        print "pantilt", self.aprils
-        time.sleep(2)

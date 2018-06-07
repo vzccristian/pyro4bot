@@ -146,6 +146,8 @@ class Control(botlogging.Logging):
     def thread_publisher(self, token_data, frec):
         """Publish the token in the subscriber list."""
         self.__check_start__()
+        if not hasattr(self, 'subscriptors'):
+            self.subscriptors = {}
         while self.threadpublisher:
             d = token_data.get_attribs()
             try:

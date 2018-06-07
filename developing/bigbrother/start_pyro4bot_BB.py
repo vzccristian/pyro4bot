@@ -19,6 +19,7 @@ import myjson
 
 DEBUGGER = False
 
+
 def load_config(filename):
     return myjson.MyJson(filename).json
 
@@ -65,7 +66,6 @@ class bigbrother(object):
         self.async_waitings = {}
         self.claimant_list = []
 
-
     def updater(self):
         self.update()
         self.bigBrother.enter(10, 1, self.updater, ())
@@ -91,7 +91,8 @@ class bigbrother(object):
                         self.components[currentComponent] = []
                         self.components.get(currentComponent).append(u)
                 except Exception:
-                    print("Error connecting to: %s " % value)
+                    if (DEBUGGER):
+                        print("Error connecting to: %s " % value)
                     if (withRemove):
                         self.remove(key)
 
@@ -177,7 +178,8 @@ class bigbrother(object):
                 if (name == self.async_waitings[obj]["claimant"]):
                     while (trys > 0):
                         try:
-                            p = utils.get_pyro4proxy(robots, name.split(".")[0])
+                            p = utils.get_pyro4proxy(
+                                robots, name.split(".")[0])
                             p.add_resolved_remote_dep({obj: uris})
                             break
                         except Exception:
@@ -187,25 +189,28 @@ class bigbrother(object):
                 break
         except Exception:
             if (DEBUGGER):
-                print(colored("\nImposible realizar callback a {}".format(claimant), 'red'))
+                print(
+                    colored("\nImposible realizar callback a {}".format(claimant), 'red'))
             else:
                 pass
 
-        if claimant in self.claimant_list: self.claimant_list.remove(claimant)
+        if claimant in self.claimant_list:
+            self.claimant_list.remove(claimant)
         self.async_waitings.pop(obj, None)  # Remove if exists
-
 
     @Pyro4.expose
     def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
         if (DEBUGGER):
-            print(colored("\nLookup for: {} {}".format(obj, return_metadata),"yellow"))
+            print(colored("\nLookup for: {} {}".format(
+                obj, return_metadata), "yellow"))
         self.update()
         target_type_info = -1
         uris = []
         try:
             target = obj.split(".")
             if "." in obj:
-                if (target[0] and (not target[1] or target[1].count("*") == 1)): # simplebot. o simplebot.*
+                # simplebot. o simplebot.*
+                if (target[0] and (not target[1] or target[1].count("*") == 1)):
                     target_type_info = 1
                     for x in self.robots[target[0]]:
                         uris.append(x)
@@ -322,7 +327,8 @@ class bigbrother(object):
 class nameServer(object):
     def __init__(self, config):
         self.config = config
-        Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
+        Pyro4.config.SERIALIZERS_ACCEPTED = [
+            "json", "marshal", "serpent", "pickle"]
 
         # Public NS
         self.public_pyro4ns = None  # Public Nameserver location
@@ -396,7 +402,8 @@ class adminTool():
     def list(self):
         try:
             print "<-- adminTool -->"
-            pprint.pprint(ast.literal_eval(json.dumps(self.nameServer.get_priv_pyro4ns().list())))
+            pprint.pprint(ast.literal_eval(json.dumps(
+                self.nameServer.get_priv_pyro4ns().list())))
         except Exception:
             print "Error name-server"
             raise
@@ -407,6 +414,14 @@ class adminTool():
     def printComp(self):
         pprint.pprint(ast.literal_eval(json.dumps(self.bigbrother.components)))
 
+    def printAsync(self):
+        print(colored("Components waiting:", "green"))
+        pprint.pprint(ast.literal_eval(
+            json.dumps(self.bigbrother.claimant_list)))
+        print(colored("Components that are needed:", "green"))
+        for x in self.bigbrother.async_waitings.keys():
+            print("{}. Type: {}. Needed by: {}".format(
+                x, self.bigbrother.async_waitings[x]["target_type"], self.bigbrother.async_waitings[x]["claimant"]))
 
     """Get URI for a determinate pyro4object"""
 
@@ -450,7 +465,10 @@ class adminTool():
     def execute(self, command):
         return {
             'robots': self.printRobots,
+            'robot': self.printRobots,
+            'comp': self.printComp,
             'comps': self.printComp,
+            'async': self.printAsync,
             'remove': self.remove,
             'lookup': self.lookup,
             'exit': self.exit,
@@ -487,6 +505,7 @@ if __name__ == "__main__":
                 print colored("\n----------\nAvailable commands: " +
                               "\n* robots" +
                               "\n* comps" +
+                              "\n* async" +
                               "\n* remove <robot_name>" +
                               "\n* lookup <robot_name>" +
                               "\n* exit" +
@@ -494,6 +513,7 @@ if __name__ == "__main__":
                 command = raw_input(
                     "\n" + colored("Enter a new command: ", "yellow"))
                 try:
+                    command = command.lower()
                     command = command.split()
                     if (command is not None):
                         realCommand = admintool.execute(command[0])
