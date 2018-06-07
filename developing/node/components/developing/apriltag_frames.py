@@ -7,10 +7,8 @@ import numpy as np
 import io
 import picamera
 from random import randint
-import token
 
-class apriltag_frames_lb(control.Control):
-    """Send frames to PiCamera (learnbot)."""
+class apriltag_frames(control.Control):
     __REQUIRED = []
 
     def __init__(self):
@@ -18,9 +16,6 @@ class apriltag_frames_lb(control.Control):
         self.time_notags = None
         self.init_workers(self.get_frame)
         self.init_workers(self.change_position)
-        self.subscriptors = {}
-        self.april_detected = token.Token()
-        self.init_publisher(self.april_detected,)
 
 
     def get_frame(self):
@@ -34,15 +29,13 @@ class apriltag_frames_lb(control.Control):
                 data = np.fromstring(stream.getvalue(), dtype=np.uint8)
                 Pyro4.config.SERIALIZER = 'pickle'
                 detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
-                    data, openWindow=True, name="Learnbot")
+                    data, openWindow=True)
                 if detections:
                     self.deps["ruedas"].set__vel(mi=0, md=0)
                     # target
                     self.detections = detections
                     self.time_notags = None
                     for d in detections:
-                        for d in self.detections:
-                            self.comunicate(d)
                         print d["tag_family"], d["tag_id"]
                         corner_l = [d["corners"][0][0], d["corners"][1][0],
                                     d["corners"][2][0], d["corners"][3][0]]
@@ -96,10 +89,3 @@ class apriltag_frames_lb(control.Control):
                     self.deps["ruedas"].set__vel(mi=1000, md=0)
                     time.sleep(ranvalue)
                     self.deps["ruedas"].set__vel(mi=0, md=0)
-
-    def comunicate(self, april):
-        if (april["tag_family"] not in self.detecteds):
-            print("Adquired: ", april["tag_family"])
-            self.detecteds[april["tag_family"]] = april
-            self.april_detected.update_key_value("aprils", self.detecteds)
-            print "SUBS:", self.subscriptors

@@ -18,7 +18,7 @@ class apriltag_resolver(control.Control):
         # self.init_workers(self.test)
 
     @Pyro4.expose
-    def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False):
+    def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False, name="default"):
         if self.worker_run:
             if (frame is not None):
                 list_detections = []
@@ -44,7 +44,10 @@ class apriltag_resolver(control.Control):
 
                 if (openWindow):
                     # Show image
-                    window = 'AprilTag Resolver '+ str(self.botname)
+                    try:
+                        window = 'AprilTag Resolver '+ str(name)
+                    except Exception:
+                        window = 'AprilTag Resolver'
                     cv2.namedWindow(window)
                     overlay = frame / 2 + dimg[:, :, None] / 2
 

@@ -1,4 +1,4 @@
-# ____________developed by cristian vazquez____________________
+90  # ____________developed by cristian vazquez____________________
 import time
 from node.libs import control, token
 import Pyro4
@@ -7,36 +7,42 @@ import numpy as np
 import io
 import picamera
 
+
 class apriltag_frames_ab(control.Control):
     """Send frames to PiCamera (Alphabot)."""
     __REQUIRED = []
 
     def __init__(self):
         self.detections = None
-        self.time_notags = None
+        self.init_time = None
         self.detecteds = {}
-
+        self.newDetection = False
+        self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
         self.init_workers(self.get_frame)
-        self.init_workers(self.change_position)
+        # self.init_workers(self.change_position_with_ir)
 
         self.subscriptors = {}
         self.april_detected = token.Token()
         self.init_publisher(self.april_detected,)
 
     def get_frame(self):
+        print "get_frame working"
         stream = io.BytesIO()
         with picamera.PiCamera() as camera:
             # ----------- DONT USE OPTIONS. ---------------- #
             # camera.vflip = True
-            while True:
+            while len(self.detecteds) < self.numero_marcas:
+                print "SUBS", self.subscriptors
+                time.sleep(0.1)
+                # print("DETECTEDS[{}]: ".format(len(self.detecteds)), self.detecteds.keys())
+                self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
                 data = np.fromstring(stream.getvalue(), dtype=np.uint8)
                 Pyro4.config.SERIALIZER = 'pickle'
                 try:
                     self.detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
-                        data, openWindow=True, showInfo=False)
+                        data, openWindow=True, showInfo=False, name="Alphabot")
                     if self.detections:
-                        self.deps["ruedas"].setvel(0, 0)
                         for d in self.detections:
                             self.saveTag(d)
                     stream.seek(0)
@@ -46,24 +52,115 @@ class apriltag_frames_ab(control.Control):
                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                     print template.format(type(ex).__name__, ex.args)
                     time.sleep(2)
-            cv2.destroyAllWindows()
 
-    def change_position(self):
-        while True:
-            time.sleep(self.frec * 5)
-            if (self.detections is None):
-                if self.time_notags is None:  # First time
-                    self.time_notags = time.time()
-                now = time.time()
-                if (now - self.time_notags > 5):
-                    self.time_notags = None
-                    self.deps["ruedas"].setvel(99,99,True,False)
-                    time.sleep(0.5)
-                    self.deps["ruedas"].setvel(0, 0)
+    def change_position_with_ir(self):
+        print "change_position_with_ir working"
+        obstaculos = self.deps["obstaculos"] if "obstaculos" in self.deps else None
+        ultrasonido = self.deps["alphaultrasound"] if "alphaultrasound" in self.deps else None
+        if obstaculos is not None and ultrasonido is not None and self.ruedas is not None:
+            time.sleep(1)
+            while True:
+                if not(self.newDetection):
+                    self.init_time = time.time()
+                    self.ruedas.setvel(100, 100, True, True)  # Move
+                    distance = ultrasonido.getDistance()
+                    infrarrojos = obstaculos.get_ir()
+                    # print "0[{}] - DIST: {} - INFRAROJOS: {},{}".format(self.newDetection, distance, infrarrojos[0], infrarrojos[1])
+                    while (distance > 40 and infrarrojos[0] == 1 and
+                           infrarrojos[1] == 1 and not(self.newDetection) and
+                           time.time() - self.init_time < 10):
+                        distance = ultrasonido.getDistance()
+                        infrarrojos = obstaculos.get_ir()
+                        # print "1[{}] - DIST: {} - INFRAROJOS: {},{}".format(self.newDetection, distance, infrarrojos[0], infrarrojos[1])
+                        time.sleep(self.frec)
+                    # print "2[{}] - DIST: {} - INFRAROJOS: {},{}".format(self.newDetection, distance, infrarrojos[0], infrarrojos[1])
+                    self.ruedas.setvel(0, 0)
+                    time.sleep(0.1)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(100, 100, False, False)
+                        time.sleep(0.8)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(100, 100, True, False)
+                        time.sleep(1)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(0, 0)
+                        time.sleep(0.1)
+        else:
+            print "change_position_with_ir: ERROR in deps."
 
     def saveTag(self, april):
-        identificator = str(april["tag_family"])+"."+str(april["tag_id"])
+        identificator = str(april["tag_family"]) + "." + str(april["tag_id"])
         if (identificator not in self.detecteds):
-            print("New tag: {}".format(identificator))
-            self.detecteds[identificator] = april
-            self.april_detected.update_key_value("aprils", self.detecteds)
+            self.newDetection = True
+            self.ruedas.setvel(0, 0)
+            if (self.centerPantilt(april)):
+                self.ruedas.setvel(0, 0)
+                self.newDetection = True
+                print("--> New tag: {}".format(identificator))
+                self.centerPantilt(april)
+                time.sleep(2)
+                self.detecteds[identificator] = april
+                self.april_detected.update_key_value("aprils", self.detecteds)
+
+
+    def centerPantilt(self, april):
+        # print "centerPantilt ", april
+        centered = True
+        pantilt = self.deps["alphapantilt"] if "alphapantilt" in self.deps else None
+        if pantilt is not None:
+            try:
+                pan_and_tilt = pantilt.get_pantilt()
+                pan = pan_and_tilt[0]
+                tilt = pan_and_tilt[1]
+            except Exception:
+                raise
+            for c in april["corners"]:
+                # print "x:", c[0], " y:", c[1]
+                if c[0] < 40:
+                    pan -= 2
+                    centered = False
+                if c[0] > 680:
+                    centered = False
+                    pan += 2
+                if c[1] < 30:
+                    centered = False
+                    tilt += 1
+                if c[1] > 390:
+                    centered = False
+                    tilt -= 1
+            pantilt.set_pantilt(pan, tilt)
+        else:
+            print "centerPantilt: ERROR in deps."
+        return centered
+
+    def change_position(self):
+        print "change_position working"
+        ultrasonido = self.deps["alphaultrasound"] if "alphaultrasound" in self.deps else None
+        self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
+        if ultrasonido is not None and self.ruedas is not None:
+            time.sleep(1)
+            while True:
+                if not(self.newDetection):
+                    self.init_time = time.time()
+                    self.ruedas.setvel(100, 100, True, True)  # Move
+                    distance = ultrasonido.getDistance()
+                    print "0[{}] - DIST: {} ".format(self.newDetection, distance)
+                    while (distance > 40 and not(self.newDetection) and
+                           time.time() - self.init_time < 10):
+                        distance = ultrasonido.getDistance()
+                        print "1[{}] - DIST: {} ".format(self.newDetection, distance)
+                        time.sleep(self.frec)
+                    print "2[{}] - DIST: {} ".format(self.newDetection, distance)
+                    self.deps["ruedas"].setvel(0, 0)
+                    time.sleep(0.1)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(100, 100, False, False)
+                        time.sleep(0.8)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(100, 100, True, False)
+                        time.sleep(1)
+                    if not(self.newDetection):
+                        self.ruedas.setvel(0, 0)
+                        time.sleep(0.1)
+        else:
+            print "change_position: ERROR in deps."

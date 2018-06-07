@@ -34,28 +34,36 @@ class alphapantilt(control.Control):
         GPIO.setup(self.TILT, GPIO.OUT)
 
         self.cpan = GPIO.PWM(self.PAN, 50)
-        self.cpan.start(50)
         self.ctilt = GPIO.PWM(self.TILT, 50)
-        self.ctilt.start(50)
 
-        self.pan_a = 100
-        self.tilt_a = 108
+        self.pan_a = 105
+        self.tilt_a = 105
 
         self.set_pantilt(self.pan_a, self.tilt_a)
+        self.aprils = {}
+        self.init_workers(self.worker)
+
 
     @control.flask("actuator")
     @Pyro4.oneway
     @Pyro4.expose
     def set_pantilt(self, pan, tilt):
+        # print "pan", pan, "tilt", tilt
         self.pan_a = pan
         self.tilt_a = tilt
         self.ctilt.start(50)
         self.cpan.start(50)
         self.cpan.ChangeDutyCycle(12.5 - 10.0 * float(self.pan_a) / 180)
         self.ctilt.ChangeDutyCycle(12.5 - 10.0 * float(self.tilt_a) / 180)
-        time.sleep(1)
-        self.cpan.stop()
-        self.ctilt.stop()
+        time.sleep(0.5)
+        self.ctilt.start(0)
+        self.cpan.start(0)
+        # self.cpan.stop()
+        # self.ctilt.stop()
 
     def get_pantilt(self):
         return (self.pan_a, self.tilt_a)
+
+    def worker(self):
+        print "pantilt", self.aprils
+        time.sleep(2)

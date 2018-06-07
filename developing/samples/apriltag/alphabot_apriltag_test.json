@@ -1,0 +1,12 @@
+{
+   "node":{
+      "name":"alphabot_apriltag",
+      "ethernet":"wlan0"
+    },
+   "services":{
+     "gpioservice":{"cls":"gpioservice","gpio_mode":11}
+   },
+   "components":{
+      "alphalaser":{"cls":"alphalaser","TRIG":17, "ECHO":5}
+    }
+}

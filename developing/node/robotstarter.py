@@ -56,7 +56,6 @@ def start_node(robot, proc_pipe, msg):
             "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow"))
         print("[%s]  PYRO4BOT: %s" %
               (colored("OK", 'green'), uri_node))
-
         new_object.start_components()
         msg.put((uri_node, os.getpid()))
         proc_pipe.send("OK")

@@ -89,8 +89,8 @@ class gpioservice(control.Control):
             print "GPIO: Error no pin for PWM or not setup"
             return False
 
+
     def __del__(self):
-        print "borrando"
         GPIO.cleanup()
 
 

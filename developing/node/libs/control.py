@@ -132,7 +132,6 @@ class Control(botlogging.Logging):
     def init_publisher(self, token_data, frec=0.01):
         """ Start publisher daemon"""
         self.threadpublisher = False
-        self.subscriptors = {}
         if isinstance(token_data, token.Token):
             self.threadpublisher = True
             t = threading.Thread(target=self.thread_publisher,
@@ -155,11 +154,12 @@ class Control(botlogging.Logging):
                     try:
                         if key in d:
                             for item in subscriptors:
-                                # print("publicando",key, d[key])
+                                # print("publicando", key, d[key])
                                 try:
                                     item.publication(key, d[key])
                                 except (Pyro4.errors.ConnectionClosedError, Pyro4.errors.CommunicationError):
                                     print("Can not connect to the subscriber: {}".format(item))
+                                    raise
                                     del self.subscriptors[key]
                                 except Exception as ex:
                                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
@@ -189,10 +189,11 @@ class Control(botlogging.Logging):
     def thread_subscriber(self, identifier, token, mypassword=None):
         self.__check_start__()
         """Send a subscription request to the identifier given by parameter."""
+        # print("Soy {} y Me quiero suscribir a {} ".format(self.botname, identifier))
         try:
             if (hasattr(self, identifier)):
                 x = getattr(self, identifier)
-                x.subscribe(token, self.pyro4id)
+                x.subscribe(token, self.pyro4id, mypassword=mypassword)
             else:
                 connected = False
                 while not connected:
@@ -215,6 +216,8 @@ class Control(botlogging.Logging):
         """ Receive a request for subcripcion from an object and save data in dict subcriptors
             Data estructure store one item subcripcion (key) and subcriptors proxy list """
         # print("Im {} and {} -> {} (with pass:'{}') wants to susbscribe to me.".format(self.pyro4id, identifier, uri, mypassword))
+        if not hasattr(self, 'subscriptors'):
+            self.subscriptors = {}
         try:
             if identifier not in self.subscriptors:
                 self.subscriptors[identifier] = []
@@ -222,9 +225,11 @@ class Control(botlogging.Logging):
                 "uriresolver"].get_proxy(uri, passw=mypassword)
             self.subscriptors[identifier].append(proxy)
             return True
-        except Exception:
-            print("ERROR: in subscribe")
-            return False
+        except Exception as ex:
+            template = "[subscribe] An exception of type {0} occurred. Arguments:\n{1!r}"
+            print template.format(type(ex).__name__, ex.args)
+            time.sleep(2)
+
 
 
     @Pyro4.oneway

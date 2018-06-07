@@ -1,12 +1,11 @@
 {
    "node":{
       "name":"pc_apriltag",
-      "ethernet":"wlxc4e984e024a2"
+      "ethernet":"wlan0"
     },
    "services":{
    },
    "components":{
-        "apriltag_resolver":{"cls":"apriltag_resolver","frec":0.01},
-        "fake":{"cls": "fake","-->":["alphabot_apriltag.apriltag"], "frec":0.01 }
+        "apriltag_resolver":{"cls":"apriltag_resolver","frec":0.01}
     }
 }

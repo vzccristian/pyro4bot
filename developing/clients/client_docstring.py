@@ -21,7 +21,19 @@ if __name__ == "__main__":
     bot = ClientRobot("alphabot_apriltag")
     # print bot.__dict__
     print bot.alphapantilt.__dict__
-    print bot.alphapantilt.set_pantilt(1,10)
+    while True:
+        print "------------"
+        pan = raw_input('PAN: ')
+        tilt = raw_input('TILT: ')
+        try:
+            int(pan)
+            int(tilt)
+            bot.alphapantilt.set_pantilt(pan,tilt)
+        except ValueError:
+            print "Not a number"
+        except Exception:
+            raise
+
     # print bot.picam.__docstring__()
     # print "Infrarred DOC"
     # print bot.infrared.__docstring__()

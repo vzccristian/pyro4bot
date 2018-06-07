@@ -9,6 +9,9 @@
    "components":{
       "ruedas":{"cls":"alphal298n","IN1":12, "IN2":13, "IN3":20, "IN4":21,"ENA":6,"ENB":26},
       "alphapantilt":{"cls":"alphapantilt","PAN":27, "TILT": 22},
-      "apriltag":{"cls":"apriltag_frames_ab","-->":["pc_apriltag.apriltag_resolver","ruedas", "alphapantilt"],"frec":0.01}
+      "obstaculos":{"cls":"alphainfrarredobs","RIGHT":16, "LEFT": 19,"frec":0.01},
+      "alphaultrasound":{"cls":"alphaultrasound","TRIG":17, "ECHO":5, "frec": 0.2},
+      "apriltag":{"cls":"apriltag_frames_ab","-->":["pc_apriltag.apriltag_resolver", "alphapantilt","alphaultrasound", "obstaculos", "ruedas"],"numero_marcas":4, "frec":0.001},
+      "apriltag_controller": {"cls": "apriltag_subscripter", "-->":["apriltag"], "subscribeTo1":"apriltag", "subscribeTo2":"learnbot_apriltag.apriltag", "frec":0.5}
     }
 }
