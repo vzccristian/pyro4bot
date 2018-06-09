@@ -15,7 +15,7 @@ class pantilt(control.Control):
     __REQUIRED = ["usbserial", "PT"]
 
     def __init__(self):
-        self.send_subscription("usbserial", "PT")
+        self.start_subscription("usbserial", "PT")
         self.bar = False
         self.ptblock = False
 
@@ -29,7 +29,7 @@ class pantilt(control.Control):
         if self.ptblock is False:
             self.usbserial.command("setpt " + str(pan) + "," + str(tilt))
             while self.PT[0] != pan and self.PT[1] != tilt:
-                print("Waiting for servo...")
+                # print("Waiting for servo...")
                 self.ptblock = True
             self.ptblock = False
 

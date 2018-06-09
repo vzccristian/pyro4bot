@@ -26,8 +26,8 @@ class usbcam(control.Control):
         self.buffer = [0, 0]
         self.available = 0
         self.lock = 1
-        self.init_workers(self.worker_read)
-        # self.init_publisher(self.__dict__)
+        self.start_worker(self.worker_read)
+        # self.start_publisher(self.__dict__)
 
     def worker_read(self):
         while self.worker_run:

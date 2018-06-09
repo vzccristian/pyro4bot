@@ -12,15 +12,15 @@ class ClassName (control.Control):
         self.value = 0
 
         # Worker example
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
         # Subscription example
-        #  self.send_subscription("usbserial", "LASER")
+        #  self.start_subscription("usbserial", "LASER")
 
         # Publication example
-        # self.buffer = token.Token()
+        # self.buffer = publication.Publication()()
         # self.buffer.update_key_value("value", self.value)
-        # self.init_publisher(self.buffer)
+        # self.start_publisher(self.buffer)
 
     def worker(self):
         while self.worker_run:

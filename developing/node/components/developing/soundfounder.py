@@ -15,7 +15,7 @@ class sfline(control.Control):
         self.smbus=bot_I2C(self.Address,self.i2cservice,self.pyro4id)
         print(self.i2cservice.status)
 
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

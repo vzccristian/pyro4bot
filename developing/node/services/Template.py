@@ -12,7 +12,7 @@ class ClassName (control.Control):
         self.value = 0
 
         # Worker example
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

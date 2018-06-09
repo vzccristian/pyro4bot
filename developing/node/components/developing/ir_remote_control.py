@@ -13,7 +13,7 @@ class IR_remote_control(control.Control):
     def __init__(self):
         self.GPIO = GPIOCLS(self.gpioservice, self.pyro4id)
         self.GPIO.setup(self.IR_receiver, IN, PUD_UP)
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

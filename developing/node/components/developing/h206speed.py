@@ -20,7 +20,7 @@ class h206speed(control.Control):
         self.GPIO.setup([self.MD,self.MI],IN,PUD_DOWN)
         self.GPIO.add_event_detect(self.MD,RISING,self.pulseMD,20)
         self.GPIO.add_event_detect(self.MI,RISING,self.pulseMI,20)
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     @control.flask("actuator")
     def pulseMD(self,channel):

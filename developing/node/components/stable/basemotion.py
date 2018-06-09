@@ -13,8 +13,9 @@ class basemotion(control.Control):
     __REQUIRED = ["usbserial", "BASE"]
 
     def __init__(self):
-        self.send_subscription("usbserial", "BASE")
-        self.init_workers(self.worker)
+        self.start_subscription("usbserial", "BASE")
+        self.set__vel(mi=0, md=0)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

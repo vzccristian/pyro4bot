@@ -15,8 +15,8 @@ class infrared (control.Control):
     __REQUIRED = ["usbserial", "IR"]
 
     def __init__(self):
-        # self.init_workers(self.worker)
-        self.send_subscription("usbserial", "IR")
+        # self.start_worker(self.worker)
+        self.start_subscription("usbserial", "IR")
 
     def worker(self):
         while self.worker_run:

@@ -15,7 +15,7 @@ class gpioinfrared(control.Control):
     __REQUIRED = ["setup", "IR", "frec"]
 
     def __init__(self):
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

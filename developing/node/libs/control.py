@@ -1,17 +1,20 @@
 import Pyro4
 import utils
 import time
-import token
+from publication import Publication
+from subscription import Subscription, dict_to_class
 import threading
 from threading import Thread
 from termcolor import colored
 from botlogging import botlogging
-
+import pprint
 SECS_TO_CHECK_STATUS = 5
 
 # DECORATORS
 
 # Threaded function snippet
+
+
 def threaded(fn):
     """To use as decorator to make a function call threaded."""
     def wrapper(*args, **kwargs):
@@ -19,6 +22,7 @@ def threaded(fn):
         thread.start()
         return thread
     return wrapper
+
 
 def load_config(in_function):
     """ Decorator for load Json options in Pyro4bot objects
@@ -40,6 +44,7 @@ def Pyro4bot_Loader(clss, **kwargs):
         init superclass control
     """
     original_init = clss.__init__
+
     def init(self):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -84,7 +89,7 @@ def timing(f):
         time1 = time.time()
         ret = f(*args)
         time2 = time.time()
-        print '%s function took %0.3f ms' % (f.func_name, (time2-time1)*1000.0)
+        print '%s function took %0.3f ms' % (f.func_name, (time2 - time1) * 1000.0)
         return ret
     return wrap
 
@@ -94,7 +99,7 @@ class Control(botlogging.Logging):
         Init workers Threads and PUB/SUB thread"""
 
     def __init__(self):
-        super(Control,self).__init__()
+        super(Control, self).__init__()
         self.mutex = threading.Lock()
         self.workers = []
         if "worker_run" not in self.__dict__:
@@ -107,7 +112,7 @@ class Control(botlogging.Logging):
             time.sleep(SECS_TO_CHECK_STATUS)
 
     @threaded
-    def init_workers(self, fn, *args):
+    def start_worker(self, fn, *args):
         """ Start all workers daemon"""
         self.__check_start__()
         if type(fn) not in (list, tuple):
@@ -120,7 +125,7 @@ class Control(botlogging.Logging):
                 t.start()
 
     @threaded
-    def init_thread(self, fn, *args):
+    def start_thread(self, fn, *args):
         """ Start all workers daemon"""
         self.__check_start__()
         if self.worker_run:
@@ -128,45 +133,47 @@ class Control(botlogging.Logging):
             self.workers.append(t)
             t.start()
 
+    # Publication methods
     @threaded
-    def init_publisher(self, token_data, frec=0.01):
+    def start_publisher(self, publication, frec=0.01):
         """ Start publisher daemon"""
         self.threadpublisher = False
-        if isinstance(token_data, token.Token):
+        if isinstance(publication, Publication):
             self.threadpublisher = True
             t = threading.Thread(target=self.thread_publisher,
-                                 args=(token_data, frec))
+                                 args=(publication, frec))
             self.workers.append(t)
             t.setDaemon(True)
             t.start()
         else:
             print(
-                "ERROR: Can not publish to object other than token {}".format(token_data))
+                "ERROR: Can not publish to object other than publication {}".format(publication))
 
-    def thread_publisher(self, token_data, frec):
-        """Publish the token in the subscriber list."""
+    def thread_publisher(self, publication, frec):
+        """Publish the publication in the subscriber list."""
         self.__check_start__()
         if not hasattr(self, 'subscriptors'):
             self.subscriptors = {}
         while self.threadpublisher:
-            d = token_data.get_attribs()
+            value = publication.get()
             try:
-                for key in self.subscriptors.keys():
+                for key in self.subscriptors.keys():  # Key has atribute to publish
                     subscriptors = self.subscriptors[key]
                     try:
-                        if key in d:
-                            for item in subscriptors:
-                                # print("publicando", key, d[key])
+                        if key in value:
+                            for s in subscriptors:
+                                # print("publicando", key, value[key])
                                 try:
-                                    item.publication(key, d[key])
+                                    s.subscripter.publication(s.subscripter_attr, value[key])
                                 except (Pyro4.errors.ConnectionClosedError, Pyro4.errors.CommunicationError):
-                                    print("Can not connect to the subscriber: {}".format(item))
-                                    raise
-                                    del self.subscriptors[key]
+                                    # print(
+                                    #     "Can not connect to the subscriber: {}".format(s))
+                                    self.subscriptors[key] = [
+                                        sub for sub in self.subscriptors[key] if sub.id != s.id]
                                 except Exception as ex:
                                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                                     print template.format(type(ex).__name__, ex.args)
-                                    del self.subscriptors[key]
+                                    # del self.subscriptors[key]
 
                     except TypeError:
                         print("Invalid argument.")
@@ -177,70 +184,96 @@ class Control(botlogging.Logging):
                 raise
             time.sleep(frec)
 
+    # Subscription methods
     @threaded
-    def send_subscription(self, identifier, token, mypassword=None):
+    def start_subscription(self, target, target_attr, subscripter_attr=None, subscripter_password=None):
         """Send a subscription request to the object given by parameter."""
         try:
+            s = Subscription(target, target_attr,
+                             subscripter_attr, subscripter_password)
+            s.subscripter_uri = self.pyro4id
             t = threading.Thread(target=self.thread_subscriber,
-                                 args=(identifier, token, mypassword))
+                                 args=(s,))
             self.workers.append(t)
             t.start()
-        except Exception:
-            print "Error sending subscription"
 
-    def thread_subscriber(self, identifier, token, mypassword=None):
+        except Exception:
+            print "[ERROR] start_subscription. Error sending {}".format(target)
+            raise
+
+    def thread_subscriber(self, subscription):
         self.__check_start__()
         """Send a subscription request to the identifier given by parameter."""
-        # print("Soy {} y Me quiero suscribir a {} ".format(self.botname, identifier))
+        # print("-- Soy {} y mando esta subcripcion: {} ".format(
+        #     self.botname+"."+self.name, subscription))
         try:
-            if (hasattr(self, identifier)):
-                x = getattr(self, identifier)
-                x.subscribe(token, self.pyro4id, mypassword=mypassword)
-            else:
+            if (hasattr(self, subscription.target)):  # Locals
+                x = getattr(self, subscription.target)
+                x.subscribe(subscription.get())  # Sending as dict
+                print(colored("\t\t\t[LOCAL] Subscribed to: {}".format(
+                    subscription.target), "green"))
+            else:  # Remotes
                 connected = False
                 while not connected:
-                    if (identifier in self.deps):
+                    if (subscription.target in self.deps):
                         try:
-                            self.deps[identifier].subscribe(token, self.pyro4id, mypassword=mypassword)
-                            print(colored("Subscribed to: {} with topic: {}".format(identifier, token), "green"))
+                            self.deps[subscription.target].subscribe(
+                                subscription.get())
+                            print(colored("\t\t\t[REMOTE] Subscribed to: {}".format(
+                                subscription.target), "green"))
                             connected = True
                         except Exception:
                             pass
+                            time.sleep(10)
                     time.sleep(2)
         except Exception:
-            print("ERROR: in subscripcion to %s TOKEN: %s PASS: %s" % (identifier, token, mypassword))
+            print("ERROR: in subscripcion: {}".format(subscription))
             raise
 
-
-
     @Pyro4.expose
-    def subscribe(self, identifier, uri, mypassword=None):
+    def subscribe(self, dict_sub):
         """ Receive a request for subcripcion from an object and save data in dict subcriptors
             Data estructure store one item subcripcion (key) and subcriptors proxy list """
-        # print("Im {} and {} -> {} (with pass:'{}') wants to susbscribe to me.".format(self.pyro4id, identifier, uri, mypassword))
+        subscription = dict_to_class(dict_sub)
         if not hasattr(self, 'subscriptors'):
             self.subscriptors = {}
+        if not hasattr(self, 'id_publications'):
+            self.id_publications = 0
+        else:
+            self.id_publications += 1
+
         try:
-            if identifier not in self.subscriptors:
-                self.subscriptors[identifier] = []
-            proxy = self.__dict__["uriresolver"].get_proxy(uri) if mypassword is None else self.__dict__[
-                "uriresolver"].get_proxy(uri, passw=mypassword)
-            self.subscriptors[identifier].append(proxy)
+            if subscription.target_attr not in self.subscriptors:
+                self.subscriptors[subscription.target_attr] = []
+            subscription.id = self.id_publications
+
+            proxy = self.__dict__["uriresolver"].get_proxy(subscription.subscripter_uri) if subscription.subscripter_password is None else self.__dict__[
+                "uriresolver"].get_proxy(subscription.subscripter_uri, passw=subscription.subscripter_password)
+
+            subscription.subscripter = proxy
+            self.subscriptors[subscription.target_attr].append(subscription)
+            # print("-- Soy {} y recibo correctamente esta suscripcion: {}".format(self.botname+"."+self.name, subscription))
             return True
         except Exception as ex:
+            print("[subscribe] " + str(subscription))
             template = "[subscribe] An exception of type {0} occurred. Arguments:\n{1!r}"
             print template.format(type(ex).__name__, ex.args)
             time.sleep(2)
 
-
-
     @Pyro4.oneway
     @Pyro4.expose
     def publication(self, key, value):
+        # print "publication", key, value
         """ Is used to public in this object a item value """
         try:
-            # print("setattr",key,value)
-            setattr(self, key, value)
+            if (hasattr(self,key)):
+                x = getattr(self,key)
+                if isinstance(x, dict) and isinstance(value, dict):
+                    x.update(value)
+                else:
+                    setattr(self, key, value)
+            else:
+                setattr(self, key, value)
         except Exception:
             raise
 
@@ -307,7 +340,7 @@ class Control(botlogging.Logging):
             try:
                 self.node.status_changed()
             except Exception as e:
-                print "Error in control.check_remote_deps: "+str(e)
+                print "Error in control.check_remote_deps: " + str(e)
 
         return self._REMOTE_STATUS
 

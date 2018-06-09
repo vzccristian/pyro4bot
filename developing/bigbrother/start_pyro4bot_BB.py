@@ -17,7 +17,7 @@ sys.path.append("../node/libs")
 import utils
 import myjson
 
-DEBUGGER = False
+DEBUGGER = True
 
 
 def load_config(filename):
@@ -79,33 +79,42 @@ class bigbrother(object):
         """
         robots = {x: self.private_pyro4ns.list(
         )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
+        new_robots = {}
+        new_comps = {}
         if robots:
             for key, value in robots.iteritems():
-                self.robotProxy = Pyro4.Proxy(value)
-                self.robotProxy._pyroHmacKey = bytes(key)
+                robotProxy = Pyro4.Proxy(value)
+                robotProxy._pyroHmacKey = bytes(key)
                 try:
-                    robot_uris = self.robotProxy.get_uris()  # Return list uris
-                    self.robots[key] = robot_uris
+                    robot_uris = robotProxy.get_uris()  # Return list uris
+                    new_robots[key] = robot_uris
                     for u in robot_uris:
                         currentComponent = u.split(".")[1].split("@")[0]
-                        self.components[currentComponent] = []
-                        self.components.get(currentComponent).append(u)
+
+                        if type(new_comps.get(currentComponent)) is not list:
+                            new_comps[currentComponent] = []
+                            new_comps.get(currentComponent).append(u)
+                        else:
+                            if not (u in new_comps.get(currentComponent)):
+                                new_comps.get(currentComponent).append(u)
                 except Exception:
                     if (DEBUGGER):
                         print("Error connecting to: %s " % value)
                     if (withRemove):
                         self.remove(key)
 
-            if (DEBUGGER):
-                print "ROBOTS:\n", self.robots
-                print "COMPONENTS:\n", self.components
-                print "ASYNC_WAITINGS:\n", self.async_waitings
-                print "CLAIMANT_LIST:\n", self.claimant_list
+            # if (DEBUGGER):
+            #     print "ROBOTS:\n", self.robots
+            #     print "COMPONENTS:\n", self.components
+            #     print "ASYNC_WAITINGS:\n", self.async_waitings
+            #     print "CLAIMANT_LIST:\n", self.claimant_list
         else:
             self.robots = {}
             self.components = {}
             if (DEBUGGER):
                 print("There is no registered robot.")
+        self.robots = new_robots
+        self.components = new_comps
 
     def create_pyro_proxy(self):
         """Create proxy to make connections to BigBrother.
@@ -147,61 +156,104 @@ class bigbrother(object):
 
     @Pyro4.expose
     def request(self, obj, claimant):
+        if (DEBUGGER):
+            print(colored("\nREQUEST FROM: {} TO --> {}".format(claimant, obj), "yellow"))
         if (obj is not None and claimant is not None):
             if (claimant not in self.claimant_list):
-                t = threading.Thread(name="t_" + obj + " " + claimant,
-                                     target=self.request_loop, args=(obj,))
-                self.async_waitings[obj] = {
+                key = str(obj) + "#" + str(claimant)
+                t = threading.Thread(name="t_" + key,
+                                     target=self.request_loop, args=(key,))
+                self.async_waitings[key] = {
                     "target_type": -1,
                     "call": t,
                     "claimant": claimant,
                 }
                 self.claimant_list.append(claimant)
-                self.async_waitings[obj]["call"].start()
+
                 if (DEBUGGER):
-                    print("REQUEST:\n{}".format(self.async_waitings[obj]))
+                    print(colored("Components waiting:", "green"))
+                    pprint.pprint(ast.literal_eval(
+                        json.dumps(self.claimant_list)))
+                    print(colored("Components that are needed:", "green"))
+                    for x in self.async_waitings.keys():
+                        print("{}. Type: {}. Needed by: {}".format(
+                            x, self.async_waitings[x]["target_type"], self.async_waitings[x]["claimant"]))
 
-    def request_loop(self, obj):
-        uris = []
-        trys = 10
-        while((not uris or self.async_waitings[obj]["target_type"] == 3) and self.async_waitings[obj]["claimant"] in self.claimant_list):
-            uris, tt = self.lookup(obj, target_type=True, returnAsList=True)
-            self.async_waitings[obj]["target_type"] = tt
-            time.sleep(5)
-        if (DEBUGGER):
-            print(colored("\nURI Obtained: {}".format(uris), "green"))
-        claimant = self.async_waitings[obj]["claimant"]
-        name, comp = claimant.split(".")
+                self.async_waitings[key]["call"].start()
+
+    def request_loop(self, key):
         try:
-            for robots in self.components.get(comp):
-                (name, _, _) = utils.uri_split(robots)
-                if (name == self.async_waitings[obj]["claimant"]):
-                    while (trys > 0):
-                        try:
-                            p = utils.get_pyro4proxy(
-                                robots, name.split(".")[0])
-                            p.add_resolved_remote_dep({obj: uris})
-                            break
-                        except Exception:
-                            trys -= 1
-                            time.sleep(3)
-                            raise
-                break
-        except Exception:
-            if (DEBUGGER):
-                print(
-                    colored("\nImposible realizar callback a {}".format(claimant), 'red'))
-            else:
-                pass
+            uris = []
+            trys = 10
 
-        if claimant in self.claimant_list:
-            self.claimant_list.remove(claimant)
-        self.async_waitings.pop(obj, None)  # Remove if exists
+            r_obj = key.split("#")[0] # Obj needed
+            claimant = self.async_waitings[key]["claimant"] # Robot.Comp  needs
+            c_name, c_comp = claimant.split(".") # Robot and comp needs
+
+            init_time = time.time()
+            if (DEBUGGER):
+                print(colored("request_loop {}".format(key), "yellow"))
+                print("keys", self.robots.keys())
+            while(not uris or self.async_waitings[key]["target_type"] == 3):
+                if (time.time() - init_time > 30): # Check exists
+                    if (self.async_waitings[key]["claimant"] in self.robots.keys()):
+                        init_time = time.time()
+                    else:
+                        break
+                uris, tt = self.lookup(
+                    r_obj, target_type=True, returnAsList=True)
+                self.async_waitings[key]["target_type"] = tt
+                if (DEBUGGER):
+                    print r_obj, uris, tt
+                time.sleep(5)
+            if (uris):
+                if (DEBUGGER):
+                    print(
+                        colored("\nURI Obtained: {} for: {}".format(uris, key), "green"))
+                    print c_name, c_comp
+                try:
+                    # Callback
+                    for robots in self.components.get(c_comp):
+                        (name, _, _) = utils.uri_split(robots)
+                        if (DEBUGGER):
+                            print(colored("Robot: {} and Looking for: {}".format(
+                                robots, name), "yellow"))
+                        if (name == self.async_waitings[key]["claimant"]):
+                            while (trys > 0):
+                                try:
+                                    p = utils.get_pyro4proxy(
+                                        robots, name.split(".")[0])
+                                    p.add_resolved_remote_dep({r_obj: uris})
+                                    if (DEBUGGER):
+                                        print(
+                                            colored("\nURI SENDED: {}".format(key), "green"))
+                                    break
+                                except Exception:
+                                    if (DEBUGGER):
+                                        print(
+                                            colored("\nURI ERROR: {}".format(key), "red"))
+                                    trys -= 1
+                                    time.sleep(3)
+                                    raise
+                except Exception:
+                    if (DEBUGGER):
+                        print(
+                            colored("\nImposible realizar callback a {}".format(claimant), 'red'))
+                    else:
+                        pass
+
+            if claimant in self.claimant_list:
+                self.claimant_list.remove(claimant)
+            self.async_waitings.pop(key, None)  # Remove if exists
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            print template.format(type(ex).__name__, ex.args)
+            time.sleep(2)
 
     @Pyro4.expose
     def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
         if (DEBUGGER):
-            print(colored("\nLookup for: {} {}".format(
+            print(colored("Lookup for: {} {}".format(
                 obj, return_metadata), "yellow"))
         self.update()
         target_type_info = -1
@@ -274,7 +326,8 @@ class bigbrother(object):
                 If you set safe=True, the same name cannot be registered twice.
         """
         if (DEBUGGER):
-            print "Registering: ", name, uri, safe, metadata
+            print(colored("Registering: {} {} {} {}".format(
+                name, uri, safe, metadata), "green"))
         _safe = safe
         _metadata = metadata
         self.private_pyro4ns.register(

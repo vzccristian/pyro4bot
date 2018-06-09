@@ -1,13 +1,14 @@
 # ____________developed by cristian vazquez____________________
 import time
-from node.libs import control
+from node.libs import control,token, publication
 import Pyro4
 import cv2
 import numpy as np
 import io
 import picamera
 from random import randint
-import token
+
+MIN_DIST = 300
 
 class apriltag_frames_lb(control.Control):
     """Send frames to PiCamera (learnbot)."""
@@ -15,91 +16,118 @@ class apriltag_frames_lb(control.Control):
 
     def __init__(self):
         self.detections = None
-        self.time_notags = None
-        self.init_workers(self.get_frame)
-        self.init_workers(self.change_position)
-        self.subscriptors = {}
-        self.april_detected = token.Token()
-        self.init_publisher(self.april_detected,)
+        self.init_time = None
+        self.detecteds = {}
+        self.newDetection = False
+        self.goal = False
 
+        self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
+        self.obstaculos = [1000,1000,1000]
+        self.start_worker(self.get_laser)
+        self.start_worker(self.get_frame)
+        self.start_worker(self.change_position)
+        self.subscriptors = {}
+        self.april_detected = publication.Publication()
+        self.start_publisher(self.april_detected,frec=0.1)
+
+    def get_laser(self):
+        while True:
+            self.obstaculos = self.deps["obstaculos"].get_laser()
+            # print self.obstaculos
+            time.sleep(self.frec)
 
     def get_frame(self):
         stream = io.BytesIO()
         self.deps["pantilt"].move(25,90)
+        Pyro4.config.SERIALIZER = 'pickle'
         with picamera.PiCamera() as camera:
             # ----------- DONT USE OPTIONS. ---------------- #
-            # camera.vflip = True
-            while True:
+            # --- camera.vflip = True ----
+            # ----------- DONT USE OPTIONS. ---------------- #
+            while not self.goal:
+                self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
                 data = np.fromstring(stream.getvalue(), dtype=np.uint8)
-                Pyro4.config.SERIALIZER = 'pickle'
-                detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
-                    data, openWindow=True, name="Learnbot")
-                if detections:
-                    self.deps["ruedas"].set__vel(mi=0, md=0)
-                    # target
-                    self.detections = detections
-                    self.time_notags = None
-                    for d in detections:
+                try:
+                    self.detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
+                        data, openWindow=True, showInfo=False, name="Learnbot")
+                    if self.detections:
                         for d in self.detections:
-                            self.comunicate(d)
-                        print d["tag_family"], d["tag_id"]
-                        corner_l = [d["corners"][0][0], d["corners"][1][0],
-                                    d["corners"][2][0], d["corners"][3][0]]
-                        # Move pantilt
-                        # print d["corners"]
-                        pantilt = self.deps["pantilt"].get_pantilt()
-                        for c in d["corners"]:
-                            if c[0] < 80:
-                                self.deps["pantilt"].move(pantilt[0], pantilt[1] + 1)
-                                self.deps["ruedas"].set__vel(mi=1000, md=0)
-                                time.sleep(0.2)
-                                self.deps["ruedas"].set__vel(mi=0, md=0)
-                            elif c[0] > 650:
-                                self.deps["pantilt"].move(pantilt[0], pantilt[1] - 1)
-                                self.deps["ruedas"].set__vel(mi=0, md=1000)
-                                time.sleep(0.2)
-                                self.deps["ruedas"].set__vel(mi=0, md=0)
-                            if c[1] < 80:
-                                self.deps["pantilt"].move(pantilt[0] - 2, pantilt[1])
-                            elif c[1] > 400:
-                                self.deps["pantilt"].move(pantilt[0] + 2, pantilt[1])
+                            self.saveTag(d)
+                    stream.seek(0)
+                    stream.truncate()
+                except Exception as ex:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    print template.format(type(ex).__name__, ex.args)
 
-                        if c[0] > 80 and c[0] < 650:
-                            #   Move base
-                            dist_x = max(corner_l) - min(corner_l)
-                            if (dist_x < (max(camera.resolution.width, camera.resolution.height) / 4.5) ):
-                                # print "LEJOS"
-                                self.deps["ruedas"].set__vel(mi=1000, md=1000)
-                                if dist_x < 80: time.sleep(2)
-                                elif dist_x < 110: time.sleep(1)
-                                else: time.sleep(0.5)
-                                self.deps["ruedas"].set__vel(mi=0, md=0)
-                            # else:
-                            #     print "CERCA"
-
-                stream.seek(0)
-                stream.truncate()
-                time.sleep(self.frec)
-            cv2.destroyAllWindows()
 
     def change_position(self):
-        while True:
-            time.sleep(self.frec*3)
-            if (self.detections is None):
-                if self.time_notags is None:  # First time
-                    self.time_notags = time.time()
-                now = time.time()
-                if (now - self.time_notags > 5):
-                    self.time_notags = None
-                    ranvalue = randint(3, 5)
-                    self.deps["ruedas"].set__vel(mi=1000, md=0)
-                    time.sleep(ranvalue)
-                    self.deps["ruedas"].set__vel(mi=0, md=0)
+        while not self.goal:
+            if not(self.newDetection):
+                self.init_time = time.time()
+                self.ruedas.set__vel(mi=1000, md=1000)  # Move
+                while ((self.obstaculos[0] > MIN_DIST and self.obstaculos[1] > MIN_DIST and
+                        self.obstaculos[2] > MIN_DIST) and
+                       time.time() - self.init_time < 10):
+                    time.sleep(self.frec*2)
+                time.sleep(0.1)
+            if not(self.newDetection):
+                self.ruedas.set__vel(mi=-1000, md=-1000)
+                time.sleep(0.8)
+            if not(self.newDetection):
+                self.ruedas.set__vel(mi=1000, md=-1000)
+                time.sleep(1)
+            if not(self.newDetection):
+                self.ruedas.set__vel(mi=0, md=0)
+                time.sleep(0.1)
 
-    def comunicate(self, april):
-        if (april["tag_family"] not in self.detecteds):
-            print("Adquired: ", april["tag_family"])
-            self.detecteds[april["tag_family"]] = april
-            self.april_detected.update_key_value("aprils", self.detecteds)
-            print "SUBS:", self.subscriptors
+    def saveTag(self, april):
+        identificator = str(april["tag_family"]) + "." + str(april["tag_id"])
+        if (identificator not in self.detecteds):
+            self.newDetection = True
+            self.ruedas.set__vel(mi=0, md=0)
+            if (self.centerPantilt(april)):
+                self.ruedas.set__vel(mi=0, md=0)
+                self.newDetection = True
+                print("--> New tag: {}".format(identificator))
+                # self.centerPantilt(april)
+                time.sleep(2)
+                self.detecteds[identificator] = april
+                self.april_detected.update_key_value("aprils", self.detecteds)
+                self.deps["pantilt"].move()
+
+    def centerPantilt(self, april):
+        centered = True
+        pantilt = self.deps["pantilt"] if "pantilt" in self.deps else None
+        if pantilt is not None:
+            try:
+                pan_and_tilt = pantilt.get_pantilt()
+                pan = pan_and_tilt[0]
+                tilt = pan_and_tilt[1]
+            except Exception:
+                raise
+            for c in april["corners"]:
+                if c[0] < 30:
+                    tilt += 2
+                    centered = False
+                if c[0] > 690:
+                    centered = False
+                    tilt -= 2
+                if c[1] < 25:
+                    centered = False
+                    pan -= 1
+                if c[1] > 395:
+                    centered = False
+                    pan += 1
+            pantilt.move(pan, tilt)
+        else:
+            print "centerPantilt: ERROR in deps."
+        return centered
+
+    @Pyro4.expose
+    def setGoal(self, value=True):
+        self.goal = value
+
+    @Pyro4.expose
+    def updateDetecteds(self, value):
+        self.detecteds.update(value)

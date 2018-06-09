@@ -68,6 +68,29 @@ def get_gateway_address(ifname="lo"):
     return ip
 
 
+def get_interface():
+    """Return the name of the first network interface other than loopback."""
+    interface = None
+    loopback = None
+    try:
+        for x in ni.interfaces():
+            try:
+                if ni.ifaddresses(x)[ni.AF_INET][0]['addr'] != "127.0.0.1":
+                    interface = x
+                    break
+                else:
+                    loopback = x
+            except Exception:
+                pass
+    except Exception:
+        raise
+
+    if not interface:
+        interface = loopback
+
+    return interface
+
+
 def free_port(port, ip="127.0.0.1"):
     """Return True if the port is free at a specific IP address, otherwise \
     return False."""
@@ -154,20 +177,25 @@ def get_con_proxy(uri, password):
     return get_uri_base(uri), get_pyro4proxy(uri, password)
 
 
-def prepare_proxys(part, password):
+def prepare_proxys(part, own_password):
+    Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
     injects = {}
     part["deps"] = {}
     if "name" in part:
         part["botname"], part["name"] = part["name"].split(".")
     if "uriresolver" in part:
-        part["uriresolver"] = get_pyro4proxy(part["uriresolver"], password)
+        part["uriresolver"] = get_pyro4proxy(part["uriresolver"], own_password)
+    if "node" in part:
+        part["node"] = get_pyro4proxy(part["node"], own_password)
     for d in part.get("_locals", []):
-        con, proxy = get_con_proxy(d, password)
-        injects[con] = proxy
+        (name, _, _) = uri_split(d)
+        part["deps"][name.split(".")[1]] = get_pyro4proxy(d, own_password)
     for d in part.get("_resolved_remote_deps", []):
-        part["deps"][d] = get_pyro4proxy(d, password)
+        (name, _, _) = uri_split(d)
+        password = name.split(".")[0] if "." in name else name
+        part["deps"][name] = get_pyro4proxy(d, password)
     for d in part.get("_services", []):
-        con, proxy = get_con_proxy(d, password)
+        con, proxy = get_con_proxy(d, own_password)
         injects[con] = proxy
 
     part.update(injects)

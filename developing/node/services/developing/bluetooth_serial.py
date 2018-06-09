@@ -16,16 +16,16 @@ class bluetooth_serial(control.Control):
 
     def __init__(self):
         self.subscriptors = {}
-        self.buffer = token.Token()
+        self.buffer = publication.Publication()()
         self.writer = []
         self.clients = {}
         self.devices = None
         self.data = None
         self.server = bt_RFCOMM.BTServer(self.Port)
-        self.init_thread(self.server.clients_accept)
-        self.init_workers(self.worker_reader)
-        self.init_workers((self.Discover,))
-        #self.init_publisher(self.buffer,)
+        self.start_thread(self.server.clients_accept)
+        self.start_worker(self.worker_reader)
+        self.start_worker((self.Discover,))
+        #self.start_publisher(self.buffer,)
 
     def worker_reader(self):
         while self.worker_run:

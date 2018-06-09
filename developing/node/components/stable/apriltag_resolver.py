@@ -7,6 +7,7 @@ import apriltag
 from itertools import izip
 import pprint
 
+CAM = 0
 
 class apriltag_resolver(control.Control):
     __REQUIRED = []
@@ -15,7 +16,7 @@ class apriltag_resolver(control.Control):
         self.detector = apriltag.Detector()
 
         # Uncomment to debug with USB-CAM
-        # self.init_workers(self.test)
+        # self.start_worker(self.test)
 
     @Pyro4.expose
     def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False, name="default"):
@@ -58,7 +59,7 @@ class apriltag_resolver(control.Control):
         if (openWindow):
             cv2.destroyAllWindows()
 
-    def test(self, cam_number=0):
+    def test(self, cam_number=CAM):
         while True:
             cap = cv2.VideoCapture(cam_number)
             while True:

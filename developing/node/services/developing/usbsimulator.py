@@ -16,13 +16,13 @@ class usbsimulator(control.Control):
     __REQUIRED = ["comPort","comPortBaud"]
 
     def __init__(self):
-        self.buffer = token.Token()
+        self.buffer = publication.Publication()()
         self.available = 0
         self.lock = 1
         self.IR = [0, 1, 1]
         self.LASER = [0, 0]
-        self.init_workers(self.worker_reader)
-        self.init_publisher(self.buffer,)
+        self.start_worker(self.worker_reader)
+        self.start_publisher(self.buffer,)
 
     def worker_reader(self):
         while self.worker_run:

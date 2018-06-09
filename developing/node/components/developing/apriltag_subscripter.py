@@ -1,7 +1,7 @@
 import time
 from node.libs import control
 import Pyro4
-import pprint
+
 
 
 class apriltag_subscripter(control.Control):
@@ -9,11 +9,17 @@ class apriltag_subscripter(control.Control):
 
     def __init__(self):
         self.aprils = {}
-        self.init_workers(self.worker)
-        self.send_subscription(self.subscribeTo1, "aprils", self.botname)
-        # self.send_subscription(self.subscribeTo2, "aprils", self.botname)
+        self.start_subscription(self.subscribeTo1, self.topic, self.topic, self.botname)
+        self.start_subscription(self.subscribeTo2, self.topic, self.topic, self.botname)
+        self.start_worker(self.worker)
 
     def worker(self):
+        print self.deps
         while self.worker_run:
-            print "apriltag_subscripter", self.aprils
+            print "aprils", self.aprils.keys()
+            print type(self.aprils)
+            # self.deps["apriltag"].updateDetecteds(self.aprils)
+            if (len(self.aprils) > 3):
+                 self.deps["apriltag"].setGoal()
+                 self.worker_run = False
             time.sleep(self.frec)

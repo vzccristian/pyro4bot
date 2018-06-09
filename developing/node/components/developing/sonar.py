@@ -13,8 +13,8 @@ import Pyro4
 class sonar (control.Control):
     __REQUIRED = ["usbserial"]
     def __init__(self):
-        self.send_subscription("usbserial", "US")
-        self.init_workers(self.worker)
+        self.start_subscription("usbserial", "US")
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

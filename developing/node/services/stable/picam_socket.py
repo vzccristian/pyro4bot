@@ -56,8 +56,8 @@ class picam(control.Control):
 
         self.ip = utils.get_ip_address(self.ethernet)
 
-        self.init_workers(self.worker_read)
-        self.init_thread(self.removeClosedConnections)
+        self.start_worker(self.worker_read)
+        self.start_thread(self.removeClosedConnections)
 
     def worker_read(self):
         """Main worker."""

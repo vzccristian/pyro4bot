@@ -15,7 +15,7 @@ class alphaultrasound(control.Control):
         GPIO.setup(self.TRIG, GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.ECHO, GPIO.IN)
         self.middleDistance = 0
-        self.init_workers(self.worker,)
+        self.start_worker(self.worker,)
 
     def worker(self):
         while self.worker_run:

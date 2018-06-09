@@ -15,12 +15,12 @@ class laser(control.Control):
     __REQUIRED = ["usbserial", "LASER", "frec"]
 
     def __init__(self):
-        self.init_workers(self.worker)
-        self.send_subscription("usbserial", "LASER")
+        # self.start_worker(self.worker)
+        self.start_subscription("usbserial", "LASER", "LASER")
 
     def worker(self):
         while self.worker_run:
-            print("LASER-sal:", self.LASER)
+            # print("LASER-sal:", self.LASER)
             time.sleep(self.frec)
 
     @Pyro4.expose

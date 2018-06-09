@@ -19,7 +19,7 @@ class alphainfrarredobs(control.Control):
         GPIO.setwarnings(False)
         GPIO.setup(self.RIGHT, GPIO.IN, GPIO.PUD_UP)
         GPIO.setup(self.LEFT, GPIO.IN, GPIO.PUD_UP)
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:

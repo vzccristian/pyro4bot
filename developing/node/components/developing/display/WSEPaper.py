@@ -43,7 +43,7 @@ class WSEPaper(control.Control):
         self.font_link = "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
         self.font = ImageFont.truetype(self.font_link, size=self.font_size)
         self.buffer = []
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         while True:

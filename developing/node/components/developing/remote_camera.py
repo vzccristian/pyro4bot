@@ -10,7 +10,7 @@ class RemoteCamera (control.Control):
 
     def __init__(self):
         # Worker example
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         print("\n\nWorker is running.")

@@ -1,12 +1,11 @@
 90  # ____________developed by cristian vazquez____________________
 import time
-from node.libs import control, token
-import Pyro4
+from node.libs import control, publication
 import cv2
 import numpy as np
 import io
 import picamera
-
+import Pyro4
 
 class apriltag_frames_ab(control.Control):
     """Send frames to PiCamera (Alphabot)."""
@@ -17,23 +16,24 @@ class apriltag_frames_ab(control.Control):
         self.init_time = None
         self.detecteds = {}
         self.newDetection = False
+        self.goal = False
+
         self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
-        self.init_workers(self.get_frame)
-        # self.init_workers(self.change_position_with_ir)
+        self.start_worker(self.get_frame)
+        self.start_worker(self.change_position_with_ir)
 
         self.subscriptors = {}
-        self.april_detected = token.Token()
-        self.init_publisher(self.april_detected,)
+        self.april_detected = publication.Publication()
+        self.start_publisher(self.april_detected, frec=0.1)
+
 
     def get_frame(self):
-        print "get_frame working"
         stream = io.BytesIO()
         with picamera.PiCamera() as camera:
             # ----------- DONT USE OPTIONS. ---------------- #
-            # camera.vflip = True
-            while len(self.detecteds) < self.numero_marcas:
-                print "SUBS", self.subscriptors
-                time.sleep(0.1)
+            # --- camera.vflip = True ----
+            # ----------- DONT USE OPTIONS. ---------------- #
+            while not self.goal:
                 # print("DETECTEDS[{}]: ".format(len(self.detecteds)), self.detecteds.keys())
                 self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
@@ -42,6 +42,7 @@ class apriltag_frames_ab(control.Control):
                 try:
                     self.detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
                         data, openWindow=True, showInfo=False, name="Alphabot")
+
                     if self.detections:
                         for d in self.detections:
                             self.saveTag(d)
@@ -54,12 +55,11 @@ class apriltag_frames_ab(control.Control):
                     time.sleep(2)
 
     def change_position_with_ir(self):
-        print "change_position_with_ir working"
         obstaculos = self.deps["obstaculos"] if "obstaculos" in self.deps else None
         ultrasonido = self.deps["alphaultrasound"] if "alphaultrasound" in self.deps else None
         if obstaculos is not None and ultrasonido is not None and self.ruedas is not None:
             time.sleep(1)
-            while True:
+            while not self.goal:
                 if not(self.newDetection):
                     self.init_time = time.time()
                     self.ruedas.setvel(100, 100, True, True)  # Move
@@ -102,7 +102,6 @@ class apriltag_frames_ab(control.Control):
                 self.detecteds[identificator] = april
                 self.april_detected.update_key_value("aprils", self.detecteds)
 
-
     def centerPantilt(self, april):
         # print "centerPantilt ", april
         centered = True
@@ -139,7 +138,7 @@ class apriltag_frames_ab(control.Control):
         self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
         if ultrasonido is not None and self.ruedas is not None:
             time.sleep(1)
-            while True:
+            while not self.goal:
                 if not(self.newDetection):
                     self.init_time = time.time()
                     self.ruedas.setvel(100, 100, True, True)  # Move
@@ -164,3 +163,11 @@ class apriltag_frames_ab(control.Control):
                         time.sleep(0.1)
         else:
             print "change_position: ERROR in deps."
+
+    @Pyro4.expose
+    def setGoal(self, value=True):
+        self.goal = value
+
+    @Pyro4.expose
+    def updateDetecteds(self, value):
+        self.detecteds.update(value)

@@ -9,14 +9,14 @@ class fake(control.Control):
     __REQUIRED = []
     def __init__(self):
         self.detections = {}
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
         # Publication example
-        # self.buffer = token.Token()
+        # self.buffer = publication.Publication()()
         # self.buffer.update_key_value("value", self.value)
-        # self.init_publisher(self.buffer)
+        # self.start_publisher(self.buffer)
         # Subscription example
-        self.send_subscription("alphabot_apriltag.apriltag", "aprils", "pc_apriltag")
+        self.start_subscription("alphabot_apriltag.apriltag", "aprils", "pc_apriltag")
 
     def worker(self):
         while self.worker_run:

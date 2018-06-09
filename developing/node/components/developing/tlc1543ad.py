@@ -13,7 +13,7 @@ class tlc1543ad(control.Control):
         self.GPIO=GPIOCLS(self.gpioservice,self.pyro4id)
         self.GPIO.setup((self.Clock,self.Address,self.CS),OUT)
         self.GPIO.setup(self.DataOut,IN,PUD_UP)
-        self.init_workers(self.worker)
+        self.start_worker(self.worker)
 
     def worker(self):
         x =0
