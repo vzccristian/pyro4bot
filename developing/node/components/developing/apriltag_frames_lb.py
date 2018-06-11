@@ -17,7 +17,7 @@ class apriltag_frames_lb(control.Control):
     def __init__(self):
         self.detections = None
         self.init_time = None
-        self.detecteds = {}
+        self.detecteds = []
         self.newDetection = False
         self.goal = False
 
@@ -25,7 +25,7 @@ class apriltag_frames_lb(control.Control):
         self.obstaculos = [1000,1000,1000]
         self.start_worker(self.get_laser)
         self.start_worker(self.get_frame)
-        self.start_worker(self.change_position)
+        # self.start_worker(self.change_position)
         self.subscriptors = {}
         self.april_detected = publication.Publication()
         self.start_publisher(self.april_detected,frec=0.1)
@@ -45,6 +45,7 @@ class apriltag_frames_lb(control.Control):
             # --- camera.vflip = True ----
             # ----------- DONT USE OPTIONS. ---------------- #
             while not self.goal:
+                print("DETECTEDS[{}]: ".format(len(self.detecteds)), self.detecteds)
                 self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
                 data = np.fromstring(stream.getvalue(), dtype=np.uint8)
@@ -90,9 +91,9 @@ class apriltag_frames_lb(control.Control):
                 self.ruedas.set__vel(mi=0, md=0)
                 self.newDetection = True
                 print("--> New tag: {}".format(identificator))
-                # self.centerPantilt(april)
+                self.centerPantilt(april)
                 time.sleep(2)
-                self.detecteds[identificator] = april
+                self.detecteds.append(identificator)
                 self.april_detected.update_key_value("aprils", self.detecteds)
                 self.deps["pantilt"].move()
 
@@ -130,4 +131,5 @@ class apriltag_frames_lb(control.Control):
 
     @Pyro4.expose
     def updateDetecteds(self, value):
-        self.detecteds.update(value)
+        if value not in self.detecteds:
+            self.detecteds.append(value)

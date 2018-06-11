@@ -14,13 +14,13 @@ class apriltag_frames_ab(control.Control):
     def __init__(self):
         self.detections = None
         self.init_time = None
-        self.detecteds = {}
+        self.detecteds = []
         self.newDetection = False
         self.goal = False
 
         self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
         self.start_worker(self.get_frame)
-        self.start_worker(self.change_position_with_ir)
+        # self.start_worker(self.change_position_with_ir)
 
         self.subscriptors = {}
         self.april_detected = publication.Publication()
@@ -34,7 +34,7 @@ class apriltag_frames_ab(control.Control):
             # --- camera.vflip = True ----
             # ----------- DONT USE OPTIONS. ---------------- #
             while not self.goal:
-                # print("DETECTEDS[{}]: ".format(len(self.detecteds)), self.detecteds.keys())
+                print("DETECTEDS[{}]: ".format(len(self.detecteds)), self.detecteds)
                 self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
                 data = np.fromstring(stream.getvalue(), dtype=np.uint8)
@@ -42,7 +42,6 @@ class apriltag_frames_ab(control.Control):
                 try:
                     self.detections = self.deps["pc_apriltag.apriltag_resolver"].get_detections(
                         data, openWindow=True, showInfo=False, name="Alphabot")
-
                     if self.detections:
                         for d in self.detections:
                             self.saveTag(d)
@@ -99,7 +98,7 @@ class apriltag_frames_ab(control.Control):
                 print("--> New tag: {}".format(identificator))
                 self.centerPantilt(april)
                 time.sleep(2)
-                self.detecteds[identificator] = april
+                self.detecteds.append(identificator)
                 self.april_detected.update_key_value("aprils", self.detecteds)
 
     def centerPantilt(self, april):
@@ -170,4 +169,5 @@ class apriltag_frames_ab(control.Control):
 
     @Pyro4.expose
     def updateDetecteds(self, value):
-        self.detecteds.update(value)
+        if value not in self.detecteds:
+            self.detecteds.append(value)

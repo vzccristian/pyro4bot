@@ -17,7 +17,7 @@ sys.path.append("../node/libs")
 import utils
 import myjson
 
-DEBUGGER = True
+DEBUGGER = False
 
 
 def load_config(filename):
@@ -77,8 +77,15 @@ class bigbrother(object):
         in self.components. The key of the dictionary is the component in question
         and the value is a list of all the robots that have this component.
         """
-        robots = {x: self.private_pyro4ns.list(
-        )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
+        error = True
+        while (error):
+            try:
+                robots = {x: self.private_pyro4ns.list(
+                )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
+                error = False
+            except Exception:
+                error = True
+
         new_robots = {}
         new_comps = {}
         if robots:
@@ -191,21 +198,22 @@ class bigbrother(object):
             c_name, c_comp = claimant.split(".") # Robot and comp needs
 
             init_time = time.time()
-            if (DEBUGGER):
-                print(colored("request_loop {}".format(key), "yellow"))
-                print("keys", self.robots.keys())
             while(not uris or self.async_waitings[key]["target_type"] == 3):
-                if (time.time() - init_time > 30): # Check exists
-                    if (self.async_waitings[key]["claimant"] in self.robots.keys()):
+                interval = (time.time() - init_time)
+                if (interval > 30): # Check exists
+                    if (self.async_waitings[key]["claimant"].split(".")[0] in self.robots.keys()):
                         init_time = time.time()
                     else:
                         break
+
                 uris, tt = self.lookup(
                     r_obj, target_type=True, returnAsList=True)
                 self.async_waitings[key]["target_type"] = tt
+
                 if (DEBUGGER):
-                    print r_obj, uris, tt
+                    print "[time:{}]".format(interval), r_obj, uris, tt,("keys[{}]".format(len(self.robots)), self.robots.keys())
                 time.sleep(5)
+
             if (uris):
                 if (DEBUGGER):
                     print(
@@ -252,9 +260,6 @@ class bigbrother(object):
 
     @Pyro4.expose
     def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
-        if (DEBUGGER):
-            print(colored("Lookup for: {} {}".format(
-                obj, return_metadata), "yellow"))
         self.update()
         target_type_info = -1
         uris = []
@@ -301,7 +306,7 @@ class bigbrother(object):
             return uris[0]
         else:
             return uris
-        print uris
+
 
     @Pyro4.expose
     def ping(self):

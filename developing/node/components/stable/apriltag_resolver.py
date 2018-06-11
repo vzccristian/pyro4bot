@@ -20,44 +20,47 @@ class apriltag_resolver(control.Control):
 
     @Pyro4.expose
     def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False, name="default"):
-        if self.worker_run:
-            if (frame is not None):
-                list_detections = []
+        try:
+            if self.worker_run:
+                if (frame is not None):
+                    list_detections = []
 
-                if picamera:
-                    frame = cv2.imdecode(frame, 1)
+                    if picamera:
+                        frame = cv2.imdecode(frame, 1)
 
-                gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-                detections, dimg = self.detector.detect(
-                    gray, return_image=True)
+                    gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+                    detections, dimg = self.detector.detect(
+                        gray, return_image=True)
 
-                num_detections = len(detections)
-                if (showInfo):
-                    print 'Detected {} tags.\n'.format(num_detections)
-
-                for i, detection in enumerate(detections):
-                    list_detections.append(dict(detection._asdict()))
+                    num_detections = len(detections)
                     if (showInfo):
-                        print 'Detection {} of {}:'.format(i + 1, num_detections)
-                        print
-                        print detection.tostring(indent=2)
-                        print
+                        print 'Detected {} tags.\n'.format(num_detections)
 
-                if (openWindow):
-                    # Show image
-                    try:
-                        window = 'AprilTag Resolver '+ str(name)
-                    except Exception:
-                        window = 'AprilTag Resolver'
-                    cv2.namedWindow(window)
-                    overlay = frame / 2 + dimg[:, :, None] / 2
+                    for i, detection in enumerate(detections):
+                        list_detections.append(dict(detection._asdict()))
+                        if (showInfo):
+                            print 'Detection {} of {}:'.format(i + 1, num_detections)
+                            print
+                            print detection.tostring(indent=2)
+                            print
 
-                    cv2.imshow(window, overlay)
-                    cv2.waitKey(1)
-                return list_detections
+                    if (openWindow):
+                        # Show image
+                        try:
+                            window = 'AprilTag Resolver '+ str(name)
+                        except Exception:
+                            window = 'AprilTag Resolver'
+                        cv2.namedWindow(window)
+                        overlay = frame / 2 + dimg[:, :, None] / 2
 
-        if (openWindow):
-            cv2.destroyAllWindows()
+                        cv2.imshow(window, overlay)
+                        cv2.waitKey(1)
+                    return list_detections
+
+            if (openWindow):
+                cv2.destroyAllWindows()
+        except Exception:
+            pass
 
     def test(self, cam_number=CAM):
         while True:
