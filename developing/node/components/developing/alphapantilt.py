@@ -37,14 +37,14 @@ class alphapantilt(control.Control):
         self.ctilt = GPIO.PWM(self.TILT, 50)
 
         self.pan_a = 105
-        self.tilt_a = 110
+        self.tilt_a = 120
 
         self.set_pantilt(self.pan_a, self.tilt_a)
 
     @control.flask("actuator")
     @Pyro4.oneway
     @Pyro4.expose
-    def set_pantilt(self, pan, tilt):
+    def set_pantilt(self, pan=105, tilt=120):
         # print "pan", pan, "tilt", tilt
         self.pan_a = pan
         self.tilt_a = tilt

@@ -192,12 +192,12 @@ class bigbrother(object):
         try:
             uris = []
             trys = 10
-
             r_obj = key.split("#")[0] # Obj needed
             claimant = self.async_waitings[key]["claimant"] # Robot.Comp  needs
             c_name, c_comp = claimant.split(".") # Robot and comp needs
 
             init_time = time.time()
+
             while(not uris or self.async_waitings[key]["target_type"] == 3):
                 interval = (time.time() - init_time)
                 if (interval > 30): # Check exists
@@ -214,41 +214,42 @@ class bigbrother(object):
                     print "[time:{}]".format(interval), r_obj, uris, tt,("keys[{}]".format(len(self.robots)), self.robots.keys())
                 time.sleep(5)
 
-            if (uris):
-                if (DEBUGGER):
-                    print(
-                        colored("\nURI Obtained: {} for: {}".format(uris, key), "green"))
-                    print c_name, c_comp
-                try:
-                    # Callback
-                    for robots in self.components.get(c_comp):
-                        (name, _, _) = utils.uri_split(robots)
-                        if (DEBUGGER):
-                            print(colored("Robot: {} and Looking for: {}".format(
-                                robots, name), "yellow"))
-                        if (name == self.async_waitings[key]["claimant"]):
-                            while (trys > 0):
-                                try:
-                                    p = utils.get_pyro4proxy(
-                                        robots, name.split(".")[0])
-                                    p.add_resolved_remote_dep({r_obj: uris})
-                                    if (DEBUGGER):
-                                        print(
-                                            colored("\nURI SENDED: {}".format(key), "green"))
-                                    break
-                                except Exception:
-                                    if (DEBUGGER):
-                                        print(
-                                            colored("\nURI ERROR: {}".format(key), "red"))
-                                    trys -= 1
-                                    time.sleep(3)
-                                    raise
-                except Exception:
+                if (uris):
                     if (DEBUGGER):
                         print(
-                            colored("\nImposible realizar callback a {}".format(claimant), 'red'))
-                    else:
-                        pass
+                            colored("\nURI Obtained: {} for: {}".format(uris, key), "green"))
+                        print c_name, c_comp
+                    try:
+                        for robots in self.components.get(c_comp):
+                            (name, _, _) = utils.uri_split(robots)
+                            if (DEBUGGER):
+                                print(colored("Robot: {} and Looking for: {}".format(
+                                    robots, name), "yellow"))
+                            if (name == self.async_waitings[key]["claimant"]):
+                                if (tt == 2 or tt == 4) and (isinstance(uris, list)):
+                                    uris = uris[0]
+                                while (trys > 0):
+                                    try:
+                                        p = utils.get_pyro4proxy(
+                                            robots, name.split(".")[0])
+                                        p.add_resolved_remote_dep({r_obj: uris})
+                                        if (DEBUGGER):
+                                            print(
+                                                colored("\nURI SENDED: {}".format(key), "green"))
+                                        break
+                                    except Exception:
+                                        if (DEBUGGER):
+                                            print(
+                                                colored("\nURI ERROR: {}".format(key), "red"))
+                                        trys -= 1
+                                        time.sleep(3)
+                                        raise
+                    except Exception:
+                        if (DEBUGGER):
+                            print(
+                                colored("\nImposible realizar callback a {}".format(claimant), 'red'))
+                        else:
+                            pass
 
             if claimant in self.claimant_list:
                 self.claimant_list.remove(claimant)
@@ -261,27 +262,29 @@ class bigbrother(object):
     @Pyro4.expose
     def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
         self.update()
+        if (DEBUGGER):
+            print("Lookup for: {}".format(obj))
         target_type_info = -1
         uris = []
         try:
             target = obj.split(".")
             if "." in obj:
-                # simplebot. o simplebot.*
+                # simplebot. o simplebot.* [list]
                 if (target[0] and (not target[1] or target[1].count("*") == 1)):
                     target_type_info = 1
                     for x in self.robots[target[0]]:
                         uris.append(x)
-                elif target[0] == "?" and target[1]:  # ?.component
+                elif target[0] == "?" and target[1]:  # ?.component  [NO list]
                     target_type_info = 2
                     if target[1] in self.components:
                         uris.append(random.choice(self.components[target[1]]))
                 elif (target[0].count("*") == 1 and target[1] and
-                        target[1].count("*") == 0):  # *.component
+                        target[1].count("*") == 0):  # *.component [list]
                     target_type_info = 3
-                    if target[1] in self.components:
+                    if target[1] in self.components.keys():
                         for x in self.components[target[1]]:
                             uris.append(x)
-                elif target[0] and target[1]:  # robot.component
+                elif target[0] and target[1]:  # robot.component [NO list]
                     target_type_info = 4
                     if target[0] in self.robots:
                         for x in self.robots[target[0]]:
@@ -300,6 +303,7 @@ class bigbrother(object):
         except Exception:
             print "\nError accesing to:", obj
             return False
+
         if (target_type):
             return uris, target_type_info
         elif not (returnAsList):

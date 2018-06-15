@@ -21,7 +21,7 @@ class pantilt(control.Control):
 
     @Pyro4.oneway
     @control.flask("actuator")
-    def move(self, pan=30, tilt=90):
+    def move(self, pan=40, tilt=90):
         if pan < 10: pan = 10
         elif pan > 120: pan = 120
         if tilt < 15: tilt = 15

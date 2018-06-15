@@ -69,7 +69,7 @@ class apriltag_resolver(control.Control):
                 ret, frame = cap.read()
                 if not ret:
                     break
-                detections = self.get_detections(frame, picamera=False, openWindow=True)
+                detections = self.get_detections(frame, picamera=False, openWindow=True, showInfo=True)
                 for d in detections:
                     print d["tag_family"], d["tag_id"]
                 time.sleep(0.1)
