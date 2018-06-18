@@ -1,0 +1,11 @@
+{
+   "NODE":{
+      "name":"display_bot",
+      "ethernet":"wlan0"
+    },
+   "components":{
+        "display":{"cls":"WSEPaper","bus":0, "device":0, "width":200, "height":200}
+    },
+   "services":{
+	}
+}

@@ -152,17 +152,17 @@ class EPDDriver:
         self.EPD_SetRamPointer(RAM_XST, RAM_YST, RAM_YST1)
 
     def EPD_Init(self):
-        print 'EPD_Init'
+        # print 'EPD_Init'
         """Initialize display"""
         """2. reset driver"""
         GPIO.output(CS, GPIO.LOW)
         GPIO.output(RST, GPIO.HIGH)
         time.sleep(0.1)
         GPIO.output(RST, GPIO.LOW)
-        if GPIO.input(RST) == 0:
-            print '[EPD] Reset is complete'
-        else:
-            print '[EPD] Reset is false'
+        # if GPIO.input(RST) == 0:
+        #     print '[EPD] Reset is complete'
+        # else:
+        #     print '[EPD] Reset is false'
         time.sleep(0.01)
         GPIO.output(RST, GPIO.HIGH)
         """3. set register"""
@@ -230,12 +230,12 @@ class EPDDriver:
     ********************************************************************************"""
 
     def Dis_Clear_full(self):
-        print '1.init full screen'
+        # print '1.init full screen'
         self.ReadBusy()
         self.EPD_init_Full()
         self.delay()
         # Clear screen
-        print '2.clear full screen'
+        # print '2.clear full screen'
         self.ReadBusy()
         self.EPD_Dis_Full(0xff)
         self.delay()

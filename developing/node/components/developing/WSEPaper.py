@@ -43,6 +43,7 @@ class WSEPaper(control.Control):
         self.font_link = "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
         self.font = ImageFont.truetype(self.font_link, size=self.font_size)
         self.buffer = []
+        self.init_panel()
         self.start_worker(self.worker)
 
     def worker(self):
@@ -105,11 +106,41 @@ class WSEPaper(control.Control):
         test_draw = ImageDraw.Draw(test_img)
         return test_draw.textsize(text, font)
 
+    @Pyro4.expose
     def set_text(self, text, font=0):
         if font not in [0, self.font_size]:
             self.font = ImageFont.truetype(self.font_link, font)
         img = Image.new('RGB', (200, 200), (255, 255, 255))
         d = ImageDraw.Draw(img)
         d.text((20, 20), text, fill=(255, 0, 0), font=self.font)
+        img.save("image.jpg")
+        self.set_image(open("image.jpg").read())
+
+    def init_panel(self):
+        self.first_val = '0'
+        self.list_val = []
+
+    def set_first(self, val):
+        self.first_val = val
+
+    @Pyro4.expose
+    def set_values(self, val):
+        if len(self.list_val) == 5:
+            self.list_val.pop(0)
+        self.list_val.append(val)
+        self.first_val = str(len(self.list_val))
+
+    #Precondition: init_panel()
+    def write_panel(self):
+        self.font = ImageFont.truetype(self.font_link, size=130)
+        img = Image.new('RGB', (200, 200), (255, 255, 255))
+        d = ImageDraw.Draw(img)
+        d.text((10, 40), self.first_val, fill=(255, 0, 0), font=self.font)
+        font = ImageFont.truetype(self.font_link, size=20)
+        i = 20
+        if self.list_val > 0:
+            for a in self.list_val:
+                d.text((90, i), a, fill=(255, 0, 0), font=font)
+                i += 32
         img.save("image.jpg")
         self.set_image(open("image.jpg").read())

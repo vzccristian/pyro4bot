@@ -112,6 +112,7 @@ class apriltag_frames_ab(control.Control):
                 self.detecteds.append(identificator)
                 self.april_detected.update_key_value("aprils", self.detecteds)
 
+
     def centerPantilt(self, april):
         # print "centerPantilt ", april
         centered = True
