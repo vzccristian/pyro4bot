@@ -47,8 +47,8 @@ class apriltag_frames_lb(control.Control):
             # --- camera.vflip = True ----
             # ----------- DONT USE OPTIONS. ---------------- #
             while not self.goal:
-                print("DETECTEDS[{}]: {}".format(len(self.detecteds), self.detecteds))
-                print("APRILS[{}]: {}".format(len(self.aprils), self.aprils))
+                print(("DETECTEDS[{}]: {}".format(len(self.detecteds), self.detecteds)))
+                print(("APRILS[{}]: {}".format(len(self.aprils), self.aprils)))
                 # print("SUBS: {}".format(self.subscriptors))
                 self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
@@ -63,13 +63,13 @@ class apriltag_frames_lb(control.Control):
                     stream.truncate()
                 except Exception as ex:
                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                    print template.format(type(ex).__name__, ex.args)
+                    print(template.format(type(ex).__name__, ex.args))
 
                 if len (self.aprils) == self.numero_marcas:
-                    print "------------------------------------------"
-                    print "---->   TARGET REACHED   <----"
-                    print self.aprils
-                    print "------------------------------------------"
+                    print("------------------------------------------")
+                    print("---->   TARGET REACHED   <----")
+                    print(self.aprils)
+                    print("------------------------------------------")
                     self.goal = True
                     self.ruedas.set__vel(mi=0, md=0)
 
@@ -101,7 +101,7 @@ class apriltag_frames_lb(control.Control):
             if (self.centerPantilt(april)):
                 self.ruedas.set__vel(mi=0, md=0)
                 self.newDetection = True
-                print("--> New tag: {}".format(identificator))
+                print(("--> New tag: {}".format(identificator)))
                 self.centerPantilt(april)
                 time.sleep(2)
                 self.detecteds.append(identificator)
@@ -133,7 +133,7 @@ class apriltag_frames_lb(control.Control):
                     pan += 1
             pantilt.move(pan, tilt)
         else:
-            print "centerPantilt: ERROR in deps."
+            print("centerPantilt: ERROR in deps.")
         return centered
 
     @Pyro4.expose

@@ -16,17 +16,17 @@ class RPCProxy:
         return do_rpc
 
 if __name__ == "__main__":
-    print "Client"
+    print("Client")
     c = Client(('localhost', 17000), authkey=b'PyRobot')
     proxy = RPCProxy(c)
     proxy.request("*.camera")
 
-    print "Lista:",(proxy.list())
+    print("Lista:",(proxy.list()))
     time.sleep(1)
     bot = proxy.proxy("learnbot1")
     if (bot is not None):
-        print "Learnbot1",(bot.get_uris())
+        print("Learnbot1",(bot.get_uris()))
 
     time.sleep(3)
     proxy.remove("learnbot1")
-    print "Lista despues de remove",(proxy.list())
+    print("Lista despues de remove",(proxy.list()))

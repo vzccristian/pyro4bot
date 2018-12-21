@@ -94,8 +94,8 @@ class Subscription(object):
 if __name__ == '__main__':
     s = Subscription("usbserial", "LASER")
     s.id = 2
-    print s
+    print(s)
     s.id = 4
-    print str(s)
+    print(str(s))
     d = s.__dict__
-    print dict_to_class(d)
+    print(dict_to_class(d))

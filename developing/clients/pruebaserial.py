@@ -4,7 +4,7 @@ def funcion(l):
     if type(l) not in (list, tuple):
         l = (l,)
     for k in l:
-        print k
+        print(k)
 
 
 funcion([1, 2, 4])

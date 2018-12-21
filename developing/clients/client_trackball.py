@@ -4,11 +4,11 @@
 # _________collaboration with cristian vazquez____________
 
 import threading
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import numpy as np
 
 def track(image):
@@ -37,7 +37,7 @@ def run_camera(cam):
         c=cam.image
         centro=[]
         centro,img=track(c)
-        print centro
+        print(centro)
         cv2.imshow('learnbot',img)
         if cv2.waitKey(1) == 27:
             exit(0)

@@ -46,7 +46,7 @@ class bt_RFCOMM(object):
 
     def DumpDevices(self):
         for mac, name in self.btDevices:
-            print("BT device name: {0}, MAC: {1}".format(name, mac))
+            print(("BT device name: {0}, MAC: {1}".format(name, mac)))
 
     def BindListen(self, mac, port=8000, backlog=1):
         self.btSocket.bind((mac, port))
@@ -104,9 +104,9 @@ class BTServer(object):
             try:
                 while True:
                     self.data =self.client.recv(self.srv.GetReceiveSize())
-                    print("data: ",self.data)
+                    print(("data: ",self.data))
             except:
-                print("clossing",self.clientInfo)
+                print(("clossing",self.clientInfo))
                 self.client.close()
         self.srv.Disconnect()
 

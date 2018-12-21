@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton

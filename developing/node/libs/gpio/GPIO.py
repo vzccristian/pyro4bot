@@ -4,7 +4,7 @@
 # support three diferent moderboards
 # ____________developed by paco andres____________________
 
-from Platform import HARDWARE
+from .Platform import HARDWARE
 import Pyro4
 from node.libs.gpio.gpiodef import *
 from node.libs.gpio.PWM import *

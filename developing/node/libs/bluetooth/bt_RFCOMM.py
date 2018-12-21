@@ -46,7 +46,7 @@ class bt_RFCOMM(object):
 
     def DumpDevices(self):
         for mac, name in self.btDevices:
-            print("BT device name: {0}, MAC: {1}".format(name, mac))
+            print(("BT device name: {0}, MAC: {1}".format(name, mac)))
 
     def BindListen(self, mac, port=3333, backlog=1):
         self.btSocket.bind((mac, port))

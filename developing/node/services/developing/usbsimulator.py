@@ -33,7 +33,7 @@ class usbsimulator(control.Control):
 
     @Pyro4.oneway
     def command(self, comman="ee"):
-        print comman
+        print(comman)
         # self.serial.write(comman+"\r\n")
 
 

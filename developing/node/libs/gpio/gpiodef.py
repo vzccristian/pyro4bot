@@ -3,7 +3,7 @@
 # lock().acquire()
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-from Platform import HARDWARE
+from .Platform import HARDWARE
 
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as GPIO

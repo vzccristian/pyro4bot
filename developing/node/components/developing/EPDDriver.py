@@ -208,7 +208,7 @@ class EPDDriver:
 
     def EPD_Dis_Part(self, xStart, xEnd, yStart, yEnd, DisBuffer):
         if(xStart % 8 != 0):
-            print 'EPD_Dis_Part xStart must be divable by 8 !'
+            print('EPD_Dis_Part xStart must be divable by 8 !')
         self.ReadBusy()
         self.part_display(xStart / 8, xEnd / 8, yEnd %
                           256, yEnd / 256, yStart % 256, yStart / 256)

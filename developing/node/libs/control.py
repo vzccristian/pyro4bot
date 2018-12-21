@@ -1,13 +1,13 @@
 import Pyro4
-import utils
+from . import utils
 import time
-from publication import Publication
-from subscription import Subscription, dict_to_class
+from .publication import Publication
+from .subscription import Subscription, dict_to_class
 import threading
 from threading import Thread
 from termcolor import colored
-from botlogging import botlogging
-import pprint
+from .botlogging import botlogging
+
 SECS_TO_CHECK_STATUS = 5
 
 # DECORATORS
@@ -46,7 +46,7 @@ def Pyro4bot_Loader(clss, **kwargs):
     original_init = clss.__init__
 
     def init(self):
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             setattr(self, k, v)
         super(clss, self).__init__()
         original_init(self)
@@ -60,7 +60,7 @@ def flask(*args_decorator):
         if func.__doc__ is None:
             original_doc = ""
         if len(args_decorator) % 2 == 0:  # Tuplas
-            for i in xrange(0, len(args_decorator), 2):
+            for i in range(0, len(args_decorator), 2):
                 original_doc += "\n@type:" + \
                     args_decorator[i] + "\n@count:" + \
                     str(args_decorator[i + 1])
@@ -89,7 +89,7 @@ def timing(f):
         time1 = time.time()
         ret = f(*args)
         time2 = time.time()
-        print '%s function took %0.3f ms' % (f.func_name, (time2 - time1) * 1000.0)
+        print('%s function took %0.3f ms' % (f.__name__, (time2 - time1) * 1000.0))
         return ret
     return wrap
 
@@ -146,8 +146,8 @@ class Control(botlogging.Logging):
             t.setDaemon(True)
             t.start()
         else:
-            print(
-                "ERROR: Can not publish to object other than publication {}".format(publication))
+            print((
+                "ERROR: Can not publish to object other than publication {}".format(publication)))
 
     def thread_publisher(self, publication, frec):
         """Publish the publication in the subscriber list."""
@@ -157,7 +157,7 @@ class Control(botlogging.Logging):
         while self.threadpublisher:
             value = publication.get()
             try:
-                for key in self.subscriptors.keys():  # Key has atribute to publish
+                for key in list(self.subscriptors.keys()):  # Key has atribute to publish
                     subscriptors = self.subscriptors[key]
                     try:
                         if key in value:
@@ -172,7 +172,7 @@ class Control(botlogging.Logging):
                                         sub for sub in self.subscriptors[key] if sub.id != s.id]
                                 except Exception as ex:
                                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                                    print template.format(type(ex).__name__, ex.args)
+                                    print(template.format(type(ex).__name__, ex.args))
                                     # del self.subscriptors[key]
 
                     except TypeError:
@@ -180,7 +180,7 @@ class Control(botlogging.Logging):
                         raise
                         exit()
             except Exception as e:
-                print utils.format_exception(e)
+                print(utils.format_exception(e))
                 raise
             time.sleep(frec)
 
@@ -198,7 +198,7 @@ class Control(botlogging.Logging):
             t.start()
 
         except Exception:
-            print "[ERROR] start_subscription. Error sending {}".format(target)
+            print("[ERROR] start_subscription. Error sending {}".format(target))
             raise
 
     def thread_subscriber(self, subscription):
@@ -210,8 +210,8 @@ class Control(botlogging.Logging):
             if (hasattr(self, subscription.target)):  # Locals
                 x = getattr(self, subscription.target)
                 x.subscribe(subscription.get())  # Sending as dict
-                print(colored("\t\t\t[LOCAL] Subscribed to: {}".format(
-                    subscription.target), "green"))
+                print((colored("\t\t\t[LOCAL] Subscribed to: {}".format(
+                    subscription.target), "green")))
             else:  # Remotes
                 connected = False
                 while not connected:
@@ -231,25 +231,25 @@ class Control(botlogging.Logging):
                                                         added_list.append(dp)
                                                     except Exception:
                                                         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                                                        print template.format(type(ex).__name__, ex.args)
+                                                        print(template.format(type(ex).__name__, ex.args))
                                 for dp in self.deps[subscription.target]:
                                     try:
                                         dp.subscribe(subscription.get())
                                     except Exception:
                                         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                                        print template.format(type(ex).__name__, ex.args)
+                                        print(template.format(type(ex).__name__, ex.args))
                             else:
                                 self.deps[subscription.target].subscribe(
                                     subscription.get())
-                                print(colored("\t\t\t[REMOTE] Subscribed to: {}".format(
-                                    subscription.target), "green"))
+                                print((colored("\t\t\t[REMOTE] Subscribed to: {}".format(
+                                    subscription.target), "green")))
                             connected = True
                         except Exception:
                             pass
                             time.sleep(10)
                     time.sleep(2)
         except Exception:
-            print("ERROR: in subscripcion: {}".format(subscription))
+            print(("ERROR: in subscripcion: {}".format(subscription)))
             raise
 
     @Pyro4.expose
@@ -277,9 +277,9 @@ class Control(botlogging.Logging):
             # print("-- Soy {} y recibo correctamente esta suscripcion: {}".format(self.botname+"."+self.name, subscription))
             return True
         except Exception as ex:
-            print("[subscribe] " + str(subscription))
+            print(("[subscribe] " + str(subscription)))
             template = "[subscribe] An exception of type {0} occurred. Arguments:\n{1!r}"
-            print template.format(type(ex).__name__, ex.args)
+            print(template.format(type(ex).__name__, ex.args))
             time.sleep(2)
 
     @Pyro4.oneway
@@ -331,7 +331,7 @@ class Control(botlogging.Logging):
     def add_resolved_remote_dep(self, dep):
         # print(colored("New remote dep! {}, type: {}".format(dep, type(dep)), "green"))
         if isinstance(dep, dict):
-            k = dep.keys()[0]
+            k = list(dep.keys())[0]
             proxy_lst = []
             try:
                 if isinstance(dep[k], list):
@@ -354,10 +354,10 @@ class Control(botlogging.Logging):
                         self._unr_remote_deps.remove(k)
             except Exception:
                 template = "[control.add_resolved_remote_dep()] An exception of type {0} occurred. Arguments:\n{1!r}"
-                print template.format(type(ex).__name__, ex.args)
+                print(template.format(type(ex).__name__, ex.args))
             self.check_remote_deps()
         else:
-            print("Error in control.add_resolved_remote_dep(): No dict", dep)
+            print(("Error in control.add_resolved_remote_dep(): No dict", dep))
 
     def check_remote_deps(self):
         status = True
@@ -365,7 +365,7 @@ class Control(botlogging.Logging):
             for unr in self._unr_remote_deps:
                 if "*" not in unr:
                     status = False
-        for k in self.deps.keys():
+        for k in list(self.deps.keys()):
             try:
                 if isinstance(self.deps[k], list):
                     for prx in self.deps[k]:
@@ -375,9 +375,9 @@ class Control(botlogging.Logging):
                     if (self.deps[k]._pyroHandshake != "hello"):
                         status = False
             except Exception:
-                print("Error connecting to dep: {} ".format(k))
+                print(("Error connecting to dep: {} ".format(k)))
                 template = "[check_remote_deps] An exception of type {0} occurred. Arguments:\n{1!r}"
-                print template.format(type(ex).__name__, ex.args)
+                print(template.format(type(ex).__name__, ex.args))
                 status = False
 
         if (status):
@@ -385,7 +385,7 @@ class Control(botlogging.Logging):
             try:
                 self.node.status_changed()
             except Exception as e:
-                print "Error in control.check_remote_deps: " + str(e)
+                print("Error in control.check_remote_deps: " + str(e))
 
         return self._REMOTE_STATUS
 

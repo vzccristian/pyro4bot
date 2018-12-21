@@ -14,12 +14,12 @@ print("# PYRO4BOT #")
 print("MODULES TO INSTALL:")
 modulestointall = not_finded_modules(_modules_libs_errors)
 for mod in modulestointall:
-    print ("\t{}".format(mod))
+    print(("\t{}".format(mod)))
 if not modulestointall:
     print("All packages are up today.")
     exit()
 
-question = raw_input("Do you want install packages? (y/n).. ")
+question = input("Do you want install packages? (y/n).. ")
 
 if question.upper() == "Y":
     for mod in modulestointall:

@@ -3,12 +3,10 @@
 # ____________developed by paco andres____________________
 # ________in collaboration with cristian vazquez _________
 
-import os
-from multiprocessing import Process, Pipe, Queue
 import Pyro4
 from termcolor import colored
 import setproctitle
-from node import *
+from .node import *
 
 
 def start_node(robot, proc_pipe, msg):
@@ -38,7 +36,7 @@ def start_node(robot, proc_pipe, msg):
 
         # Hide methods from Control
         safe_exposed = {}
-        for k in exposed.keys():
+        for k in list(exposed.keys()):
             safe_exposed[k] = list(
                 set(exposed[k]) - set(dir(control.Control)))
         safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
@@ -52,18 +50,18 @@ def start_node(robot, proc_pipe, msg):
         new_object.docstring = new_object.get_docstring(new_object, exposed)
 
         # Printing info
-        print(colored(
-            "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow"))
-        print("[%s]  PYRO4BOT: %s" %
-              (colored("OK", 'green'), uri_node))
+        print((colored(
+            "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow")))
+        print(("[%s]  PYRO4BOT: %s" %
+              (colored("OK", 'green'), uri_node)))
         new_object.start_components()
         msg.put((uri_node, os.getpid()))
         proc_pipe.send("OK")
 
         new_object.register_node()
         daemon.requestLoop()
-        print("[%s] Final shutting %s" %
-              (colored("Down", 'green'), uri_node))
+        print(("[%s] Final shutting %s" %
+              (colored("Down", 'green'), uri_node)))
         os._exit(0)
     except Exception:
         print("ERROR: start_node in robotstarter.py")
@@ -80,12 +78,12 @@ def pre_start_node(robot):
     name = robot["node"]["name"]
 
     # Information
-    print(colored("\n_________PYRO4BOT SYSTEM__________", "yellow"))
-    print("\tEthernet device {} IP: {}".format(
-        colored(robot["node"]["ethernet"], "cyan"), colored(robot["node"]["ip"], "cyan")))
-    print("\tRobot name: {}".format(colored(name, "cyan")))
-    print("\tPassword: {}".format(colored(robot["node"]["password"], "cyan")))
-    print("\tFilename: {}".format(colored(robot["filename"], 'cyan')))
+    print((colored("\n_________PYRO4BOT SYSTEM__________", "yellow")))
+    print(("\tEthernet device {} IP: {}".format(
+        colored(robot["node"]["ethernet"], "cyan"), colored(robot["node"]["ip"], "cyan"))))
+    print(("\tRobot name: {}".format(colored(name, "cyan"))))
+    print(("\tPassword: {}".format(colored(robot["node"]["password"], "cyan"))))
+    print(("\tFilename: {}".format(colored(robot["filename"], 'cyan'))))
     print("")
 
     # Process for console

@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from misc.findrobots import findrobots
 
 
@@ -39,7 +39,7 @@ class Application:
         self.window.mainloop()
 
     def hehe(self, event):
-        print self.user.get(), self.password.get()
+        print(self.user.get(), self.password.get())
 
     def find_robots(self):
         return findrobots.Searcher().robots

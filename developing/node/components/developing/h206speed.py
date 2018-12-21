@@ -25,12 +25,12 @@ class h206speed(control.Control):
     @control.flask("actuator")
     def pulseMD(self,channel):
         self.cont_MD = self.cont_MD + 1
-        print("MD: {}".format(self.cont_MD))
+        print(("MD: {}".format(self.cont_MD)))
 
     @control.flask("actuator")
     def pulseMI(self,channel):
         self.cont_MI = self.cont_MI + 1
-        print("MI: {}".format(self.cont_MI))
+        print(("MI: {}".format(self.cont_MI)))
 
     def worker(self):
         while self.worker_run:

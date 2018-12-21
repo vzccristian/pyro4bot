@@ -19,7 +19,7 @@ class IR_remote_control(control.Control):
         while self.worker_run:
             k = self.getkey()
             if k:
-                print(hex(k))
+                print((hex(k)))
             time.sleep(self.frec)
 
     def getkey(self):

@@ -1,5 +1,5 @@
-from Tkinter import *
-import ttk
+from tkinter import *
+import tkinter.ttk
 from misc.findrobots.findrobots import Searcher
 import pygubu
 from pexpect import pxssh
@@ -52,7 +52,7 @@ class GUI:
         for i in r_list:
             robot_gui_list.option_add(END, i)
         robot_gui_list['state'] = DISABLED if r_list == ['-'] else NORMAL
-        print r_list
+        print(r_list)
 
 
 if __name__ == '__main__':

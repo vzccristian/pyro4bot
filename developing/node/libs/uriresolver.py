@@ -60,8 +60,8 @@ class uriresolver(control.Control):
             print("ERROR: creating _client_robot")
         finally:
             if (self.uri is not None):
-                print("[%s] Shutting %s" %
-                      (colored("Down", 'green'), self.uri.asString()))
+                print(("[%s] Shutting %s" %
+                      (colored("Down", 'green'), self.uri.asString())))
             os._exit(0)
 
     def register_uriresolver(self):
@@ -90,17 +90,17 @@ class uriresolver(control.Control):
                 connect = False
             time.sleep(0.3)
         if connect:
-            print(
+            print((
                 colored("\n___________STARTING RESOLVER URIs___________________",
-                        "yellow"))
-            print("URI %s" % colored(self.uri.asString(), 'green'))
+                        "yellow")))
+            print(("URI %s" % colored(self.uri.asString(), 'green')))
 
             if self.get_ns():
-                print("NAME SERVER LOCATED. %s" %
-                      (colored(" Resolving remote URIs ", 'green')))
+                print(("NAME SERVER LOCATED. %s" %
+                      (colored(" Resolving remote URIs ", 'green'))))
             else:
-                print("NAME SERVER NOT LOCATED. %s" %
-                      (colored(" Resolving only LOCAL URIs ", 'green')))
+                print(("NAME SERVER NOT LOCATED. %s" %
+                      (colored(" Resolving only LOCAL URIs ", 'green'))))
             return self.uri.asString(), self.proxy
         else:
             print("Cant connect with uriresolver")
@@ -196,13 +196,13 @@ class uriresolver(control.Control):
             if (self.usingBB):
                 ns.proxy(target, passw)
             else:
-                print(colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red"))
+                print((colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red")))
                 return None
         return None
 
     @Pyro4.expose
     def get_proxy(self, obj, passw=None):
-        if isinstance(obj, basestring):
+        if isinstance(obj, str):
             obj = [obj]
         if (self.get_ns()):
             for d in obj:
@@ -218,7 +218,7 @@ class uriresolver(control.Control):
                     elif (d.count(".") == 1):  # simplebot.component
                         return (self.get_proxy_without_uri(d, passw))
                     else:
-                        print "Objeto no valido"
+                        print("Objeto no valido")
                 except Exception:
                     return None
 
@@ -254,7 +254,7 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_name(self, uri):
-        for k, v in self.URIS.iteritems():
+        for k, v in self.URIS.items():
             if v == uri:
                 return k
         return None
@@ -315,7 +315,7 @@ class uriresolver(control.Control):
                     except Exception:
                         pass
                 else:  # Another thing
-                    print(colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red"))
+                    print((colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red")))
                     return "ERROR", "BIG-BROTHER"   # big brother needed
             trys -= 1
             time.sleep(0.5)
@@ -327,8 +327,8 @@ class uriresolver(control.Control):
         try:
             if self.nameserver is not None:
                 self.URIS[self.botName] = uri
-                print("\nROBOT AVAILABLE: %s" %
-                      (colored(self.URIS[self.botName], 'green')))
+                print(("\nROBOT AVAILABLE: %s" %
+                      (colored(self.URIS[self.botName], 'green'))))
                 if (self.usingBB):
                     self.nameserver.register(
                         self.botName, self.URIS[self.botName])
@@ -337,7 +337,7 @@ class uriresolver(control.Control):
                     nserver = Pyro4.locateNS()
                     nserver.register(self.botName, self.URIS[self.botName])
             else:
-                print(colored("NAME SERVER NOT FIND", 'red'))
+                print((colored("NAME SERVER NOT FIND", 'red')))
 
         except Exception:
             print("ERROR:name server not find")
@@ -356,7 +356,7 @@ class uriresolver(control.Control):
 
 
 def printInfo(text, color="green"):
-    print colored("[uriresolver]:" + text, color)
+    print(colored("[uriresolver]:" + text, color))
 
 
 if __name__ == "__main__":

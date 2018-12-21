@@ -27,8 +27,8 @@ if __name__ == "__main__":
         salir = True
         time.sleep(2)
         while salir:
-            print colored("\n----\nAvailable commands:: \n* Doc \n* Status \n* Exit\n----\n", "green")
-            cad = raw_input("{} ".format(colored(PROCESS[0] + ":", 'green')))
+            print(colored("\n----\nAvailable commands:: \n* Doc \n* Status \n* Exit\n----\n", "green"))
+            cad = input("{} ".format(colored(PROCESS[0] + ":", 'green')))
             if cad.upper() == "EXIT":
                 ROB.shutdown()
                 os.kill(PROCESS[3], 9)
@@ -36,14 +36,14 @@ if __name__ == "__main__":
             if cad.upper() == "STATUS":
                 ROB.print_process()
             if cad.upper() == "DOC":
-                for k, v in ROB.__docstring__().items():
+                for k, v in list(ROB.__docstring__().items()):
                     print(k)
-                    print("\t" + str(v))
+                    print(("\t" + str(v)))
             if cad.upper() == "SALIR":
                 salir = False
                 exit()
     except IOError:
-        print("The file can not be found: %s" % jsonbot)
+        print(("The file can not be found: %s" % jsonbot))
     except (KeyboardInterrupt, SystemExit):
         os._exit(0)
     except Exception:

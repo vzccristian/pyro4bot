@@ -164,7 +164,7 @@ class ClientSocket():
     def acceptConnection(self):
         """ Accept conections from servers to clients"""
         if self.connection is 0:
-            print("PICAM-New client: {}".format(self.port))
+            print(("PICAM-New client: {}".format(self.port)))
             self.waitingForConnection = True
             self.connection = self.serverSocket.accept(
             )[0].makefile("rb" + str(self.port))
@@ -175,5 +175,5 @@ class ClientSocket():
 
     def setClosed(self):
         """ Set client as closed """
-        print("PICAM-Client disconnected: {}".format(self.port))
+        print(("PICAM-Client disconnected: {}".format(self.port)))
         self.closed = True

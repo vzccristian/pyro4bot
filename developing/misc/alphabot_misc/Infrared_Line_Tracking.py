@@ -113,7 +113,7 @@ class TRSensor(object):
 
 			sensor_values[i] = value
 
-		print("readCalibrated",sensor_values)
+		print(("readCalibrated",sensor_values))
 		return sensor_values
 
 	"""
@@ -194,9 +194,9 @@ if __name__ == '__main__':
 	time.sleep(0.5)
 	for i in range(0,400):
 		TR.calibrate()
-		print i
-	print(TR.calibratedMin)
-	print(TR.calibratedMax)
+		print(i)
+	print((TR.calibratedMin))
+	print((TR.calibratedMax))
 	time.sleep(0.5)
 	Ab.backward()
 	while True:
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 			power_difference = maximum
 		if (power_difference < - maximum):
 			power_difference = - maximum
-		print(position,power_difference)
+		print((position,power_difference))
 		if (power_difference < 0):
 			Ab.setPWMB(maximum + power_difference)
 			Ab.setPWMA(maximum);

@@ -35,8 +35,8 @@ class apriltag_frames_ab(control.Control):
             # --- camera.vflip = True ----
             # ----------- DONT USE OPTIONS. ---------------- #
             while not self.goal:
-                print("DETECTEDS[{}]: {}".format(len(self.detecteds), self.detecteds))
-                print("APRILS[{}]: {}".format(len(self.aprils), self.aprils))
+                print(("DETECTEDS[{}]: {}".format(len(self.detecteds), self.detecteds)))
+                print(("APRILS[{}]: {}".format(len(self.aprils), self.aprils)))
                 # print("SUBS: {}".format(self.subscriptors))
                 self.newDetection = False
                 camera.capture(stream, format='jpeg', use_video_port=True)
@@ -53,14 +53,14 @@ class apriltag_frames_ab(control.Control):
                     time.sleep(self.frec)
                 except Exception as ex:
                     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                    print template.format(type(ex).__name__, ex.args)
+                    print(template.format(type(ex).__name__, ex.args))
                     time.sleep(2)
 
                 if len (self.aprils) == self.numero_marcas:
-                    print "------------------------------------------"
-                    print "---->   TARGET REACHED   <----"
-                    print self.aprils
-                    print "------------------------------------------"
+                    print("------------------------------------------")
+                    print("---->   TARGET REACHED   <----")
+                    print(self.aprils)
+                    print("------------------------------------------")
                     self.deps["ruedas"].setvel(0, 0)
                     self.goal = True
 
@@ -96,7 +96,7 @@ class apriltag_frames_ab(control.Control):
                         self.ruedas.setvel(0, 0)
                         time.sleep(0.1)
         else:
-            print "change_position_with_ir: ERROR in deps."
+            print("change_position_with_ir: ERROR in deps.")
 
     def saveTag(self, april):
         identificator = str(april["tag_family"]) + "." + str(april["tag_id"])
@@ -106,7 +106,7 @@ class apriltag_frames_ab(control.Control):
             if (self.centerPantilt(april)):
                 self.ruedas.setvel(0, 0)
                 self.newDetection = True
-                print("--> New tag: {}".format(identificator))
+                print(("--> New tag: {}".format(identificator)))
                 self.centerPantilt(april)
                 time.sleep(2)
                 self.detecteds.append(identificator)
@@ -140,13 +140,13 @@ class apriltag_frames_ab(control.Control):
                     tilt -= 1
             pantilt.set_pantilt(pan, tilt)
         else:
-            print "centerPantilt: ERROR in deps."
+            print("centerPantilt: ERROR in deps.")
         if centered:
             pantilt.set_pantilt() # Default
         return centered
 
     def change_position(self):
-        print "change_position working"
+        print("change_position working")
         ultrasonido = self.deps["alphaultrasound"] if "alphaultrasound" in self.deps else None
         self.ruedas = self.deps["ruedas"] if "ruedas" in self.deps else None
         if ultrasonido is not None and self.ruedas is not None:
@@ -156,13 +156,13 @@ class apriltag_frames_ab(control.Control):
                     self.init_time = time.time()
                     self.ruedas.setvel(100, 100, True, True)  # Move
                     distance = ultrasonido.getDistance()
-                    print "0[{}] - DIST: {} ".format(self.newDetection, distance)
+                    print("0[{}] - DIST: {} ".format(self.newDetection, distance))
                     while (distance > 40 and not(self.newDetection) and
                            time.time() - self.init_time < 10):
                         distance = ultrasonido.getDistance()
-                        print "1[{}] - DIST: {} ".format(self.newDetection, distance)
+                        print("1[{}] - DIST: {} ".format(self.newDetection, distance))
                         time.sleep(self.frec)
-                    print "2[{}] - DIST: {} ".format(self.newDetection, distance)
+                    print("2[{}] - DIST: {} ".format(self.newDetection, distance))
                     self.deps["ruedas"].setvel(0, 0)
                     time.sleep(0.1)
                     if not(self.newDetection):
@@ -175,7 +175,7 @@ class apriltag_frames_ab(control.Control):
                         self.ruedas.setvel(0, 0)
                         time.sleep(0.1)
         else:
-            print "change_position: ERROR in deps."
+            print("change_position: ERROR in deps.")
 
     @Pyro4.expose
     def updateAprils(self, value):

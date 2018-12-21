@@ -52,7 +52,7 @@ class ClientRobot(object):
                 proxy = utils.get_pyro4proxy(p, self.name)
                 setattr(self, con, proxy)
         except Pyro4.errors.NamingError:
-            print("Error: Unknown name {}".format(name))
+            print(("Error: Unknown name {}".format(name)))
             exit()
         except Exception:
             print("ERROR: conection")
@@ -67,7 +67,7 @@ class ClientRobot(object):
                     self.ip + ":" + str(self.port_robot)
                 self.node = utils.get_pyro4proxy(uri, self.name)
             except Exception:
-                print("ERROR: invalid URI: %d" % uri)
+                print(("ERROR: invalid URI: %d" % uri))
                 exit()
         else:
             # NameServer o BigBrother
@@ -87,7 +87,7 @@ class ClientRobot(object):
                 bb_uri = ns.lookup("bigbrother")
                 bb = utils.get_pyro4proxy(bb_uri, self.bigbrother_passw)
                 robot_uri = bb.lookup(self.name)
-                print robot_uri
+                print(robot_uri)
             except Pyro4.errors.NamingError:  # Busco en NS de robot anonimo
                 robot_uri = ns.lookup(self.name)
             try:
@@ -99,8 +99,8 @@ class ClientRobot(object):
                 proxys = self.node.get_uris()
                 # print proxys
             except Exception:
-                print("ERROR: Unable to obtain list of robot components: \
-                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
+                print(("ERROR: Unable to obtain list of robot components: \
+                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name)))
                 raise
                 os._exit(0)
 

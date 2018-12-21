@@ -1,4 +1,4 @@
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 
 
 def main():

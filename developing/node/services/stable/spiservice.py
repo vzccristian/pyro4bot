@@ -30,7 +30,7 @@ class spiservice (control.Control):
                 self.devices[device]=proxy
                 return True
             else:
-                print("Device {} in use".format(device))
+                print(("Device {} in use".format(device)))
                 return False
         else:
             return False

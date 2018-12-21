@@ -5,7 +5,7 @@
 # ____________developed by paco andres____________________
 
 
-from Platform import *
+from .Platform import *
 if HARDWARE == "RASPBERRY_PI":
     import smbus
     if PI_REVISION == 1:
@@ -34,13 +34,13 @@ class RPiI2C(object):
             if self.service is not None:
                 self.service.register(self.address,self.pyro4id)
         except:
-            print("ERROR: no i2c-{} bus loscated".format(BUS))
+            print(("ERROR: no i2c-{} bus loscated".format(BUS)))
 
     def detect_ports(self):
         addr = {}
         for device in range(128):
             try:
-                print self._bus.write_byte(device,0)
+                print(self._bus.write_byte(device,0))
                 addr[device] = []
             except:
                 pass

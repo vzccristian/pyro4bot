@@ -22,5 +22,5 @@ class fake(control.Control):
         while self.worker_run:
             if hasattr(self, 'aprils'):
                 self.detections.update(self.aprils)
-            print self.detections
+            print(self.detections)
             time.sleep(10)

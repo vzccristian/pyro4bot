@@ -43,7 +43,7 @@ class usbcam(control.Control):
     def subscribe(self, key, uri):
         try:
             self.subscriptors[key] = Pyro4.Proxy(uri)
-            print("arduino subcriptor %s %s" % (key, uri))
+            print(("arduino subcriptor %s %s" % (key, uri)))
             return True
         except:
             return False

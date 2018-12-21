@@ -42,9 +42,9 @@ class Searcher():
         self.socket_list = []
         try:
             interface_list = ni.interfaces()
-            interface_list.remove("lo")
-            interfaces = zip(
-                interface_list, get_all_ip_address(broadcast=True))
+            interface_list.remove("lo0")
+            interfaces = list(zip(
+                interface_list, get_all_ip_address(broadcast=True)))
             n = 0
             for interface in interfaces:
                 threading.Thread(target=self.send, args=(
@@ -85,5 +85,5 @@ class Searcher():
 
 if __name__ == '__main__':
     s = Searcher()
-    for r in s.robots.iteritems():
-        print r
+    for r in s.robots.items():
+        print(r)

@@ -4,9 +4,9 @@
 
 from node.libs import control
 import Pyro4
-import EPDDriver
+from . import EPDDriver
 import time
-import cStringIO as IO
+import io as IO
 import spidev as SPI
 from PIL import ImageFont, ImageDraw, Image
 # 3V3

@@ -1,5 +1,5 @@
 
-import platform
+from . import platform
 import re
 
 # Platform identification constants.

@@ -64,7 +64,7 @@ class ClientRobot(object):
                     self.ip + ":" + str(self.port_robot)
                 self.node = utils.get_pyro4proxy(uri, self.name)
             except Exception:
-                print("ERROR: invalid URI: %d" % uri)
+                print(("ERROR: invalid URI: %d" % uri))
                 exit()
         else:
             # NameServer o BigBrother
@@ -94,8 +94,8 @@ class ClientRobot(object):
             try:
                 proxys = self.node.get_uris()
             except Exception:
-                print("ERROR: Unable to obtain list of robot components: \
-                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
+                print(("ERROR: Unable to obtain list of robot components: \
+                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name)))
                 # os._exit(0)
                 # raise
         else:

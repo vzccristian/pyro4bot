@@ -33,14 +33,14 @@ class bluetooth_serial(control.Control):
             for cli in clients:
                 self.data =(cli,self.server.get_data(cli))
                 if self.data is not None:
-                    print("RECEV: ",self.data)
+                    print(("RECEV: ",self.data))
             #time.sleep(self.frec)
 
 
     def Discover(self):
         self.devices=self.server.discover_devices()
-        print self.devices
-        print("MAC: ",self.server.mac)
+        print(self.devices)
+        print(("MAC: ",self.server.mac))
 
 
     def sendMessageTo(self,mac,msg):

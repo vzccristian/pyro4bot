@@ -4,7 +4,7 @@ from node.libs import control
 import Pyro4
 import cv2
 import apriltag
-from itertools import izip
+
 import pprint
 
 CAM = 0
@@ -34,15 +34,15 @@ class apriltag_resolver(control.Control):
 
                     num_detections = len(detections)
                     if (showInfo):
-                        print 'Detected {} tags.\n'.format(num_detections)
+                        print('Detected {} tags.\n'.format(num_detections))
 
                     for i, detection in enumerate(detections):
                         list_detections.append(dict(detection._asdict()))
                         if (showInfo):
-                            print 'Detection {} of {}:'.format(i + 1, num_detections)
-                            print
-                            print detection.tostring(indent=2)
-                            print
+                            print('Detection {} of {}:'.format(i + 1, num_detections))
+                            print()
+                            print(detection.tostring(indent=2))
+                            print()
 
                     if (openWindow):
                         # Show image
@@ -71,5 +71,5 @@ class apriltag_resolver(control.Control):
                     break
                 detections = self.get_detections(frame, picamera=False, openWindow=True, showInfo=True)
                 for d in detections:
-                    print d["tag_family"], d["tag_id"]
+                    print(d["tag_family"], d["tag_id"])
                 time.sleep(0.1)

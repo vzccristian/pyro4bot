@@ -1,4 +1,4 @@
 #from libs import config, control, utils,inspection
-import libs
-import services
-import components
+from . import libs
+from . import services
+from . import components

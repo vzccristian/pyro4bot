@@ -7,7 +7,7 @@
 
 import operator
 import time
-from Platform import *
+from .Platform import *
 if HARDWARE == "RASPBERRY_PI":
     import spidev
     PORT = 0

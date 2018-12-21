@@ -4,11 +4,11 @@
 # _________collaboration with cristian vazquez____________
 
 import threading
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import numpy as np
 
 
@@ -57,16 +57,16 @@ for i in range(1, 200):
     laser = bot.laser.get_laser()
     mx = max(laser)
     ind = laser.index(mx)
-    print("laser:%s ind:%s" % (laser, ind))
+    print(("laser:%s ind:%s" % (laser, ind)))
     if ind == 0:
         # bot.base.Set_Vel(300,100)
-        print "izquierda"
+        print("izquierda")
     if ind == 1:
         # bot.base.Set_Vel(200,200)
-        print "centro"
+        print("centro")
     if ind == 2:
         # bot.base.Set_Vel(100,300)
-        print "derecha"
+        print("derecha")
     time.sleep(0.1)
 
 bot.base.set__vel(0, 0)

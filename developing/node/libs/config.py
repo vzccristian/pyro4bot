@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
-import os.path
-import utils
-import myjson
-from inspection import _modules, _modules_errors, _clases, import_module
+from . import utils
+from . import myjson
+from .inspection import _modules_errors, _clases
 from termcolor import colored
-import pprint
+
 
 def get_field(search_dict, field, enable=True):
     """
@@ -15,7 +14,7 @@ def get_field(search_dict, field, enable=True):
     provided.
     """
     fields_found = []
-    for key, value in search_dict.iteritems():
+    for key, value in search_dict.items():
         if key == field:
             if isinstance(value, list):
                 fields_found = fields_found + value
@@ -47,13 +46,13 @@ class Config:
         self.components_order = self.dependency(self.components)
 
     def set_lower_case(self):
-        self.conf = {k.lower(): self.conf[k] for k in self.conf.keys()}
+        self.conf = {k.lower(): self.conf[k] for k in list(self.conf.keys())}
         self.conf["node"] = {k.lower(): self.conf["node"][k] for k in
-                             self.conf["node"].keys()}
+                             list(self.conf["node"].keys())}
 
     def disable_lines(self):
-        for key in [x for x in self.conf.keys() if x != "node"]:
-            for k, v in self.conf[key].items():
+        for key in [x for x in list(self.conf.keys()) if x != "node"]:
+            for k, v in list(self.conf[key].items()):
                 if get_field(v, "enable") == [False]:
                     del(self.conf[key][k])
 
@@ -100,7 +99,7 @@ class Config:
             self.conf["node"]["bigbrother-password"] = "PyRobot"
 
         # Services and components config
-        for k, v in self.components.items() + self.services.items():
+        for k, v in list(self.components.items()) + list(self.services.items()):
             if "worker_run" not in v:
                 v["worker_run"] = True
             if "mode" not in v:
@@ -109,7 +108,7 @@ class Config:
                 v["frec"] = self.conf["node"]["def_frec"]
             v["docstring"] = {}
             v["exposed"] = {}
-        for k, v in self.services.items():
+        for k, v in list(self.services.items()):
             v["mode"] = "local"
 
         # Services configuration
@@ -117,18 +116,18 @@ class Config:
         for n in self.services:
             if _clases.get(self.services[n]["cls"], None) is not None:
                 if len(_clases[self.services[n]["cls"]]) > 1:
-                    print("Warning: there are many modules {} for class {}".format(
-                        _clases[self.services[n]["cls"]], self.services[n]["cls"]))
+                    print(("Warning: there are many modules {} for class {}".format(
+                        _clases[self.services[n]["cls"]], self.services[n]["cls"])))
                 self.services[n]["module"] = _clases[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
                     newservices[n] = self.services[n]
             else:
-                print(colored("ERROR: Class {} not found or error in Modules".format(
-                    self.services[n]["cls"]), "red"))
-                for k_error, error in _modules_errors.iteritems():
-                    print("Module {}: {}".format(k_error, error))
+                print((colored("ERROR: Class {} not found or error in Modules".format(
+                    self.services[n]["cls"]), "red")))
+                for k_error, error in _modules_errors.items():
+                    print(("Module {}: {}".format(k_error, error)))
                 exit()
             if ("-->") in self.services[n]:
                 sp = [self.node["name"] + "." +
@@ -149,14 +148,14 @@ class Config:
         for n in self.components:
             if _clases.get(self.components[n]["cls"], None) is not None:
                 if len(_clases[self.components[n]["cls"]]) > 1:
-                    print("Warning: there are many modules {} for class {}".format(
-                        _clases[self.components[n]["cls"]], self.components[n]["cls"]))
+                    print(("Warning: there are many modules {} for class {}".format(
+                        _clases[self.components[n]["cls"]], self.components[n]["cls"])))
                 self.components[n]["module"] = _clases[self.components[n]["cls"]][0]
             else:
-                print(colored("ERROR: Class {} not found or error in Modules".format(
-                    self.components[n]["cls"]), "red"))
-                for k_error, error in _modules_errors.iteritems():
-                    print("Module {}: {}".format(k_error, error))
+                print((colored("ERROR: Class {} not found or error in Modules".format(
+                    self.components[n]["cls"]), "red")))
+                for k_error, error in _modules_errors.items():
+                    print(("Module {}: {}".format(k_error, error)))
                 exit()
             self.components[n]["_services"] = list(self.services)
             if ("-->") in self.components[n]:
@@ -195,7 +194,7 @@ class Config:
                     condep.remove(i)
             nivel_dep += 1
         if nivel_dep == 20:
-            print "ERROR:there are unresolved dependencies", condep, "-->", dep_imcump
+            print("ERROR:there are unresolved dependencies", condep, "-->", dep_imcump)
             exit()
         return ser_order
 

@@ -11,16 +11,16 @@ class sfline(control.Control):
     __REQUIRED = ["i2cservice","Address","line"]
 
     def __init__(self):
-        print(self.i2cservice.status)
+        print((self.i2cservice.status))
         self.smbus=bot_I2C(self.Address,self.i2cservice,self.pyro4id)
-        print(self.i2cservice.status)
+        print((self.i2cservice.status))
 
         self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:
             self.line=self.read_analog()
-            print(self.line)
+            print((self.line))
             time.sleep(self.frec)
 
     @Pyro4.expose

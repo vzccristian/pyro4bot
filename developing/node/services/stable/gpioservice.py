@@ -28,20 +28,20 @@ class gpioservice(control.Control):
             set empty pwm and event_detect this funcionality no is implemented yet"""
         if self.gpio_mode == BCM:
             self.MAP = {x[1]: [k, x[0], self.HGPIO.get_function(x[1]), None]
-                         for k, x in gpioport.items() if x[1] != None}
+                         for k, x in list(gpioport.items()) if x[1] != None}
         else:
             self.MAP = {k: [k, x[0], self.HGPIO.get_function(k), None]
-                         for k, x in gpioport.items() if x[2] != None}
+                         for k, x in list(gpioport.items()) if x[2] != None}
 
     def status(self, pins=None, _str=False):
         if pins is None:
-            pins = self.MAP.keys()
+            pins = list(self.MAP.keys())
         if type(pins) not in (list, tuple):
             pins = (pins,)
         if _str:
-            return {k: [x[0], x[1], status[x[2]], x[3]] for (k, x) in self.MAP.items() if k in pins}
+            return {k: [x[0], x[1], status[x[2]], x[3]] for (k, x) in list(self.MAP.items()) if k in pins}
         else:
-            return {k: x for (k, x) in self.MAP.items() if k in pins}
+            return {k: x for (k, x) in list(self.MAP.items()) if k in pins}
 
     def setup(self, proxy, pins, mode, pull_up_down=PUD_OFF):
         """ set a pin list in service gpio with initial value.
@@ -52,7 +52,7 @@ class gpioservice(control.Control):
         notavailable = [
             x for x in pins if x in self.MAP and self.MAP[x][3] is not None]
         if len(notavailable) != 0:
-            print ("GPIO pins in use:", notavailable)
+            print(("GPIO pins in use:", notavailable))
             return False
         for k in pins:
             if k in self.MAP:
@@ -86,7 +86,7 @@ class gpioservice(control.Control):
             self.MAP[pin][3] = proxy
             return True
         else:
-            print "GPIO: Error no pin for PWM or not setup"
+            print("GPIO: Error no pin for PWM or not setup")
             return False
 
 

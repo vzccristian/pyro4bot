@@ -21,7 +21,7 @@ class mirror(control.Control):
     @Pyro4.oneway
     @control.flask("actuator")
     def set__vel(self, mi=1000, md=1000):
-        if "esclavo.ruedas" in self.deps.keys():
+        if "esclavo.ruedas" in list(self.deps.keys()):
             self.start_thread(self.deps["esclavo.ruedas"].stop())
             self.deps["ruedas"].set__vel(mi, md)
             try:

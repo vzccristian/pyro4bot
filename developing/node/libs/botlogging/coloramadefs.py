@@ -6,7 +6,7 @@ from colorama import Cursor, init, Fore, Back, Style
 import re
 init()
 STYLE = re.compile("\[[F,B,S][A-Z]\]")
-print(Style.RESET_ALL)
+print((Style.RESET_ALL))
 
 color = {"[FR]":Fore.RED,
          "[FY]":Fore.YELLOW,
@@ -50,7 +50,7 @@ def outlog(mesaje):
     colors=[ s for s in STYLE.findall(mesaje) if s in color]
     for s in colors:
         mesaje= mesaje.replace(s,color[s])
-    print(mesaje+Style.RESET_ALL)
+    print((mesaje+Style.RESET_ALL))
 
 def rawlog(mesaje):
     colors=[ s for s in STYLE.findall(mesaje) if s in color]
