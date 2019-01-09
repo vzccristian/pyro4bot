@@ -8,13 +8,13 @@ This module find in node all paCkages with ImportError and try to INSTALL
 with pip module.
 """
 import pip
-from node.libs.inspection import _modules_libs_errors, not_finded_modules
+from .node.libs.inspection import _modules_libs_errors, not_finded_modules
 
 print("# PYRO4BOT #")
 print("MODULES TO INSTALL:")
 modulestointall = not_finded_modules(_modules_libs_errors)
 for mod in modulestointall:
-    print(("\t{}".format(mod)))
+    print("\t{}".format(mod))
 if not modulestointall:
     print("All packages are up today.")
     exit()
