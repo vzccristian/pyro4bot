@@ -1,12 +1,12 @@
 import Pyro4
-from . import utils
+from developing.node.libs import utils
 import time
-from .publication import Publication
-from .subscription import Subscription, dict_to_class
+from developing.node.libs.publication import Publication
+from developing.node.libs.subscription import Subscription, dict_to_class
 import threading
 from threading import Thread
 from termcolor import colored
-from .botlogging import botlogging
+from developing.node.libs.botlogging import botlogging
 
 SECS_TO_CHECK_STATUS = 5
 

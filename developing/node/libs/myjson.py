@@ -1,4 +1,4 @@
-import simplejson
+import json as simplejson
 import re
 import collections
 

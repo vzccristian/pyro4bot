@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
-from . import utils
-from . import myjson
-from .inspection import _modules_errors, _clases
+
+from developing.node.libs import utils
+from developing.node.libs import myjson
+from developing.node.libs.inspection import _modules_errors, _clases
 from termcolor import colored
 
 

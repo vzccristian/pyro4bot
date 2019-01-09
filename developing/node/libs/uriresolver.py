@@ -3,7 +3,7 @@
 # ____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
 import time
-from node.libs import control, utils
+from developing.node.libs import control, utils
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
@@ -194,6 +194,7 @@ class uriresolver(control.Control):
                 raise
         else:
             if (self.usingBB):
+                #TODO: var ns is not inicialized here
                 ns.proxy(target, passw)
             else:
                 print((colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red")))
