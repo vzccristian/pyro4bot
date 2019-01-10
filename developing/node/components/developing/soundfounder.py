@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
-from node.libs import control
+from developing.node.libs import control
 import Pyro4
-from node.libs.gpio import *
+from developing.node.libs.gpio import *
 
 
 class sfline(control.Control):

@@ -3,8 +3,8 @@
 # this classes are an adaption of adafruit gpio class
 # support three diferent moderboards
 # ____________developed by paco andres____________________
-from node.libs.gpio.GPIO import HARDWARE
-from  node.libs.gpio.gpiodef import *
+from developing.node.libs.gpio.GPIO import HARDWARE
+from developing.node.libs.gpio.gpiodef import *
 
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio

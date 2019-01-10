@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # this classes are an adaption of adafruit gpio class
-# support three diferent moderboards
+# support three different motherboards
 # ____________developed by paco andres____________________
+import time
+from developing.node.libs.gpio.Platform import *
 
-
-from .Platform import *
 if HARDWARE == "RASPBERRY_PI":
     import smbus
     if PI_REVISION == 1:

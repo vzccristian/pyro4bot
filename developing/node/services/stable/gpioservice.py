@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 
 import time
-from node.libs import control, utils
-from node.libs.gpio.GPIO import *
+from developing.node.libs import control, utils
+from developing.node.libs.gpio.GPIO import HARDWARE, GPIOCLS
 import Pyro4
 
 

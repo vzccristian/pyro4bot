@@ -4,10 +4,10 @@
 # support three diferent moderboards
 # ____________developed by paco andres____________________
 
-from .Platform import HARDWARE
+from developing.node.libs.gpio.Platform import *
 import Pyro4
-from node.libs.gpio.gpiodef import *
-from node.libs.gpio.PWM import *
+from developing.node.libs.gpio.gpiodef import *
+from developing.node.libs.gpio.PWM import *
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio
 

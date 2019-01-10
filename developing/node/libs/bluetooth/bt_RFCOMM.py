@@ -1,7 +1,9 @@
 #!/usr/bin/python
+import cmd
 import bluetooth
 from subprocess import Popen, PIPE
 import sys
+
 
 def GetFirstMAC():
     proc = Popen(['hcitool', 'dev'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
