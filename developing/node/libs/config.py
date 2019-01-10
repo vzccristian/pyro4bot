@@ -47,6 +47,7 @@ class Config:
 
     def set_lower_case(self):
         self.conf = {k.lower(): self.conf[k] for k in list(self.conf.keys())}
+        print(self.conf)
         self.conf["node"] = {k.lower(): self.conf["node"][k] for k in
                              list(self.conf["node"].keys())}
 

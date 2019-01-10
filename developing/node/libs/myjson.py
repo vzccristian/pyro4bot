@@ -1,4 +1,4 @@
-import json as simplejson
+import simplejson
 import re
 import collections
 
@@ -25,7 +25,7 @@ class MyJson(object):
             exit(0)
         except Exception:
             print(("ERROR: loading %s" % (filename)))
-            exit(0)
+           # exit(0)
         return json
 
     def del_coments(self, data, ch="#"):

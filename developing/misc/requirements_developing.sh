@@ -7,4 +7,4 @@ sudo apt install atom
 pip3 install opencv-python
 pip3 install -r "requirements.txt"
 sudo apt install git
-sudo easy_install green
+sudo pip3 install green
