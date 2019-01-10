@@ -124,12 +124,12 @@ def show_warnings(modules_errors):
 print("INSPECTING MODULES...")
 # _modules is a list of all components and services in pyro4bot
 # TODO: check if it works
-_modules = get_modules(("developing.node.services", "developing.node.components"))
+_modules = get_modules(("node.services", "node.components"))
 _clases, _modules_errors = get_all_class(_modules)
 
 # it is a list of all modules in system pyro4bot
 # TODO: check if it works
-_modules_libs = get_modules(("developing.node.libs", "developing.node.node"))
+_modules_libs = get_modules(("node.libs", "node.node"))
 _clases_libs, _modules_libs_errors = get_all_class(_modules_libs)
 
 if __name__ == "__main__":

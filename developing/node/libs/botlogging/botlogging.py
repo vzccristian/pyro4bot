@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # ________in collaboration with cristian vazquez _________
-from developing.node.libs.botlogging.coloramadefs import *
+from node.libs.botlogging.coloramadefs import *
 import logging
 
 class Logging(logging.Logger):

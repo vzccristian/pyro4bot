@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
-from developing.node.libs import control
+from node.libs import control
 import Pyro4
 
 

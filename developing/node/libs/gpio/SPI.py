@@ -7,7 +7,7 @@
 
 import operator
 import time
-from developing.node.libs.gpio.Platform import *
+from node.libs.gpio.Platform import *
 if HARDWARE == "RASPBERRY_PI":
     import spidev
     PORT = 0

@@ -3,7 +3,7 @@
 # ____________developed by paco andres____________________
 # All datas defined in json configuration are atributes in your code object
 import time
-from developing.node.libs import control, utils
+from node.libs import control, utils
 import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored

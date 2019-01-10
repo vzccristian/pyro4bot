@@ -4,9 +4,9 @@
 # _________collaboration with cristian vazquez____________
 # All datas defined in json configuration are atributes in your code object
 import time
-from developing.node.libs import control
+from node.libs import control
 import Pyro4
-from developing.node.libs.gpio.SPI import *
+from node.libs.gpio.SPI import *
 
 
 @Pyro4.expose

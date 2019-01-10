@@ -5,9 +5,9 @@
 # All datas defined in json configuration are atributes in your code object
 
 import time
-from developing.node.libs import control
+from node.libs import control
 import Pyro4
-from developing.node.libs.gpio.I2C import *
+from node.libs.gpio.I2C import *
 
 
 @Pyro4.expose

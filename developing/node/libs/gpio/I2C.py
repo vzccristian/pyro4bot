@@ -4,7 +4,7 @@
 # support three different motherboards
 # ____________developed by paco andres____________________
 import time
-from developing.node.libs.gpio.Platform import *
+from node.libs.gpio.Platform import *
 
 if HARDWARE == "RASPBERRY_PI":
     import smbus

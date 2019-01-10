@@ -4,7 +4,7 @@
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
 import time
-from developing.node.libs import control, subscription, publication
+from node.libs import control, subscription, publication
 import serial
 import json
 import Pyro4

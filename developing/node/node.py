@@ -4,13 +4,13 @@
 # ________in collaboration with cristian vazquez _________
 
 import time
-from developing.node.libs import control, utils, uriresolver
+from node.libs import control, utils, uriresolver
 from multiprocessing import Process, Pipe
 import traceback
 import Pyro4
 from termcolor import colored
 import setproctitle
-from developing.node.libs.inspection import _modules_libs_errors, show_warnings
+from node.libs.inspection import _modules_libs_errors, show_warnings
 
 show_warnings(_modules_libs_errors)
 _LOCAL_TRYS = 5

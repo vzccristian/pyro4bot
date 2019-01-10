@@ -9,7 +9,7 @@ from multiprocessing import Process, Pipe
 import setproctitle
 import os
 from queue import Queue
-from developing.node.libs import utils, control, config
+from node.libs import utils, control, config
 # from .node import *
 
 

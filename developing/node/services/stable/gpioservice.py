@@ -5,8 +5,8 @@
 # All data defined in json configuration are attributes in your code object
 
 import time
-from developing.node.libs import control, utils
-from developing.node.libs.gpio.GPIO import HARDWARE, GPIOCLS
+from node.libs import control, utils
+from node.libs.gpio.GPIO import HARDWARE, GPIOCLS
 import Pyro4
 
 
