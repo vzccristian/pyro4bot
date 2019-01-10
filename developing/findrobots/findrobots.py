@@ -64,12 +64,12 @@ class Searcher():
             socket.AF_INET, socket.SOCK_DGRAM))
         self.socket_list[n].bind(('', 0))
         self.socket_list[n].setsockopt(
-            socket.SOL_SOCKET, socket.SO_BROADCAST, interface[0] + '\0')
+            socket.SOL_SOCKET, socket.SO_BROADCAST, (interface[0] + '\0').encode())
         self.socket_list[n].settimeout(TIMEOUT + 1)
         # print('sending to: {}'.format(PORT))
         while (not stop_event.is_set()):
             self.data = 'hi pyro4bot'
-            self.socket_list[n].sendto(self.data, (interface[1], PORT))
+            self.socket_list[n].sendto(self.data.encode(), (interface[1], PORT))
             time.sleep(1)
 
     def locate(self, stop_event, n):
