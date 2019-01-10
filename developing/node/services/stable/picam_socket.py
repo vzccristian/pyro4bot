@@ -4,8 +4,8 @@
 # lock().acquire()
 #____________developed by cristian vazquez____________________
 import time
-from node.libs import control
-from node.libs import utils
+from developing.node.libs import control
+from developing.node.libs import utils
 from picamera import PiCamera
 from io import BytesIO
 import Pyro4
