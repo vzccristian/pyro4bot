@@ -87,3 +87,4 @@ if __name__ == '__main__':
     s = Searcher()
     for r in s.robots.items():
         print(r)
+        # TODO : in python3, it prints: "(('158.49.247.121', 56665), b'pyro4bot1/hello')" with that character 'b' before the name
