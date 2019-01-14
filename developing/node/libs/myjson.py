@@ -18,13 +18,14 @@ class MyJson(object):
             data = open(filename).read()
             data = self.del_coments(data)
             data = self.substitute_params(data)
-            json = simplejson.loads(data, object_hook=ascii_encode_dict)
+            # method ascii_encode_dict is just for Python 2, Python3 doesn't need that encoding -> it breaks using it.
+            json = simplejson.loads(data)
             json = self.load_dependencies(json) if (dependencies) else json
         except ValueError as e:
-            print(("ERROR: JSON incorrectly described: " + str(e)))
+            print("ERROR: JSON incorrectly described: " + str(e))
             exit(0)
         except Exception:
-            print(("ERROR: loading %s" % (filename)))
+            print("ERROR: loading %s" % filename)
            # exit(0)
         return json
 
