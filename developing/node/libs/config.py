@@ -3,7 +3,7 @@
 # ____________developed by paco andres____________________
 
 from node.libs import utils, myjson
-from node.libs.inspection import _modules_errors, _clases
+from node.libs.inspection import _modules_errors, _classes
 from termcolor import colored
 
 
@@ -115,11 +115,11 @@ class Config:
         # Services configuration
         newservices = {}
         for n in self.services:
-            if _clases.get(self.services[n]["cls"], None) is not None:
-                if len(_clases[self.services[n]["cls"]]) > 1:
+            if _classes.get(self.services[n]["cls"], None) is not None:
+                if len(_classes[self.services[n]["cls"]]) > 1:
                     print(("Warning: there are many modules {} for class {}".format(
-                        _clases[self.services[n]["cls"]], self.services[n]["cls"])))
-                self.services[n]["module"] = _clases[self.services[n]["cls"]][0]
+                        _classes[self.services[n]["cls"]], self.services[n]["cls"])))
+                self.services[n]["module"] = _classes[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
@@ -147,11 +147,11 @@ class Config:
         newrobot = {}
         # Components configuration
         for n in self.components:
-            if _clases.get(self.components[n]["cls"], None) is not None:
-                if len(_clases[self.components[n]["cls"]]) > 1:
+            if _classes.get(self.components[n]["cls"], None) is not None:
+                if len(_classes[self.components[n]["cls"]]) > 1:
                     print(("Warning: there are many modules {} for class {}".format(
-                        _clases[self.components[n]["cls"]], self.components[n]["cls"])))
-                self.components[n]["module"] = _clases[self.components[n]["cls"]][0]
+                        _classes[self.components[n]["cls"]], self.components[n]["cls"])))
+                self.components[n]["module"] = _classes[self.components[n]["cls"]][0]
             else:
                 print((colored("ERROR: Class {} not found or error in Modules".format(
                     self.components[n]["cls"]), "red")))
@@ -212,14 +212,14 @@ class Config:
 
     def whithout_deps(self, part):
         """
-         Return components or services whihout dependencies
+         Return components or services without dependencies
          part can be component or services
         """
         return [x for x in part if not get_field(part[x], "-->")]
 
     def with_deps(self, part):
         """
-         Return components or services whih dependencies.
+         Return components or services with dependencies.
          part can be component or services
         """
         return [x for x in part if get_field(part[x], "-->")]

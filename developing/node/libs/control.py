@@ -229,13 +229,13 @@ class Control(botlogging.Logging):
                                                         # print "Mando suscripcion a {}".format(dp)
                                                         dp.subscribe(subscription.get())
                                                         added_list.append(dp)
-                                                    except Exception:
+                                                    except Exception as ex:
                                                         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                                                         print(template.format(type(ex).__name__, ex.args))
                                 for dp in self.deps[subscription.target]:
                                     try:
                                         dp.subscribe(subscription.get())
-                                    except Exception:
+                                    except Exception as ex:
                                         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
                                         print(template.format(type(ex).__name__, ex.args))
                             else:
@@ -352,7 +352,7 @@ class Control(botlogging.Logging):
                 if (self._unr_remote_deps is not None):
                     if k in self._unr_remote_deps:
                         self._unr_remote_deps.remove(k)
-            except Exception:
+            except Exception as ex:
                 template = "[control.add_resolved_remote_dep()] An exception of type {0} occurred. Arguments:\n{1!r}"
                 print(template.format(type(ex).__name__, ex.args))
             self.check_remote_deps()
@@ -374,7 +374,7 @@ class Control(botlogging.Logging):
                 else:
                     if (self.deps[k]._pyroHandshake != "hello"):
                         status = False
-            except Exception:
+            except Exception as ex:
                 print(("Error connecting to dep: {} ".format(k)))
                 template = "[check_remote_deps] An exception of type {0} occurred. Arguments:\n{1!r}"
                 print(template.format(type(ex).__name__, ex.args))
