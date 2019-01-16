@@ -21,8 +21,8 @@ def explore_package(module_name):
     """
     modules = []
     loader = pkgutil.get_loader(module_name)
-    for sub_module in pkgutil.walk_packages([loader.path]):
-        a, sub_module_name, b = sub_module
+    loader.filename = loader.path[:-12] if '/__init__.py' in loader.path else loader.path
+    for a, sub_module_name, b in pkgutil.walk_packages([loader.filename]):
         qname = module_name + "." + sub_module_name
         modules.append(qname)
         if b:
