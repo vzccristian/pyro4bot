@@ -262,7 +262,7 @@ class Robot(control.Control):
             # Daemon proxy for sensor
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
-            daemon._pyroHmacKey = bytes(self.node["password"])
+            daemon._pyroHmacKey = bytes(self.node["password"],'utf8')
 
             proc_pipe.send("CONTINUE")
             deps = utils.prepare_proxys(d, self.node["password"])
