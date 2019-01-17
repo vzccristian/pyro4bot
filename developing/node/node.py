@@ -28,6 +28,7 @@ def import_class(services, components):
     for module, cls in services:
         try:
             print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
+            # TODO : change that "node.{}" to the actual reference.
             exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
@@ -37,6 +38,7 @@ def import_class(services, components):
     for module, cls in components:
         try:
             print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
+            # TODO : change that "node.{}" to the actual reference.
             exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
