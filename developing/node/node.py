@@ -3,14 +3,17 @@
 # ____________developed by paco andres____________________
 # ________in collaboration with cristian vazquez _________
 
+import os
 import time
-from node.libs import control, utils, uriresolver
-from multiprocessing import Process, Pipe
+from node.libs import config, control, utils, uriresolver
+from multiprocessing import Process, Pipe, Queue
+import threading
 import traceback
 import Pyro4
 from termcolor import colored
 import setproctitle
 from node.libs.inspection import _modules_libs_errors, show_warnings
+import pprint
 
 show_warnings(_modules_libs_errors)
 _LOCAL_TRYS = 5
@@ -25,7 +28,7 @@ def import_class(services, components):
     for module, cls in services:
         try:
             print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
-            exec("from {} import {}".format(module, cls), globals())
+            exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
             traceback.print_exc()
@@ -34,7 +37,7 @@ def import_class(services, components):
     for module, cls in components:
         try:
             print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
-            exec("from {} import {}".format(module, cls), globals())
+            exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
             traceback.print_exc()
