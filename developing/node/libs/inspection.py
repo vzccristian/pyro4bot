@@ -100,7 +100,7 @@ def import_module(module):
 
 def module_packages_not_found(modules):
     """
-    Ŕeturn all modules imported in modules that is no found
+    Return all modules imported in modules that is no found
     """
     # return [m for m in modules if pkg in get_packages_not_found(m)]
     x = set()

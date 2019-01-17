@@ -278,3 +278,11 @@ class Config:
         rob["components_order"] = self.components_order
         rob["imports"] = self.get_imports()
         return rob
+
+    @services.setter
+    def services(self, value):
+        self._services = value
+
+    @components.setter
+    def components(self, value):
+        self._components = value
