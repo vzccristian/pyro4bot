@@ -7,6 +7,7 @@ import Pyro4
 from termcolor import colored
 from multiprocessing import Process, Pipe
 import setproctitle
+from .node import Robot
 import os
 from queue import Queue
 from node.libs import utils, control, config
@@ -26,7 +27,7 @@ def start_node(robot, proc_pipe, msg):
 
         daemon = Pyro4.Daemon(
             host=robot["node"]["ip"], port=robot["node"]["port_node"])
-        daemon._pyroHmacKey = bytes(robot["node"]["password"])
+        daemon._pyroHmacKey = bytes(robot["node"]["password"], "utf8")
 
         pyro4bot_class = control.Pyro4bot_Loader(globals()["Robot"], **robot)
         new_object = pyro4bot_class()
