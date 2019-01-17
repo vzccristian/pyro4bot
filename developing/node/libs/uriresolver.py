@@ -10,6 +10,7 @@ from termcolor import colored
 import threading
 import os
 import sys
+
 ROUTER_PASSWORD = "PyRobot"
 ROUTER_IP = "192.168.10.1"
 ROUTER_PORT = "6060"
@@ -52,7 +53,7 @@ class uriresolver(control.Control):
             self.port = utils.get_free_port(self.port)
             self.daemonproxy = Pyro4.Daemon(
                 host="127.0.0.1", port=self.port)  # Daemon proxy for NODE
-            self.daemonproxy._pyroHmacKey = bytes(self.password)
+            self.daemonproxy._pyroHmacKey = bytes(self.password, 'utf8')
             self.daemonproxy.requestLoop()
         except Pyro4.errors.ConnectionClosedError:
             print("Error al conectar al proxy")
@@ -76,9 +77,10 @@ class uriresolver(control.Control):
             name = self.botName + ".URI_resolv"
             # Registering uriresolver
             self.uri = self.daemonproxy.register(self, objectId=name)
+
             # Getting proxy
             self.proxy = Pyro4.Proxy(self.uri)
-            self.proxy._pyroHmacKey = bytes(self.password)
+            self.proxy._pyroHmacKey = bytes(self.password, 'utf8')
         except Exception:
             print("ERROR: register_uriresolver in uriresolver.py")
 
