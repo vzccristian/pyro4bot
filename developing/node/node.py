@@ -83,10 +83,18 @@ class Robot(control.Control):
         print((colored("\t|", "yellow")))
         print((colored("\t|", "yellow")))
         print((colored("\t+-----> COMPONENTS", "yellow")))
+
+        print('\n\n\t node/start_components(self): \t', self.components, '   ', self.components_order)
+
         self.load_objects(self.components, self.components_order)
+
+        print("after load_objects (components)")
 
     def load_objects(self, parts, object_robot):
         """Execute the components or services of the node."""
+
+        print("before loop k in object_robot")
+
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRYS
             parts[k]["_remote_trys"] = _REMOTE_TRYS
@@ -97,14 +105,25 @@ class Robot(control.Control):
             parts[k]["_unresolved_services"] = list(
                 parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
+
+
         errors = False
+
+        print("after that loop, there's another similar loop")
+
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print((colored("ERROR: class {} require {} for {}  ".
                               format(parts[k]["cls"], parts[k]["_non_required"], k), "red")))
                 errors = True
+
+        print("loops finished, now an if")
+
         if errors:
             exit()
+
+        print("and after this, a while loop")
+
         while object_robot != []:
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
@@ -137,6 +156,8 @@ class Robot(control.Control):
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
                 self.pre_start_pyro4bot_object(k, parts[k])
+
+        print("we're out of the while loop")
 
     def check_deps(self, k, obj):
         """Check the dependencies of the robot."""
@@ -329,8 +350,16 @@ class Robot(control.Control):
         requireds = self.get_class_REQUIRED(obj["cls"])
         connectors = obj.get("_services", []) + obj.get("_locals", [])
         keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
-        unfulfilled = [x for x in requireds if x not in
-                       [x.split(".")[1] for x in connectors] + keys]
+
+        print("requireds:", type(requireds), ' - ', requireds, '  \n -  conn: ', type(connectors), '    -  ', connectors)
+
+        # TODO : delete 'learnbot.' from connector and finally fix it.
+        connectors = ['learnbot.' + con for con in connectors]
+
+        print("requireds:", type(requireds), ' - ', requireds, '  \n -  conn: ', type(connectors), '    -  ', connectors)
+
+        unfulfilled = [req for req in requireds if req not in
+                       [con.split(".")[1] for con in connectors] + keys]
         return unfulfilled
 
     def register_node(self):

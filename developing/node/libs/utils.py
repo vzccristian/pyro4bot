@@ -181,7 +181,11 @@ def prepare_proxys(part, own_password):
     Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
     injects = {}
     part["deps"] = {}
+
     if "name" in part:
+        print("\n prepare proxyyys", part["name"])
+        part["name"] = "learnbot." + part["name"]
+        print(part["name"], "\n\n")
         part["botname"], part["name"] = part["name"].split(".")
     if "uriresolver" in part:
         part["uriresolver"] = get_pyro4proxy(part["uriresolver"], own_password)

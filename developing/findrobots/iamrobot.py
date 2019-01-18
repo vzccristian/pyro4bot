@@ -2,6 +2,7 @@ import sys
 import socket
 import netifaces as ni
 import time
+
 PORT = 56665
 
 
@@ -21,27 +22,27 @@ def get_all_ip_address():
             except Exception:
                 pass
     except Exception:
-        #print("ERROR: get_all_ip_address()")
+        print("ERROR: get_all_ip_address()")
         return None
     return address
 
-class Robot():
+
+class Robot:
     def __init__(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.s.bind(('', PORT))
         # print('{} -> listening on port: {}'.format(get_all_ip_address()
-                                                  # [0], self.s.getsockname()[1]))
+        # [0], self.s.getsockname()[1]))
         self.listener()
-
 
     def listener(self):
         while 1:
             data, wherefrom = self.s.recvfrom(1500, 0)
-            if data=="hi pyro4bot":
+            if data == "hi pyro4bot":
                 # print("From: {}:{} --> {}".format(
                 #     wherefrom[0], wherefrom[1], data))
-                self.s.sendto(str(socket.gethostname() + "/" + "hello"),
-                     (wherefrom[0], wherefrom[1]))
+                self.s.sendto(bytes(socket.gethostname() + "/" + "hello", 'utf8'),
+                              (wherefrom[0], wherefrom[1]))
             time.sleep(1)
 
 

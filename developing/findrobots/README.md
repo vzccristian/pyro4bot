@@ -18,8 +18,8 @@ sudo service iamrobot start
 sudo service iamrobot restart
 sudo service iamrobot stop
 
-# How to search a robots
+# How to search robots
 
 Just execute findrobots.py
 
-python findrobots.py
+python3 findrobots.py

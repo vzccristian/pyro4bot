@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python /lib/systemd/system/iamrobot.py
+ExecStart=/usr/bin/python3 /lib/systemd/system/iamrobot.py
 Restart=on-abort
 
 [Install]

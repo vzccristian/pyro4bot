@@ -10,6 +10,7 @@ import netifaces as ni
 PORT = 56665
 TIMEOUT = 5
 
+
 def get_all_ip_address(broadcast=False):
     """Return the list of IPs of all network interfaces.
 
@@ -75,7 +76,7 @@ class Searcher():
     def locate(self, stop_event, n):
         # print self.socket_list[n].getsockname()
         # print('listening from port: {}'.format(self.socket_list[n].getsockname()[1]))
-        while (not stop_event.is_set()):
+        while not stop_event.is_set():
             try:
                 data, wherefrom = self.socket_list[n].recvfrom(1500, 0)
                 self.robots[wherefrom] = data
