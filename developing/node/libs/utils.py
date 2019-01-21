@@ -184,6 +184,7 @@ def prepare_proxys(part, own_password):
 
     if "name" in part:
         print("\n prepare proxyyys", part["name"])
+        # TODO : change "learnbot." for the current robot name
         part["name"] = "learnbot." + part["name"]
         print(part["name"], "\n\n")
         part["botname"], part["name"] = part["name"].split(".")

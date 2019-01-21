@@ -318,7 +318,7 @@ class Robot(control.Control):
         return docstring
 
     def get_class_REQUIRED(self, cls):
-        """Return a list of requeriments if cls has __REQUIRED class attribute."""
+        """Return a list of requirements if cls has __REQUIRED class attribute."""
         try:
             dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
             return dic_cls
@@ -327,20 +327,16 @@ class Robot(control.Control):
 
     def check_requireds(self, obj):
         """
-        For a given obj this method calc requeriments class and
-        get unfulfilled requeriments for an obj
+        For a given obj this method calc requirements class and
+        get unfulfilled requirements for an obj
         inside _service and _local find on left side string.
         """
         requireds = self.get_class_REQUIRED(obj["cls"])
         connectors = obj.get("_services", []) + obj.get("_locals", [])
         keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
 
-        print("requireds:", type(requireds), ' - ', requireds, '  \n -  conn: ', type(connectors), '    -  ', connectors)
-
         # TODO : delete 'learnbot.' from connector and finally fix it.
         connectors = ['learnbot.' + con for con in connectors]
-
-        print("requireds:", type(requireds), ' - ', requireds, '  \n -  conn: ', type(connectors), '    -  ', connectors)
 
         unfulfilled = [req for req in requireds if req not in
                        [con.split(".")[1] for con in connectors] + keys]
