@@ -22,26 +22,26 @@ _REMOTE_TRYS = 5
 
 def import_class(services, components):
     """ Import necesary packages for Robot"""
-    print((colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
-                  'yellow')))
+    print(colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
+                  'yellow'))
     print(" SERVICES:")
     for module, cls in services:
         try:
-            print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
+            print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
             # TODO : change that "node.{}" to the actual reference.
             exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
-            print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
             exit(0)
     print(" COMPONENTS:")
     for module, cls in components:
         try:
-            print((colored("      FROM {} IMPORT {}".format(module, cls), "cyan")))
+            print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
             # TODO : change that "node.{}" to the actual reference.
             exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
-            print(("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module)))
+            print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
             exit(0)
     print("")
@@ -83,17 +83,10 @@ class Robot(control.Control):
         print((colored("\t|", "yellow")))
         print((colored("\t|", "yellow")))
         print((colored("\t+-----> COMPONENTS", "yellow")))
-
-        print('\n\n\t node/start_components(self): \t', self.components, '   ', self.components_order)
-
         self.load_objects(self.components, self.components_order)
-
-        print("after load_objects (components)")
 
     def load_objects(self, parts, object_robot):
         """Execute the components or services of the node."""
-
-        print("before loop k in object_robot")
 
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRYS
@@ -106,10 +99,7 @@ class Robot(control.Control):
                 parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
 
-
         errors = False
-
-        print("after that loop, there's another similar loop")
 
         for k in object_robot:
             if parts[k]["_non_required"]:
@@ -117,12 +107,8 @@ class Robot(control.Control):
                               format(parts[k]["cls"], parts[k]["_non_required"], k), "red")))
                 errors = True
 
-        print("loops finished, now an if")
-
         if errors:
             exit()
-
-        print("and after this, a while loop")
 
         while object_robot != []:
             k = object_robot.pop(0)
@@ -156,8 +142,6 @@ class Robot(control.Control):
                 del(parts[k]["_services_trys"])
                 del(parts[k]["_remote_trys"])
                 self.pre_start_pyro4bot_object(k, parts[k])
-
-        print("we're out of the while loop")
 
     def check_deps(self, k, obj):
         """Check the dependencies of the robot."""
@@ -408,7 +392,7 @@ class Robot(control.Control):
                     v[0], self.node["name"]).get_status()
             except Exception:
                 v[3] = "FAIL"
-            if ((onlyChanges and v[3] != old_status) or not onlyChanges):
+            if (onlyChanges and v[3] != old_status) or not onlyChanges:
                 if v[3] == "OK":
                     st = colored(v[3], 'green')
                 elif v[3] == "FAIL":
