@@ -59,12 +59,27 @@ def start_node(robot, proc_pipe, msg):
             "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow")))
         print(("[%s]  PYRO4BOT: %s" %
               (colored("OK", 'green'), uri_node)))
+
         new_object.start_components()
+
+        print("after start components")
+
         msg.put((uri_node, os.getpid()))
+
+        print("after msg.put")
+
         proc_pipe.send("OK")
 
+        print("we're here")
+
         new_object.register_node()
+
+        print("in the middle")
+
         daemon.requestLoop()
+
+        print("daemon request loop")
+
         print(("[%s] Final shutting %s" %
               (colored("Down", 'green'), uri_node)))
         os._exit(0)
