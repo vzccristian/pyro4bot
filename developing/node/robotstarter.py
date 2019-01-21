@@ -76,6 +76,19 @@ def start_node(robot, proc_pipe, msg):
 
         print("in the middle")
 
+        print("hellooo:    ", robot["node"]["name"])
+
+        print(daemon, '\t', type(daemon), '\t', daemon.locationStr)
+        print("hi")
+        print(daemon.locationStr)
+        print(daemon.housekeeper_lock)
+        print(daemon.natLocationStr)
+        print(daemon.objectsById)
+        print(daemon.streaming_responses)
+        print(daemon.transportServer)
+        print(daemon._pyroHmacKey)
+        print(daemon._pyroHmacKey.decode())
+
         daemon.requestLoop()
 
         print("daemon request loop")

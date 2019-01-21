@@ -49,8 +49,8 @@ def get_all_ip_address(broadcast=False):
                 pass
     except Exception:
         print("ERROR: utils.get_all_ip_address()")
-        raise
         exit()
+        raise
     return address
 
 
@@ -108,7 +108,7 @@ def get_free_port(port, interval=1, ip="127.0.0.1"):
     _port = port
     while not free_port(_port, ip=ip):
         _port += interval
-    return (_port)
+    return _port
 
 
 def uri_split(uri):
@@ -116,7 +116,7 @@ def uri_split(uri):
     name = uri[uri.find("PYRO:") + 5:uri.find("@")]
     ip = uri[uri.find("@") + 1:uri.find(":", 7)]
     port = int(uri[uri.find(":", 7) + 1:])
-    return (name, ip, port)
+    return name, ip, port
 
 
 def get_uri(name, ip, port):
@@ -128,9 +128,11 @@ def get_uri_name(uri):
     """Return name from Pyro4 URI."""
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
+
 def get_uri_base(uri):
     """ return base sensor from Pyro4 URI """
     return get_uri_name(uri).split(".")[1]
+
 
 def format_exception(e):
     """Representation of exceptions."""
@@ -182,15 +184,14 @@ def prepare_proxys(part, own_password):
     injects = {}
     part["deps"] = {}
 
-    if "name" in part:
-        print("\n prepare proxyyys", part["name"])
-        # TODO : change "learnbot." for the current robot name
-        part["name"] = "learnbot." + part["name"]
-        print(part["name"], "\n\n")
-        part["botname"], part["name"] = part["name"].split(".")
+    #   if "name" in part:
+    # TODO - delete learnbot
+    #       part["name"] = "learnbot." + part["name"]
+    #       part["botname"], part["name"] = part["name"].split(".")
     if "uriresolver" in part:
         part["uriresolver"] = get_pyro4proxy(part["uriresolver"], own_password)
     if "node" in part:
+        part["botname"] = part["node"].object
         part["node"] = get_pyro4proxy(part["node"], own_password)
     for d in part.get("_locals", []):
         (name, _, _) = uri_split(d)

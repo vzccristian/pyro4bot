@@ -21,7 +21,7 @@ _REMOTE_TRYS = 5
 
 
 def import_class(services, components):
-    """ Import necesary packages for Robot"""
+    """ Import necessary packages for Robot"""
     print(colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
                   'yellow'))
     print(" SERVICES:")
@@ -104,7 +104,7 @@ class Robot(control.Control):
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print((colored("ERROR: class {} require {} for {}  ".
-                              format(parts[k]["cls"], parts[k]["_non_required"], k), "red")))
+                               format(parts[k]["cls"], parts[k]["_non_required"], k), "red")))
                 errors = True
 
         if errors:
@@ -115,7 +115,8 @@ class Robot(control.Control):
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
 
             if st_local == "ERROR":
-                print("\t\t[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"]))
+                print("\t\t[%s]  NOT STARTING %s Error in locals %s" % (
+                    colored(st_local, 'red'), k, parts[k]["_unresolved_locals"]))
                 continue
 
             if "ERROR" in st_remote:
@@ -127,7 +128,8 @@ class Robot(control.Control):
                 continue
 
             if st_service == "ERROR":
-                print("\t\t[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"]))
+                print("\t\t[%s]  NOT STARTING %s Error in service %s" % (
+                    colored(st_remote, 'red'), k, parts[k]["_unresolved_services"]))
                 continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
@@ -218,7 +220,7 @@ class Robot(control.Control):
         return check_remote
 
     def pre_start_pyro4bot_object(self, name, obj):
-        """Prestarter for component."""
+        """Pre starter for component."""
         serv_pipe, client_pipe = Pipe()
         attemps = 5
         if "_locals" not in obj:
@@ -256,11 +258,12 @@ class Robot(control.Control):
             if status == "WAITING":
                 st = colored(status, 'yellow')
             if status == "ASYNC":
-                print("\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow')))
+                print("\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (
+                    colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow')))
             else:
                 print("\t\t[%s] STARTING %s" % (st, obj["pyro4id"]))
         else:
-            print(("ERROR: " + name + " is runing"))
+            print(("ERROR: " + name + " is running"))
 
     def start_pyro4bot_object(self, d, proc_pipe):
         """Start PYRO4BOT component."""
@@ -269,7 +272,7 @@ class Robot(control.Control):
             # Daemon proxy for sensor
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
-            daemon._pyroHmacKey = bytes(self.node["password"],'utf8')
+            daemon._pyroHmacKey = bytes(self.node["password"], 'utf8')
 
             proc_pipe.send("CONTINUE")
             deps = utils.prepare_proxys(d, self.node["password"])
@@ -301,7 +304,7 @@ class Robot(control.Control):
 
             daemon.requestLoop()
             print(("[%s] Shutting %s" %
-                  (colored("Down", 'green'), d["pyro4id"])))
+                   (colored("Down", 'green'), d["pyro4id"])))
         except Exception as e:
             proc_pipe.send("FAIL")
             print(("ERROR: creating sensor robot object: " + d["pyro4id"]))
@@ -335,8 +338,7 @@ class Robot(control.Control):
         connectors = obj.get("_services", []) + obj.get("_locals", [])
         keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
 
-        # TODO : delete 'learnbot.' from connector and finally fix it.
-        connectors = ['learnbot.' + con for con in connectors]
+        connectors = [self.node["name"] + '.' + con for con in connectors]
 
         unfulfilled = [req for req in requireds if req not in
                        [con.split(".")[1] for con in connectors] + keys]
@@ -370,7 +372,7 @@ class Robot(control.Control):
     @Pyro4.expose
     def shutdown(self):
         print((colored("____STOPPING PYRO4BOT %s_________" %
-                      self.node["name"], "yellow")))
+                       self.node["name"], "yellow")))
         for k, v in list(self.PROCESS.items()):
             try:
                 v[1].terminate()
