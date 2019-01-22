@@ -230,12 +230,18 @@ class Robot(control.Control):
         if name not in self.PROCESS:
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI_proxy.new_uri(name, obj["mode"])
+
+            print(name)
+
             obj["name"] = name
             obj["node"] = self.uri_node
             obj["uriresolver"] = self.URI_uri
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.start_pyro4bot_object, args=(obj, client_pipe)))
+
+            print("SELF.PROCESS: ", self.PROCESS[name], "   ", type(self.PROCESS[name]))
+
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
             self.PROCESS[name].append(obj["_REMOTE_STATUS"])
@@ -315,7 +321,7 @@ class Robot(control.Control):
         docstring = {}
         for key in [x for x in list(exposed.keys()) if x in ["methods", "oneway"]]:
             for m in exposed[key]:
-                if (m not in (dir(control.Control))):  # Exclude control methods
+                if m not in (dir(control.Control)):  # Exclude control methods
                     d = eval("new_object." + str(m) + ".__doc__")
                     docstring[m] = d
         return docstring
@@ -338,7 +344,8 @@ class Robot(control.Control):
         connectors = obj.get("_services", []) + obj.get("_locals", [])
         keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
 
-        connectors = [self.node["name"] + '.' + con for con in connectors]
+        # TODO
+        #   connectors = [self.node["name"] + '.' + con for con in connectors]
 
         unfulfilled = [req for req in requireds if req not in
                        [con.split(".")[1] for con in connectors] + keys]

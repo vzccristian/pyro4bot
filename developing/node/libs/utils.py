@@ -183,15 +183,11 @@ def prepare_proxys(part, own_password):
     Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
     injects = {}
     part["deps"] = {}
-
-    #   if "name" in part:
-    # TODO - delete learnbot
-    #       part["name"] = "learnbot." + part["name"]
-    #       part["botname"], part["name"] = part["name"].split(".")
+    if "name" in part:
+        part["botname"], part["name"] = part["name"].split(".")
     if "uriresolver" in part:
         part["uriresolver"] = get_pyro4proxy(part["uriresolver"], own_password)
     if "node" in part:
-        part["botname"] = part["node"].object
         part["node"] = get_pyro4proxy(part["node"], own_password)
     for d in part.get("_locals", []):
         (name, _, _) = uri_split(d)

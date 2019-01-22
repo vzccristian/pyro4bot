@@ -37,6 +37,9 @@ def get_field(search_dict, field, enable=True):
 
 class Config:
     def __init__(self, filename="", json=None):
+        self.services = None
+        self.components = None
+
         self.conf = json if (filename == "") else myjson.MyJson(
             filename, dependencies=True).json
 
@@ -137,7 +140,7 @@ class Config:
                 cp = [x for x in self.services[n]["-->"] if x.find(".") >= 0]
                 self.services[n]["-->"] = sp + cp  # esto se puede simplificar
 
-        self.services = newservices
+        self.conf["services"] = newservices
 
         for n in self.services:
                     self.services[n]["_locals"] = []
@@ -170,7 +173,7 @@ class Config:
             else:
                 newrobot[n] = self.components[n]
 
-        self.components = newrobot
+        self.conf["components"] = newrobot
 
         for n in self.components:
             self.components[n]["_locals"] = []
