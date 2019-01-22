@@ -62,25 +62,10 @@ def start_node(robot, proc_pipe, msg):
 
         new_object.start_components()
 
-        print("after start components")
-
         msg.put((uri_node, os.getpid()))
-
-        print("after msg.put")
-
         proc_pipe.send("OK")
-
-        print("we're here")
-
         new_object.register_node()
-
-        print("in the middle")
-
-        print(daemon, '\t', type(daemon))
-
         daemon.requestLoop()
-
-        print("daemon request loop")
 
         print(("[%s] Final shutting %s" %
               (colored("Down", 'green'), uri_node)))

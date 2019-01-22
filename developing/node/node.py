@@ -230,18 +230,12 @@ class Robot(control.Control):
         if name not in self.PROCESS:
             self.PROCESS[name] = []
             obj["pyro4id"] = self.URI_proxy.new_uri(name, obj["mode"])
-
-            print(name)
-
             obj["name"] = name
             obj["node"] = self.uri_node
             obj["uriresolver"] = self.URI_uri
             self.PROCESS[name].append(obj["pyro4id"])
             self.PROCESS[name].append(
                 Process(name=name, target=self.start_pyro4bot_object, args=(obj, client_pipe)))
-
-            print("SELF.PROCESS: ", self.PROCESS[name], "   ", type(self.PROCESS[name]))
-
             self.PROCESS[name][1].start()
             self.PROCESS[name].append(self.PROCESS[name][1].pid)
             self.PROCESS[name].append(obj["_REMOTE_STATUS"])
