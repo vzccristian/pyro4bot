@@ -27,7 +27,7 @@ def start_node(robot, proc_pipe, msg):
 
         daemon = Pyro4.Daemon(
             host=robot["node"]["ip"], port=robot["node"]["port_node"])
-        daemon._pyroHmacKey = bytes(robot["node"]["password"], "utf8")
+        daemon._pyroHmacKey = robot["node"]["password"].encode()
 
         pyro4bot_class = control.Pyro4bot_Loader(globals()["Robot"], **robot)
         new_object = pyro4bot_class()
@@ -76,18 +76,7 @@ def start_node(robot, proc_pipe, msg):
 
         print("in the middle")
 
-        print("hellooo:    ", robot["node"]["name"])
-
-        print(daemon, '\t', type(daemon), '\t', daemon.locationStr)
-        print("hi")
-        print(daemon.locationStr)
-        print(daemon.housekeeper_lock)
-        print(daemon.natLocationStr)
-        print(daemon.objectsById)
-        print(daemon.streaming_responses)
-        print(daemon.transportServer)
-        print(daemon._pyroHmacKey)
-        print(daemon._pyroHmacKey.decode())
+        print(daemon, '\t', type(daemon))
 
         daemon.requestLoop()
 

@@ -91,7 +91,7 @@ class bigbrother(object):
         if robots:
             for key, value in robots.items():
                 robotProxy = Pyro4.Proxy(value)
-                robotProxy._pyroHmacKey = bytes(key, 'utf8')
+                robotProxy._pyroHmacKey = key.encode()
                 try:
                     robot_uris = robotProxy.get_uris()  # Return list uris
                     new_robots[key] = robot_uris
@@ -140,7 +140,7 @@ class bigbrother(object):
             myport = utils.get_free_port(self.config["proxy_port"], ip=myip)
 
             daemon = Pyro4.Daemon(host=myip, port=myport)
-            daemon._pyroHmacKey = bytes(self.config["proxy_password"], 'utf8')
+            daemon._pyroHmacKey = self.config["proxy_password"].encode()
 
             daemon.PYRO_MAXCONNECTIONS = 20
 
@@ -420,7 +420,7 @@ class nameServer(object):
             time.sleep(1)
             self.private_pyro4ns = Pyro4.locateNS(
                 host="localhost",
-                hmac_key=bytes(self.config["nameserver_password"], 'utf8'))  # Private NS
+                hmac_key=self.config["nameserver_password"].encode())  # Private NS
 
             ip = utils.get_ip_address(ifname=self.config["interface"])
             self.pub_ns_t = threading.Thread(
@@ -439,7 +439,7 @@ class nameServer(object):
                 self.priv_ready = True
                 print((colored("Started private name server.", 'yellow')))
                 self.priv_nameserver = nm.startNSloop(
-                    host=host, hmac=bytes(passw, 'utf8'))
+                    host=host, hmac=passw.encode())
             else:  # Public NS
                 print((colored("Started public name server.", 'yellow')))
                 self.pub_nameserver = nm.startNSloop(host=host)

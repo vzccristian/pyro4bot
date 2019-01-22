@@ -171,7 +171,7 @@ def ping(uri):
 def get_pyro4proxy(uri, password):
     """Given a Pyro4 URI and a password, return the connection proxy."""
     proxy = Pyro4.Proxy(uri)
-    proxy._pyroHmacKey = bytes(password, 'utf8')
+    proxy._pyroHmacKey = password.encode()
     return proxy
 
 

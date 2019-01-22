@@ -53,7 +53,7 @@ class uriresolver(control.Control):
             self.port = utils.get_free_port(self.port)
             self.daemonproxy = Pyro4.Daemon(
                 host="127.0.0.1", port=self.port)  # Daemon proxy for NODE
-            self.daemonproxy._pyroHmacKey = bytes(self.password, 'utf8')
+            self.daemonproxy._pyroHmacKey = self.password.encode()
             self.daemonproxy.requestLoop()
         except Pyro4.errors.ConnectionClosedError:
             print("Error al conectar al proxy")
@@ -80,7 +80,7 @@ class uriresolver(control.Control):
 
             # Getting proxy
             self.proxy = Pyro4.Proxy(self.uri)
-            self.proxy._pyroHmacKey = bytes(self.password, 'utf8')
+            self.proxy._pyroHmacKey = self.password.encode()
         except Exception:
             print("ERROR: register_uriresolver in uriresolver.py")
 
