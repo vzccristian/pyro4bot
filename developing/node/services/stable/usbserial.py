@@ -47,8 +47,8 @@ class usbserial(control.Control):
 
     @Pyro4.oneway
     def command(self, com="ee"):
-        # print com
-        self.serial.write(com + "\r\n")
+        # print(com)
+        self.serial.write((com + "\r\n").encode())
 
     def get__all(self):
         return self.json
