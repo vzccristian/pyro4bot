@@ -6,7 +6,7 @@
 import time
 from node.libs import control, utils, token
 from node.libs.bluetooth import bt_RFCOMM
-import simplejson as json
+import json
 import Pyro4
 
 
@@ -25,23 +25,21 @@ class bluetooth_serial(control.Control):
         self.start_thread(self.server.clients_accept)
         self.start_worker(self.worker_reader)
         self.start_worker((self.Discover,))
-        #self.start_publisher(self.buffer,)
+        # self.start_publisher(self.buffer,)
 
     def worker_reader(self):
         while self.worker_run:
             clients = self.server.clients.copy()
             for cli in clients:
-                self.data =(cli,self.server.get_data(cli))
+                self.data =(cli, self.server.get_data(cli))
                 if self.data is not None:
-                    print("RECEV: ",self.data)
-            #time.sleep(self.frec)
-
+                    print("RECEV: ", self.data)
+            # time.sleep(self.frec)
 
     def Discover(self):
-        self.devices=self.server.discover_devices()
-        print self.devices
-        print("MAC: ",self.server.mac)
+        self.devices = self.server.discover_devices()
+        print(self.devices)
+        print("MAC: ", self.server.mac)
 
-
-    def sendMessageTo(self,mac,msg):
-      self.server.sendData(mac,msg)
+    def sendMessageTo(self, mac, msg):
+        self.server.sendData(mac, msg)

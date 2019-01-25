@@ -8,6 +8,7 @@ from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
 
+
 @Pyro4.expose
 class l298n(control.Control):
     """Control L298N through GPIO."""
@@ -23,7 +24,6 @@ class l298n(control.Control):
         self.motor_a.start(100)
         self.motor_b.start(100)
         self.stop()
-
 
     @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):

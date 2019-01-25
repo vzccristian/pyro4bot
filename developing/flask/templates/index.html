@@ -37,7 +37,6 @@
           </button>
           <a class="navbar-brand" href="#">Julio Acedo & Enrique Moguel</a>
         </div>
-
     </nav>
     {% if name %}
     {% if bot %}
@@ -71,7 +70,7 @@
 			<h2>{{ e }}</h2>
 			<!--p>{{bot.__dict__[e]}}</p-->
                         {% for f in bot[e].__exposed__()['methods'] %}
-                                {#% if f !=  '__exposed__' and f != '__docstring__' and bot[e].__docstring__()[f] != None %#}
+                                {#% if f !=  '__exposed__' and f != '__docstring__' and bot[e].__docstring__()[f] is not None %#}
                                 {% if f !=  '__exposed__' and f != '__docstring__' %}
                                         <div class="col-md-6">
                                             <h2>{{f}}</h2>

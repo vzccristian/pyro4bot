@@ -3,12 +3,14 @@
 # ____________developed by paco andres____________________
 # ________in collaboration with cristian vazquez _________
 
-import os
-from multiprocessing import Process, Pipe, Queue
 import Pyro4
 from termcolor import colored
+from multiprocessing import Process, Pipe, Queue
 import setproctitle
-from node import *
+from .node import Robot
+import os
+from node.libs import utils, control, config
+# from .node import *
 
 
 def start_node(robot, proc_pipe, msg):
@@ -24,7 +26,7 @@ def start_node(robot, proc_pipe, msg):
 
         daemon = Pyro4.Daemon(
             host=robot["node"]["ip"], port=robot["node"]["port_node"])
-        daemon._pyroHmacKey = bytes(robot["node"]["password"])
+        daemon._pyroHmacKey = robot["node"]["password"].encode()
 
         pyro4bot_class = control.Pyro4bot_Loader(globals()["Robot"], **robot)
         new_object = pyro4bot_class()
@@ -56,12 +58,14 @@ def start_node(robot, proc_pipe, msg):
             "____________STARTING PYRO4BOT NODE %s_______________________" % robot["node"]["name"], "yellow"))
         print("[%s]  PYRO4BOT: %s" %
               (colored("OK", 'green'), uri_node))
+
         new_object.start_components()
+
         msg.put((uri_node, os.getpid()))
         proc_pipe.send("OK")
-
         new_object.register_node()
         daemon.requestLoop()
+
         print("[%s] Final shutting %s" %
               (colored("Down", 'green'), uri_node))
         os._exit(0)

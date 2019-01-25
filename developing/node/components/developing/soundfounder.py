@@ -8,18 +8,18 @@ from node.libs.gpio import *
 
 class sfline(control.Control):
     """ soundfounder line follower  i2c mode"""
-    __REQUIRED = ["i2cservice","Address","line"]
+    __REQUIRED = ["i2cservice", "Address", "line"]
 
     def __init__(self):
         print(self.i2cservice.status)
-        self.smbus=bot_I2C(self.Address,self.i2cservice,self.pyro4id)
+        self.smbus = bot_I2C(self.Address, self.i2cservice, self.pyro4id)
         print(self.i2cservice.status)
 
         self.start_worker(self.worker)
 
     def worker(self):
         while self.worker_run:
-            self.line=self.read_analog()
+            self.line = self.read_analog()
             print(self.line)
             time.sleep(self.frec)
 
@@ -47,7 +47,7 @@ class sfline(control.Control):
         if raw_result:
             analog_result = [0, 0, 0, 0, 0]
             for i in range(0, 8):
-                high_byte = raw_result[i*2] << 8
-                low_byte = raw_result[i*2+1]
+                high_byte = raw_result[i * 2] << 8
+                low_byte = raw_result[i * 2 + 1]
                 analog_result[i] = high_byte + low_byte
             return analog_result

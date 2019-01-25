@@ -5,15 +5,14 @@
 
 import os
 import time
-from libs import config, control, utils, uriresolver
-from libs.exceptions import Errornode
+from node.libs import config, control, utils, uriresolver
 from multiprocessing import Process, Pipe, Queue
 import threading
 import traceback
 import Pyro4
 from termcolor import colored
 import setproctitle
-from libs.inspection import _modules_libs_errors, show_warnings
+from node.libs.inspection import _modules_libs_errors, show_warnings
 import pprint
 
 show_warnings(_modules_libs_errors)
@@ -22,14 +21,15 @@ _REMOTE_TRYS = 5
 
 
 def import_class(services, components):
-    """ Import necesary packages for Robot"""
+    """ Import necessary packages for Robot"""
     print(colored("\n____________IMPORTING CLASS FOR ROBOT______________________",
                   'yellow'))
     print(" SERVICES:")
     for module, cls in services:
         try:
             print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
-            exec("from {} import {}".format(module, cls), globals())
+            # TODO : change that "node.{}" to the actual reference.
+            exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
@@ -38,7 +38,8 @@ def import_class(services, components):
     for module, cls in components:
         try:
             print(colored("      FROM {} IMPORT {}".format(module, cls), "cyan"))
-            exec("from {} import {}".format(module, cls), globals())
+            # TODO : change that "node.{}" to the actual reference.
+            exec("from node.{} import {}".format(module, cls), globals())
         except Exception:
             print("ERROR IMPORTING CLASS: {} FROM MODULE {}".format(cls, module))
             traceback.print_exc()
@@ -86,6 +87,7 @@ class Robot(control.Control):
 
     def load_objects(self, parts, object_robot):
         """Execute the components or services of the node."""
+
         for k in object_robot:
             parts[k]["_local_trys"] = _LOCAL_TRYS
             parts[k]["_remote_trys"] = _REMOTE_TRYS
@@ -96,32 +98,38 @@ class Robot(control.Control):
             parts[k]["_unresolved_services"] = list(
                 parts[k].get("_services", []))
             parts[k]["_non_required"] = self.check_requireds(parts[k])
+
         errors = False
+
         for k in object_robot:
             if parts[k]["_non_required"]:
                 print(colored("ERROR: class {} require {} for {}  ".
                               format(parts[k]["cls"], parts[k]["_non_required"], k), "red"))
                 errors = True
+
         if errors:
             exit()
+
         while object_robot != []:
             k = object_robot.pop(0)
             st_local, st_remote, st_service = self.check_deps(k, parts[k])
 
             if st_local == "ERROR":
-                print "\t\t[%s]  NOT STARTING %s Error in locals %s" % (colored(st_local, 'red'), k, parts[k]["_unresolved_locals"])
+                print("\t\t[%s]  NOT STARTING %s Error in locals %s" % (
+                    colored(st_local, 'red'), k, parts[k]["_unresolved_locals"]))
                 continue
 
             if "ERROR" in st_remote:
-                print "\t\t[{}] {} {} --> {}".format(
+                print("\t\t[{}] {} {} --> {}".format(
                     colored("ERROR", 'red'),
                     colored("NOT STARTING:", 'red'),
                     k,
-                    colored("".join(parts[k]["_unr_remote_deps"]), 'red'))
+                    colored("".join(parts[k]["_unr_remote_deps"]), 'red')))
                 continue
 
             if st_service == "ERROR":
-                print "\t\t[%s]  NOT STARTING %s Error in service %s" % (colored(st_remote, 'red'), k, parts[k]["_unresolved_services"])
+                print("\t\t[%s]  NOT STARTING %s Error in service %s" % (
+                    colored(st_remote, 'red'), k, parts[k]["_unresolved_services"]))
                 continue
             if st_local == "WAIT" or st_remote == "WAIT" or st_service == "WAIT":
                 object_robot.append(k)
@@ -130,11 +138,11 @@ class Robot(control.Control):
             if st_local == "OK" and st_service == "OK":
                 parts[k].pop("-->", None)
                 parts[k]["_REMOTE_STATUS"] = st_remote
-                del(parts[k]["_unresolved_locals"])
-                del(parts[k]["_local_trys"])
-                del(parts[k]["_unresolved_services"])
-                del(parts[k]["_services_trys"])
-                del(parts[k]["_remote_trys"])
+                del (parts[k]["_unresolved_locals"])
+                del (parts[k]["_local_trys"])
+                del (parts[k]["_unresolved_services"])
+                del (parts[k]["_services_trys"])
+                del (parts[k]["_remote_trys"])
                 self.pre_start_pyro4bot_object(k, parts[k])
 
     def check_deps(self, k, obj):
@@ -212,7 +220,7 @@ class Robot(control.Control):
         return check_remote
 
     def pre_start_pyro4bot_object(self, name, obj):
-        """Prestarter for component."""
+        """Pre starter for component."""
         serv_pipe, client_pipe = Pipe()
         attemps = 5
         if "_locals" not in obj:
@@ -233,7 +241,7 @@ class Robot(control.Control):
             self.PROCESS[name].append(obj["_REMOTE_STATUS"])
             status = serv_pipe.recv()
             status = "FAIL"
-            while (attemps > 0):
+            while attemps > 0:
                 try:
                     pxy = utils.get_pyro4proxy(
                         obj["pyro4id"], self.node["name"])
@@ -250,11 +258,12 @@ class Robot(control.Control):
             if status == "WAITING":
                 st = colored(status, 'yellow')
             if status == "ASYNC":
-                print "\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow'))
+                print("\t\t[%s] STARTING %s --> remotes dependencies in asynchronous mode with --> %s" % (
+                    colored(status, 'yellow'), name, colored(' '.join(obj["_unr_remote_deps"]), 'yellow')))
             else:
-                print "\t\t[%s] STARTING %s" % (st, obj["pyro4id"])
+                print("\t\t[%s] STARTING %s" % (st, obj["pyro4id"]))
         else:
-            print("ERROR: " + name + " is runing")
+            print("ERROR: " + name + " is running")
 
     def start_pyro4bot_object(self, d, proc_pipe):
         """Start PYRO4BOT component."""
@@ -263,7 +272,7 @@ class Robot(control.Control):
             # Daemon proxy for sensor
             daemon = Pyro4.Daemon(
                 host=ip, port=utils.get_free_port(ports, ip=ip))
-            daemon._pyroHmacKey = bytes(self.node["password"])
+            daemon._pyroHmacKey = self.node["password"].encode()
 
             proc_pipe.send("CONTINUE")
             deps = utils.prepare_proxys(d, self.node["password"])
@@ -299,20 +308,20 @@ class Robot(control.Control):
         except Exception as e:
             proc_pipe.send("FAIL")
             print("ERROR: creating sensor robot object: " + d["pyro4id"])
-            print utils.format_exception(e)
+            print(utils.format_exception(e))
 
     def get_docstring(self, new_object, exposed):
         """Return doc_string documentation in methods_and_docstring."""
         docstring = {}
-        for key in filter(lambda x: x in ["methods", "oneway"], exposed.keys()):
+        for key in [x for x in exposed.keys() if x in ["methods", "oneway"]]:
             for m in exposed[key]:
-                if (m not in (dir(control.Control))):  # Exclude control methods
+                if m not in (dir(control.Control)):  # Exclude control methods
                     d = eval("new_object." + str(m) + ".__doc__")
                     docstring[m] = d
         return docstring
 
     def get_class_REQUIRED(self, cls):
-        """Return a list of requeriments if cls has __REQUIRED class attribute."""
+        """Return a list of requirements if cls has __REQUIRED class attribute."""
         try:
             dic_cls = eval("{0}.__dict__['_{0}__REQUIRED']".format(cls))
             return dic_cls
@@ -321,15 +330,19 @@ class Robot(control.Control):
 
     def check_requireds(self, obj):
         """
-        For a given obj this method calc requeriments class and
-        get unfulfilled requeriments for an obj
+        For a given obj this method calc requirements class and
+        get unfulfilled requirements for an obj
         inside _service and _local find on left side string.
         """
         requireds = self.get_class_REQUIRED(obj["cls"])
         connectors = obj.get("_services", []) + obj.get("_locals", [])
         keys = list(obj.keys()) + obj.get("_resolved_remote_deps", [])
-        unfulfilled = [x for x in requireds if x not in
-                       map(lambda x:x.split(".")[1], connectors) + keys]
+
+        # TODO
+        #   connectors = [self.node["name"] + '.' + con for con in connectors]
+
+        unfulfilled = [req for req in requireds if req not in
+                       [con.split(".")[1] for con in connectors] + keys]
         return unfulfilled
 
     def register_node(self):
@@ -370,7 +383,7 @@ class Robot(control.Control):
 
     @Pyro4.expose
     def print_process(self, onlyChanges=False):
-        for k, v in self.PROCESS.iteritems():
+        for k, v in self.PROCESS.items():
             #  Update status
             try:
                 old_status = v[3]
@@ -378,7 +391,7 @@ class Robot(control.Control):
                     v[0], self.node["name"]).get_status()
             except Exception:
                 v[3] = "FAIL"
-            if ((onlyChanges and v[3] != old_status) or not onlyChanges):
+            if (onlyChanges and v[3] != old_status) or not onlyChanges:
                 if v[3] == "OK":
                     st = colored(v[3], 'green')
                 elif v[3] == "FAIL":

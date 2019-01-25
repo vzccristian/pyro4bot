@@ -4,11 +4,11 @@
 # _________collaboration with cristian vazquez____________
 
 import threading
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib
+from urllib import request, parse, error
 import numpy as np
 
 
@@ -26,7 +26,7 @@ def track(image):
         centroid_x = int(moments['m10'] / m00)
         centroid_y = int(moments['m01'] / m00)
     ctr = (-1, -1)
-    if centroid_x != None and centroid_y != None:
+    if centroid_x is not None and centroid_y is not None:
         ctr = (centroid_x, centroid_y)
         cv2.circle(image, ctr, 10, (255, 0, 0))
     return ctr, image
@@ -60,13 +60,13 @@ for i in range(1, 200):
     print("laser:%s ind:%s" % (laser, ind))
     if ind == 0:
         # bot.base.Set_Vel(300,100)
-        print "izquierda"
+        print("izquierda")
     if ind == 1:
         # bot.base.Set_Vel(200,200)
-        print "centro"
+        print("centro")
     if ind == 2:
         # bot.base.Set_Vel(100,300)
-        print "derecha"
+        print("derecha")
     time.sleep(0.1)
 
 bot.base.set__vel(0, 0)

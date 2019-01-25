@@ -1,6 +1,6 @@
-from Tkinter import *
-import ttk
-from misc.findrobots.findrobots import Searcher
+from tkinter import *
+import tkinter.ttk
+from developing.findrobots.findrobots import Searcher
 import pygubu
 from pexpect import pxssh
 
@@ -30,7 +30,7 @@ class GUI:
         # self.file_menu.add_command(label="Exit", command=exit)
         # self.menu_bar.add_cascade(label='File', menu=self.file_menu)
         # self.root.config(menu=self.menu_bar)
-        #self.robot_selection = StringVar()
+        # self.robot_selection = StringVar()
         # self.robots_list = OptionMenu(self.root, self.robot_selection, *self.found_robots_list())
         # self.robots_list.config(width=10)
         # self.robots_list.grid(row=1, column=1, sticky="ew")
@@ -52,7 +52,7 @@ class GUI:
         for i in r_list:
             robot_gui_list.option_add(END, i)
         robot_gui_list['state'] = DISABLED if r_list == ['-'] else NORMAL
-        print r_list
+        print(r_list)
 
 
 if __name__ == '__main__':

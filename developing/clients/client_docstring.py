@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import threading
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib
+from urllib import request, parse, error
 import numpy as np
 from PIL import Image
 import io
@@ -20,17 +20,17 @@ if __name__ == "__main__":
 
     bot = ClientRobot("alphabot_apriltag")
     # print bot.__dict__
-    print bot.alphapantilt.__dict__
+    print(bot.alphapantilt.__dict__)
     while True:
-        print "------------"
-        pan = raw_input('PAN: ')
-        tilt = raw_input('TILT: ')
+        print("------------")
+        pan = input('PAN: ')
+        tilt = input('TILT: ')
         try:
             int(pan)
             int(tilt)
-            bot.alphapantilt.set_pantilt(pan,tilt)
+            bot.alphapantilt.set_pantilt(pan, tilt)
         except ValueError:
-            print "Not a number"
+            print("Not a number")
         except Exception:
             raise
 

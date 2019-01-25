@@ -4,7 +4,7 @@
 # _________collaboration with cristian vazquez____________
 
 import threading
-from _client_robot import ClientRobot
+from ._client_robot import ClientRobot
 import time
 import cv2
 import numpy as np
@@ -22,9 +22,9 @@ class clientCamera(object):
         self.cam_t.start()
 
     def execute_camera(self):
-        print "Connecting to Server. Waiting for IP and PORT..."
+        print("Connecting to Server. Waiting for IP and PORT...")
         ip, port = self.cam.image()
-        print "Client: " + ip + ":" + str(port)
+        print("Client: " + ip + ":" + str(port))
         client_socket = socket.socket()
         try:
             client_socket.connect((ip, port))
@@ -40,7 +40,7 @@ class clientCamera(object):
                         '<L', connection.read(struct.calcsize('<L')))[0]
 
                     if not image_len:
-                        print "No image len"
+                        print("No image len")
                         break
                     image_stream.write(connection.read(image_len))
                     # Rewind the stream, open it as an image with PIL and do some
@@ -57,11 +57,11 @@ class clientCamera(object):
                     if cv2.waitKey(1) == 27:
                         exit(0)
             except Exception:
-                print "Error al recibir"
+                print("Error al recibir")
             finally:
                 connection.close()
         except Exception:
-            print "Error al conectar a " + ip + ":" + str(port)
+            print("Error al conectar a " + ip + ":" + str(port))
         finally:
             print("Exit")
             client_socket.close()

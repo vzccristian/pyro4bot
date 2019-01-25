@@ -6,8 +6,9 @@
 import time
 from node.libs import control, subscription, publication
 import serial
-import simplejson as json
+import json
 import Pyro4
+
 
 @Pyro4.expose
 class usbserial(control.Control):
@@ -27,8 +28,8 @@ class usbserial(control.Control):
         except Exception:
             print("error usbserial")
             raise
-        self.start_worker(self.worker_reader,)
-        self.start_publisher(self.buffer,)
+        self.start_worker(self.worker_reader, )
+        self.start_publisher(self.buffer, )
 
     def worker_reader(self):
         self.serial.flushInput()
@@ -47,8 +48,8 @@ class usbserial(control.Control):
 
     @Pyro4.oneway
     def command(self, com="ee"):
-        # print com
-        self.serial.write(com + "\r\n")
+        # print(com)
+        self.serial.write((com + "\r\n").encode())
 
     def get__all(self):
         return self.json
