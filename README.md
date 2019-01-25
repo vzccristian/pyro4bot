@@ -1,7 +1,7 @@
 # PYRO4BOT
 #### PYRO4BOT Developing Project
 
-Development of a DSL with the use of the **Pyro** library for Python, to run it on a robot built with Raspberry Pi and Arduino components.
+Development of a DSL with the use of the **Pyro** library for the Python programming language, to run it on a robot built with _Raspberry Pi_ and _Arduino_ components.
 
 
 ## Documentation
@@ -117,11 +117,11 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Authors
 
-* **Paco Andrés** - *Project manager* - @pacoandresh
-* **Cristian Vázquez** - @vzccristian
-* **José Manuel Agúndez** - @JMAgundezG
-* **Pablo Tato** - @ptato
-* **Alberto Serrano** - @BertoSerrano
+* **Paco Andrés** - *Project manager* - [@pacoandresh](https://github.com/pacoandresh)
+* **Cristian Vázquez** - [@vzccristian](https://github.com/vzccristian)
+* **José Manuel Agúndez** - [@JMAgundezG](https://github.com/JMAgundezG)
+* **Pablo Tato** - [@ptato](https://github.com/ptato)
+* **Alberto Serrano** - [@BertoSerrano](https://github.com/BertoSerrano)
 
 
 See also the list of [contributors](https://github.com/vzccristian/pyro4bot/graphs/contributors) who participated in this project.
@@ -130,4 +130,4 @@ See also the list of [contributors](https://github.com/vzccristian/pyro4bot/grap
 
 ### About
 
-_This is an educational research project of **RoboLab**, a researcher group from the School of Technology of Cáceres (Spain) of the University of Extremadura._
+_This is an educational research project of [**RoboLab**](https://robolab.unex.es/), a researcher group from the School of Technology of Cáceres (Spain) of the University of Extremadura._
