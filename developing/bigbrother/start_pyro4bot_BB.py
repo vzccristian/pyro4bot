@@ -106,7 +106,7 @@ class bigbrother(object):
                                 new_comps.get(currentComponent).append(u)
                 except Exception:
                     if (DEBUGGER):
-                        print(("Error connecting to: %s " % value))
+                        print("Error connecting to:", value)
                     if (withRemove):
                         self.remove(key)
 
@@ -145,7 +145,7 @@ class bigbrother(object):
             daemon.PYRO_MAXCONNECTIONS = 20
 
             self.uri = daemon.register(self, objectId="bigbrother")
-            print((colored("\nBigBrother running : {}".format(self.uri), 'green')))
+            print(colored("\nBigBrother running : {}".format(self.uri), 'green'))
             self.public_pyro4ns.register("bigbrother", self.uri)
             daemon.requestLoop()
         except Exception:
@@ -164,7 +164,7 @@ class bigbrother(object):
     @Pyro4.expose
     def request(self, obj, claimant):
         if (DEBUGGER):
-            print((colored("\nREQUEST FROM: {} TO --> {}".format(claimant, obj), "yellow")))
+            print(colored("\nREQUEST FROM: {} TO --> {}".format(claimant, obj), "yellow"))
         if (obj is not None and claimant is not None):
             if (claimant not in self.claimant_list):
                 key = str(obj) + "#" + str(claimant)
@@ -178,13 +178,13 @@ class bigbrother(object):
                 self.claimant_list.append(claimant)
 
                 if (DEBUGGER):
-                    print((colored("Components waiting:", "green")))
+                    print(colored("Components waiting:", "green"))
                     pprint.pprint(ast.literal_eval(
                         json.dumps(self.claimant_list)))
-                    print((colored("Components that are needed:", "green")))
-                    for x in list(self.async_waitings.keys()):
-                        print(("{}. Type: {}. Needed by: {}".format(
-                            x, self.async_waitings[x]["target_type"], self.async_waitings[x]["claimant"])))
+                    print(colored("Components that are needed:", "green"))
+                    for x in (self.async_waitings.keys()):
+                        print("{}. Type: {}. Needed by: {}".format(
+                            x, self.async_waitings[x]["target_type"], self.async_waitings[x]["claimant"]))
 
                 self.async_waitings[key]["call"].start()
 
@@ -201,7 +201,7 @@ class bigbrother(object):
             while(not uris or self.async_waitings[key]["target_type"] == 3):
                 interval = (time.time() - init_time)
                 if (interval > 30): # Check exists
-                    if (self.async_waitings[key]["claimant"].split(".")[0] in list(self.robots.keys())):
+                    if (self.async_waitings[key]["claimant"].split(".")[0] in self.robots.keys()):
                         init_time = time.time()
                     else:
                         break
@@ -216,8 +216,8 @@ class bigbrother(object):
 
                 if (uris):
                     if (DEBUGGER):
-                        print((
-                            colored("\nURI Obtained: {} for: {}".format(uris, key), "green")))
+                        print(
+                            colored("\nURI Obtained: {} for: {}".format(uris, key), "green"))
                         print(c_name, c_comp)
                     try:
                         for robots in self.components.get(c_comp):
@@ -281,7 +281,7 @@ class bigbrother(object):
                 elif (target[0].count("*") == 1 and target[1] and
                         target[1].count("*") == 0):  # *.component [list]
                     target_type_info = 3
-                    if target[1] in list(self.components.keys()):
+                    if target[1] in self.components.keys():
                         for x in self.components[target[1]]:
                             uris.append(x)
                 elif target[0] and target[1]:  # robot.component [NO list]
@@ -480,10 +480,10 @@ class adminTool():
         print((colored("Components waiting:", "green")))
         pprint.pprint(ast.literal_eval(
             json.dumps(self.bigbrother.claimant_list)))
-        print((colored("Components that are needed:", "green")))
-        for x in list(self.bigbrother.async_waitings.keys()):
-            print(("{}. Type: {}. Needed by: {}".format(
-                x, self.bigbrother.async_waitings[x]["target_type"], self.bigbrother.async_waitings[x]["claimant"])))
+        print(colored("Components that are needed:", "green"))
+        for x in self.bigbrother.async_waitings.keys():
+            print("{}. Type: {}. Needed by: {}".format(
+                x, self.bigbrother.async_waitings[x]["target_type"], self.bigbrother.async_waitings[x]["claimant"]))
 
     """Get URI for a determinate pyro4object"""
 

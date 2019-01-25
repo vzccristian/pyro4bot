@@ -38,7 +38,7 @@ class Robot:
     def listener(self):
         while 1:
             data, wherefrom = self.s.recvfrom(1500, 0)
-            if data == "hi pyro4bot":
+            if data == b"hi pyro4bot":
                 # print("From: {}:{} --> {}".format(
                 #     wherefrom[0], wherefrom[1], data))
                 self.s.sendto((socket.gethostname() + "/" + "hello").encode(),

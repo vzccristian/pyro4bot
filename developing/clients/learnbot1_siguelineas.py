@@ -16,7 +16,7 @@ bot = ClientRobot("robot_lineas")
 # print bot.basemotion.__docstring__()
 bot.basemotion.set__vel(mi=0,md=0)
 time.sleep(2)
-while (True):
+while True:
     try:
         ir_fixed = [1 if x < 400 else 0 for x in bot.infrared.get__ir()]
         if ir_fixed[3]:
