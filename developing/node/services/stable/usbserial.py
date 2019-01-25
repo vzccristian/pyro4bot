@@ -9,6 +9,7 @@ import serial
 import json
 import Pyro4
 
+
 @Pyro4.expose
 class usbserial(control.Control):
     __REQUIRED = ["comPort", "comPortBaud"]
@@ -27,8 +28,8 @@ class usbserial(control.Control):
         except Exception:
             print("error usbserial")
             raise
-        self.start_worker(self.worker_reader,)
-        self.start_publisher(self.buffer,)
+        self.start_worker(self.worker_reader, )
+        self.start_publisher(self.buffer, )
 
     def worker_reader(self):
         self.serial.flushInput()

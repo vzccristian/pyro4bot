@@ -111,7 +111,7 @@ def module_packages_not_found(modules):
 
 def not_found_modules(modules_error):
     imports = [x[1].message.split("No module named ")[1] for x
-               in list(modules_error.items()) if type(x[1]) is ImportError]
+               in modules_error.items() if type(x[1]) is ImportError]
 
     return list(set(imports))
 
@@ -119,7 +119,7 @@ def not_found_modules(modules_error):
 def show_warnings(modules_errors):
     if modules_errors:
         for k, v in modules_errors.items():
-            print(("warning: error in {} --> {}".format(k, v)))
+            print("warning: error in {} --> {}".format(k, v))
 
 
 print("INSPECTING MODULES...")

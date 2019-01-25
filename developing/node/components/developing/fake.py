@@ -5,8 +5,10 @@ from node.libs import control
 import Pyro4
 import pprint
 
+
 class fake(control.Control):
     __REQUIRED = []
+
     def __init__(self):
         self.detections = {}
         self.start_worker(self.worker)

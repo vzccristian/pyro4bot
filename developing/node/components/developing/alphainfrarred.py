@@ -30,4 +30,4 @@ class alphainfrarredobs(control.Control):
 
     @Pyro4.expose
     def get_ir(self):
-        return (self.DL_status, self.DR_status)
+        return self.DL_status, self.DR_status

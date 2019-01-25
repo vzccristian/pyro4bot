@@ -1,8 +1,7 @@
-
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 # lock().acquire()
-#____________developed by cristian vazquez____________________
+# ____________developed by cristian vazquez____________________
 import time
 from node.libs import control
 from node.libs import utils
@@ -40,14 +39,14 @@ class picam(control.Control):
         self.camera.hflip = True if not hasattr(self, 'hflip') else self.hflip
         self.camera.vflip = True if not hasattr(self, 'vflip') else self.vflip
 
-        #self.camera.sharpness = 0
-        #self.camera.saturation = 0
-        #self.camera.ISO = 0
-        #self.camera.sure_compensation = 0
-        #self.camera.exposure_mode = 'auto'
-        #self.camera.meter_mode = 'average'
-        #self.camera.awb_mode = 'auto'
-        #self.camera.crop = (0.0, 0.0, 1.0, 1.0)
+        # self.camera.sharpness = 0
+        # self.camera.saturation = 0
+        # self.camera.ISO = 0
+        # self.camera.sure_compensation = 0
+        # self.camera.exposure_mode = 'auto'
+        # self.camera.meter_mode = 'average'
+        # self.camera.awb_mode = 'auto'
+        # self.camera.crop = (0.0, 0.0, 1.0, 1.0)
 
         # Stream settings
         self.buffer = BytesIO()
@@ -64,7 +63,7 @@ class picam(control.Control):
         while self.worker_run:
             for foo in self.camera.capture_continuous(self.buffer, 'jpeg', use_video_port=True):
                 # Si hay clientes a la espera...
-                while (len(self.clients) is 0):
+                while len(self.clients) is 0:
                     time.sleep(2)
                 try:
                     self.acceptConnections()
@@ -72,7 +71,7 @@ class picam(control.Control):
                     for c in self.clients:
                         if c.closed is False:
                             try:
-                                if (c.connection is not 0):
+                                if c.connection is not 0:
                                     c.connection.write(
                                         struct.pack('<L', streamPosition))
                                     c.connection.flush()
@@ -85,7 +84,7 @@ class picam(control.Control):
                     for c in self.clients:
                         if c.closed is False:
                             try:
-                                if (c.connection is not 0):
+                                if c.connection is not 0:
                                     c.connection.write(readBuffer)
                             except Exception as e:
                                 closer = threading.Thread(
@@ -98,11 +97,11 @@ class picam(control.Control):
 
     @Pyro4.expose
     def image(self):
-        """Return IP and PORT to socket conection """
+        """Return IP and PORT to socket connection """
         newClient = ClientSocket(self.initPort + 1)
         self.clients.append(newClient)
         self.initPort = newClient.port
-        while not (newClient.waitingForConnection):
+        while not newClient.waitingForConnection:
             time.sleep(2)
         return self.ip, newClient.port
 
@@ -122,7 +121,7 @@ class picam(control.Control):
             client.serverSocket.close()
         except Exception:
             pass
-        if (exception is not None):
+        if exception is not None:
             utils.format_exception(exception)
 
     def removeClosedConnections(self, sec=20):
@@ -134,10 +133,10 @@ class picam(control.Control):
             # print "Despues:", self.clients
 
 
-class ClientSocket():
+class ClientSocket:
     """Class for Clients of PiCamera"""
 
-    def __init__(self, port=9000,):
+    def __init__(self, port=9000, ):
         self.port = port
         self.serverSocket = socket.socket()
         self.connection = 0
@@ -148,7 +147,7 @@ class ClientSocket():
     def newPort(self):
         """Check if a port is available, and if it is, assign it, otherwise continue testing the next one."""
         result = 0
-        while (result is 0):
+        while result is 0:
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 result = sock.connect_ex(('127.0.0.1', self.port))
@@ -162,9 +161,9 @@ class ClientSocket():
                 utils.format_exception(e)
 
     def acceptConnection(self):
-        """ Accept conections from servers to clients"""
+        """ Accept connections from servers to clients"""
         if self.connection is 0:
-            print(("PICAM-New client: {}".format(self.port)))
+            print("PICAM-New client: {}".format(self.port))
             self.waitingForConnection = True
             self.connection = self.serverSocket.accept(
             )[0].makefile("rb" + str(self.port))
@@ -175,5 +174,5 @@ class ClientSocket():
 
     def setClosed(self):
         """ Set client as closed """
-        print(("PICAM-Client disconnected: {}".format(self.port)))
+        print("PICAM-Client disconnected: {}".format(self.port))
         self.closed = True

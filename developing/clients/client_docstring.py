@@ -6,7 +6,7 @@ from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib.request, urllib.parse, urllib.error
+from urllib import request, parse, error
 import numpy as np
 from PIL import Image
 import io
@@ -28,7 +28,7 @@ if __name__ == "__main__":
         try:
             int(pan)
             int(tilt)
-            bot.alphapantilt.set_pantilt(pan,tilt)
+            bot.alphapantilt.set_pantilt(pan, tilt)
         except ValueError:
             print("Not a number")
         except Exception:

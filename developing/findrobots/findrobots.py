@@ -36,7 +36,7 @@ def get_all_ip_address(broadcast=False):
     return address
 
 
-class Searcher():
+class Searcher:
     def __init__(self):
         self.robots = {}
         self.stop = threading.Event()
@@ -68,7 +68,7 @@ class Searcher():
             socket.SOL_SOCKET, socket.SO_BROADCAST, (interface[0] + '\0').encode())
         self.socket_list[n].settimeout(TIMEOUT + 1)
         # print('sending to: {}'.format(PORT))
-        while (not stop_event.is_set()):
+        while not stop_event.is_set():
             self.data = 'hi pyro4bot'
             self.socket_list[n].sendto(self.data.encode(), (interface[1], PORT))
             time.sleep(1)

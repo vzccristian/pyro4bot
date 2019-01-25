@@ -8,11 +8,13 @@ from node.libs.gpio.Platform import *
 
 if HARDWARE == "RASPBERRY_PI":
     import smbus
+
     if PI_REVISION == 1:
         BUS = 0
     else:
         BUS = 1
-    OTHER_BUS = 0 # dtparam=i2c_vc=on PARA ACTIVARLO EN el config de raspaberry
+    OTHER_BUS = 0  # dtparam=i2c_vc=on PARA ACTIVARLO EN el config de raspaberry
+
 
 class RPiI2C(object):
     """Class for communicating with an I2C device using the adafruit-pureio pure
@@ -32,15 +34,15 @@ class RPiI2C(object):
             else:
                 self._bus = smbus.SMBus(bus)
             if self.service is not None:
-                self.service.register(self.address,self.pyro4id)
+                self.service.register(self.address, self.pyro4id)
         except:
-            print(("ERROR: no i2c-{} bus loscated".format(BUS)))
+            print("ERROR: no i2c-{} bus located".format(BUS))
 
     def detect_ports(self):
         addr = {}
         for device in range(128):
             try:
-                print(self._bus.write_byte(device,0))
+                print(self._bus.write_byte(device, 0))
                 addr[device] = []
             except:
                 pass
@@ -51,12 +53,11 @@ class RPiI2C(object):
         value = value & 0xFF
         self._bus.write_byte(self.address, value)
 
-
     def write8(self, register, value):
         """Write an 8-bit value to the specified register."""
         value = value & 0xFF
         self._bus.write_byte_data(self.address, register, value)
-        #print("write8: ",register,value)
+        # print("write8: ",register,value)
 
     def write16(self, register, value):
         """Write a 16-bit value to the specified register."""
@@ -94,7 +95,7 @@ class RPiI2C(object):
         """Read an unsigned 16-bit value from the specified register, with the
         specified endianness (default little endian, or least significant byte
         first)."""
-        result = self._bus.read_word_data(self.address,register) & 0xFFFF
+        result = self._bus.read_word_data(self.address, register) & 0xFFFF
         # Swap bytes if using big endian because read_word_data assumes little
         # endian on ARM (little endian) systems.
         if not little_endian:
@@ -179,6 +180,7 @@ class RPiI2C(object):
             time.sleep(0.0001)
         except:
             pass
+
 
 if HARDWARE == "RASPBERRY_PI":
     I2CCLS = RPiI2C

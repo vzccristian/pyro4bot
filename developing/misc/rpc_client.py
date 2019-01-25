@@ -2,6 +2,7 @@ import pickle
 from multiprocessing.connection import Client
 import time
 
+
 class RPCProxy:
     def __init__(self, connection):
         self._connection = connection
@@ -13,7 +14,9 @@ class RPCProxy:
             if isinstance(result, Exception):
                 raise result
             return result
+
         return do_rpc
+
 
 if __name__ == "__main__":
     print("Client")
@@ -21,12 +24,12 @@ if __name__ == "__main__":
     proxy = RPCProxy(c)
     proxy.request("*.camera")
 
-    print("Lista:",(proxy.list()))
+    print("Lista:", (proxy.list()))
     time.sleep(1)
     bot = proxy.proxy("learnbot1")
-    if (bot is not None):
-        print("Learnbot1",(bot.get_uris()))
+    if bot is not None:
+        print("Learnbot1", (bot.get_uris()))
 
     time.sleep(3)
     proxy.remove("learnbot1")
-    print("Lista despues de remove",(proxy.list()))
+    print("Lista despues de remove", (proxy.list()))

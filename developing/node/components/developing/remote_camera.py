@@ -15,7 +15,7 @@ class RemoteCamera (control.Control):
     def worker(self):
         print("\n\nWorker is running.")
         while self.worker_run:
-            for k in list(self.deps.keys()):
-                print(("Connected to: {}".format(self.deps[k].get_pyroid())))
-                print(("Handshake: {}".format(self.deps[k]._pyroHandshake)))
+            for k in self.deps.keys():
+                print("Connected to: {}".format(self.deps[k].get_pyroid()))
+                print("Handshake: {}".format(self.deps[k]._pyroHandshake))
             time.sleep(self.frec)

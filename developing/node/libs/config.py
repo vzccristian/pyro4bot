@@ -51,15 +51,15 @@ class Config:
         self.components_order = self.dependency(self.components)
 
     def set_lower_case(self):
-        self.conf = {k.lower(): self.conf[k] for k in list(self.conf.keys())}
+        self.conf = {k.lower(): self.conf[k] for k in self.conf.keys()}
         self.conf["node"] = {k.lower(): self.conf["node"][k] for k in
-                             list(self.conf["node"].keys())}
+                             self.conf["node"].keys()}
 
     def disable_lines(self):
-        for key in [x for x in list(self.conf.keys()) if x != "node"]:
-            for k, v in list(self.conf[key].items()):
+        for key in [x for x in self.conf.keys() if x != "node"]:
+            for k, v in self.conf[key].items():
                 if get_field(v, "enable") == [False]:
-                    del(self.conf[key][k])
+                    del (self.conf[key][k])
 
     def fix_config(self):
         # Add default frec
@@ -113,7 +113,7 @@ class Config:
                 v["frec"] = self.conf["node"]["def_frec"]
             v["docstring"] = {}
             v["exposed"] = {}
-        for k, v in list(self.services.items()):
+        for k, v in self.services.items():
             v["mode"] = "local"
 
         # Services configuration
@@ -121,20 +121,20 @@ class Config:
         for n in self.services:
             if _classes.get(self.services[n]["cls"], None) is not None:
                 if len(_classes[self.services[n]["cls"]]) > 1:
-                    print(("Warning: there are many modules {} for class {}".format(
-                        _classes[self.services[n]["cls"]], self.services[n]["cls"])))
+                    print("Warning: there are many modules {} for class {}".format(
+                        _classes[self.services[n]["cls"]], self.services[n]["cls"]))
                 self.services[n]["module"] = _classes[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
                     newservices[n] = self.services[n]
             else:
-                print((colored("ERROR: Class {} not found or error in Modules".format(
-                    self.services[n]["cls"]), "red")))
+                print(colored("ERROR: Class {} not found or error in Modules".format(
+                    self.services[n]["cls"]), "red"))
                 for k_error, error in _modules_errors.items():
-                    print(("Module {}: {}".format(k_error, error)))
+                    print("Module {}: {}".format(k_error, error))
                 exit()
-            if ("-->") in self.services[n]:
+            if "-->" in self.services[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.services[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.services[n]["-->"] if x.find(".") >= 0]
@@ -143,27 +143,27 @@ class Config:
         self.conf["services"] = newservices
 
         for n in self.services:
-                    self.services[n]["_locals"] = []
-                    self.services[n]["_resolved_remote_deps"] = []
-                    if "-->" in self.services[n]:
-                        self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
-                            self.services, n)
+            self.services[n]["_locals"] = []
+            self.services[n]["_resolved_remote_deps"] = []
+            if "-->" in self.services[n]:
+                self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
+                    self.services, n)
         newrobot = {}
         # Components configuration
         for n in self.components:
             if _classes.get(self.components[n]["cls"], None) is not None:
                 if len(_classes[self.components[n]["cls"]]) > 1:
-                    print(("Warning: there are many modules {} for class {}".format(
-                        _classes[self.components[n]["cls"]], self.components[n]["cls"])))
+                    print("Warning: there are many modules {} for class {}".format(
+                        _classes[self.components[n]["cls"]], self.components[n]["cls"]))
                 self.components[n]["module"] = _classes[self.components[n]["cls"]][0]
             else:
-                print((colored("ERROR: Class {} not found or error in Modules".format(
-                    self.components[n]["cls"]), "red")))
+                print(colored("ERROR: Class {} not found or error in Modules".format(
+                    self.components[n]["cls"]), "red"))
                 for k_error, error in _modules_errors.items():
-                    print(("Module {}: {}".format(k_error, error)))
+                    print("Module {}: {}".format(k_error, error))
                 exit()
             self.components[n]["_services"] = list(self.services)
-            if ("-->") in self.components[n]:
+            if "-->" in self.components[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.components[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.components[n]["-->"] if x.find(".") >= 0]
@@ -211,7 +211,7 @@ class Config:
         services = [(self.services[s]["module"], self.services[s]["cls"])
                     for s in self.services_order]
         components = [(self.components[s]["module"], self.components[s]["cls"])
-                   for s in self.components_order]
+                      for s in self.components_order]
         return set(services), set(components)
 
     def whithout_deps(self, part):

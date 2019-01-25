@@ -8,11 +8,11 @@
 import operator
 import time
 from node.libs.gpio.Platform import *
+
 if HARDWARE == "RASPBERRY_PI":
     import spidev
+
     PORT = 0
-
-
 
 MSBFIRST = 0
 LSBFIRST = 1
@@ -21,7 +21,7 @@ LSBFIRST = 1
 class SpiDev(object):
     """Hardware-based SPI implementation using the spidev interface."""
 
-    def __init__(self, device, service=None, pyro4id=None,max_speed_hz=500000, ):
+    def __init__(self, device, service=None, pyro4id=None, max_speed_hz=500000, ):
         """Initialize an SPI device using the SPIdev interface.  Port and device
         identify the device, for example the device /dev/spidev1.0 would be port
         1 and device 0.
@@ -30,10 +30,10 @@ class SpiDev(object):
         self.service = service
         self.pyro4id = pyro4id
         try:
-            if self.service is not None and self.service.register(device,pyro4id):
+            if self.service is not None and self.service.register(device, pyro4id):
                 self._device = spidev.SpiDev()
                 self._device.open(PORT, device)
-                self._device.max_speed_hz=max_speed_hz
+                self._device.max_speed_hz = max_speed_hz
                 # Default to mode 0, and make sure CS is active low.
                 self._device.mode = 0
                 self._device.cshigh = False
@@ -44,7 +44,7 @@ class SpiDev(object):
         """Set the speed of the SPI clock in hertz.  Note that not all speeds
         are supported and a lower speed might be chosen by the hardware.
         """
-        self._device.max_speed_hz=hz
+        self._device.max_speed_hz = hz
 
     def set_mode(self, mode):
         """Set SPI mode which controls clock polarity and phase.  Should be a
@@ -89,6 +89,7 @@ class SpiDev(object):
         the MISO line.  Read bytes will be returned as a bytearray object.
         """
         return bytearray(self._device.xfer2(data))
+
 
 if HARDWARE == "RASPBERRY_PI":
     SPICLS = spidev

@@ -51,7 +51,7 @@ class pca9685(control.Control):
         self.set_pwm(11, 3072, 1024)
         time.sleep(1)
         self.set_pwm(10, 1024, 3072)
-        print((self.i2cservice.status))
+        print(self.i2cservice.status)
 
     @control.flask("actuator")
     def set_pwm_freq(self, freq_hz):
@@ -60,10 +60,10 @@ class pca9685(control.Control):
         prescaleval /= 4096.0       # 12-bit
         prescaleval /= float(freq_hz)
         prescaleval -= 1.0
-        print(('Setting PWM frequency to {0} Hz'.format(freq_hz)))
-        print(('Estimated pre-scale: {0}'.format(prescaleval)))
+        print('Setting PWM frequency to {0} Hz'.format(freq_hz))
+        print('Estimated pre-scale: {0}'.format(prescaleval))
         prescale = int(math.floor(prescaleval + 0.5))
-        print(('Final pre-scale: {0}'.format(prescale)))
+        print('Final pre-scale: {0}'.format(prescale))
         oldmode = self._device.readU8(MODE1)
         newmode = (oldmode & 0x7F) | 0x10    # sleep
         self._device.write8(MODE1, newmode)  # go to sleep

@@ -74,15 +74,15 @@ class Robot(control.Control):
     def start_components(self):
         """Launcher of node components."""
         # Decoration
-        print((colored("\t|", "yellow")))
-        print((colored("\t|", "yellow")))
-        print((colored("\t+-----> SERVICES", "yellow")))
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
+        print(colored("\t+-----> SERVICES", "yellow"))
         self.load_objects(self.services, self.services_order)
 
         # Decoration
-        print((colored("\t|", "yellow")))
-        print((colored("\t|", "yellow")))
-        print((colored("\t+-----> COMPONENTS", "yellow")))
+        print(colored("\t|", "yellow"))
+        print(colored("\t|", "yellow"))
+        print(colored("\t+-----> COMPONENTS", "yellow"))
         self.load_objects(self.components, self.components_order)
 
     def load_objects(self, parts, object_robot):
@@ -103,8 +103,8 @@ class Robot(control.Control):
 
         for k in object_robot:
             if parts[k]["_non_required"]:
-                print((colored("ERROR: class {} require {} for {}  ".
-                               format(parts[k]["cls"], parts[k]["_non_required"], k), "red")))
+                print(colored("ERROR: class {} require {} for {}  ".
+                              format(parts[k]["cls"], parts[k]["_non_required"], k), "red"))
                 errors = True
 
         if errors:
@@ -138,11 +138,11 @@ class Robot(control.Control):
             if st_local == "OK" and st_service == "OK":
                 parts[k].pop("-->", None)
                 parts[k]["_REMOTE_STATUS"] = st_remote
-                del(parts[k]["_unresolved_locals"])
-                del(parts[k]["_local_trys"])
-                del(parts[k]["_unresolved_services"])
-                del(parts[k]["_services_trys"])
-                del(parts[k]["_remote_trys"])
+                del (parts[k]["_unresolved_locals"])
+                del (parts[k]["_local_trys"])
+                del (parts[k]["_unresolved_services"])
+                del (parts[k]["_services_trys"])
+                del (parts[k]["_remote_trys"])
                 self.pre_start_pyro4bot_object(k, parts[k])
 
     def check_deps(self, k, obj):
@@ -205,7 +205,7 @@ class Robot(control.Control):
                 check_remote = "ERROR"
                 obj["_remote_trys"] = 0
             elif "SYNC" == msg:
-                print(("\t\t" + colored("*REMOTE-URI", 'green') + ":{} for comp:{}".format(uri, d)))
+                print("\t\t" + colored("*REMOTE-URI", 'green') + ":{} for comp:{}".format(uri, d))
                 check_remote = "OK"
                 obj["_remote_trys"] = 0
                 obj["_resolved_remote_deps"].append(uri)
@@ -241,7 +241,7 @@ class Robot(control.Control):
             self.PROCESS[name].append(obj["_REMOTE_STATUS"])
             status = serv_pipe.recv()
             status = "FAIL"
-            while (attemps > 0):
+            while attemps > 0:
                 try:
                     pxy = utils.get_pyro4proxy(
                         obj["pyro4id"], self.node["name"])
@@ -263,7 +263,7 @@ class Robot(control.Control):
             else:
                 print("\t\t[%s] STARTING %s" % (st, obj["pyro4id"]))
         else:
-            print(("ERROR: " + name + " is running"))
+            print("ERROR: " + name + " is running")
 
     def start_pyro4bot_object(self, d, proc_pipe):
         """Start PYRO4BOT component."""
@@ -291,7 +291,7 @@ class Robot(control.Control):
 
             # Hide methods from Control
             safe_exposed = {}
-            for k in list(exposed.keys()):
+            for k in exposed.keys():
                 safe_exposed[k] = list(
                     set(exposed[k]) - set(dir(control.Control)))
             safe_exposed["methods"].extend(["__docstring__", "__exposed__"])
@@ -303,17 +303,17 @@ class Robot(control.Control):
                 self.get_docstring(new_object, safe_exposed))
 
             daemon.requestLoop()
-            print(("[%s] Shutting %s" %
-                   (colored("Down", 'green'), d["pyro4id"])))
+            print("[%s] Shutting %s" %
+                  (colored("Down", 'green'), d["pyro4id"]))
         except Exception as e:
             proc_pipe.send("FAIL")
-            print(("ERROR: creating sensor robot object: " + d["pyro4id"]))
+            print("ERROR: creating sensor robot object: " + d["pyro4id"])
             print(utils.format_exception(e))
 
     def get_docstring(self, new_object, exposed):
         """Return doc_string documentation in methods_and_docstring."""
         docstring = {}
-        for key in [x for x in list(exposed.keys()) if x in ["methods", "oneway"]]:
+        for key in [x for x in exposed.keys() if x in ["methods", "oneway"]]:
             for m in exposed[key]:
                 if m not in (dir(control.Control)):  # Exclude control methods
                     d = eval("new_object." + str(m) + ".__doc__")
@@ -372,14 +372,14 @@ class Robot(control.Control):
 
     @Pyro4.expose
     def shutdown(self):
-        print((colored("____STOPPING PYRO4BOT %s_________" %
-                       self.node["name"], "yellow")))
-        for k, v in list(self.PROCESS.items()):
+        print(colored("____STOPPING PYRO4BOT %s_________" %
+                      self.node["name"], "yellow"))
+        for k, v in self.PROCESS.items():
             try:
                 v[1].terminate()
             except Exception:
                 raise
-            print(("[{}]  {}".format(colored("Down", 'green'), v[0])))
+            print("[{}]  {}".format(colored("Down", 'green'), v[0]))
 
     @Pyro4.expose
     def print_process(self, onlyChanges=False):
@@ -398,8 +398,8 @@ class Robot(control.Control):
                     st = colored(v[3], 'red')
                 elif v[3] == "WAITING" or v[3] == "ASYNC":
                     st = colored(v[3], 'yellow')
-                print(("[{}]\t{} {}".format(
-                    st, str(v[2]), str(v[0]).rjust(60, "."))))
+                print("[{}]\t{} {}".format(
+                    st, str(v[2]), str(v[0]).rjust(60, ".")))
 
     @Pyro4.expose
     def status_changed(self):

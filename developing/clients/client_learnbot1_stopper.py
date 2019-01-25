@@ -8,10 +8,11 @@ from random import randint
 
 SPEED = 1000
 
+
 def check_infrarred(bot):
     movimiento = True
     ir_fixed = [1 if x < 200 else 0 for x in bot.infrared.get__ir()]
-    while(ir_fixed[3] or ir_fixed[2] or ir_fixed[1] or ir_fixed[0]):
+    while ir_fixed[3] or ir_fixed[2] or ir_fixed[1] or ir_fixed[0]:
         movimiento = False
         print("Infrarred", ir_fixed)
         mov(bot, -SPEED, -SPEED, 3)
@@ -19,6 +20,7 @@ def check_infrarred(bot):
         mov(bot, 0, 0, 0)
         ir_fixed = [1 if x < 200 else 0 for x in bot.infrared.get__ir()]
     return movimiento
+
 
 def movRandom(bot, speed=SPEED, t=1):
     print("movRANDOM")
@@ -37,7 +39,7 @@ def mov(bot, a_speed=SPEED, b_speed=SPEED, t=1):
 def run(bot):
     movimiento = False
     mov(bot, SPEED, SPEED, 0.2)
-    while (True):
+    while True:
         print(movimiento)
         movimiento = check_infrarred(bot)
         laser = bot.laser.get_laser()
@@ -62,21 +64,22 @@ def run(bot):
             mov(bot, -SPEED, 0, 1)
             movimiento = False
         print(movimiento)
-        if not (movimiento):
+        if not movimiento:
             mov(bot, SPEED, SPEED, 0.2)
             movimiento = True
 
+
 if __name__ == '__main__':
     bot = ClientRobot("learnbot")
- #   mov(bot, 0, 0, 2)
+    #   mov(bot, 0, 0, 2)
     try:
 
-        bot.basemotion.set__vel(0,0)
+        bot.basemotion.set__vel(0, 0)
 
         for i in range(1000):
-            print((bot.laser.get_laser()))
+            print(bot.laser.get_laser())
 
- #       run(bot)
+    #       run(bot)
     except Exception:
         print("error")
         mov(bot, 0, 0, 0)

@@ -9,6 +9,7 @@ import pprint
 
 CAM = 0
 
+
 class apriltag_resolver(control.Control):
     __REQUIRED = []
 
@@ -22,7 +23,7 @@ class apriltag_resolver(control.Control):
     def get_detections(self, frame, picamera=True, openWindow=False, showInfo=False, name="default"):
         try:
             if self.worker_run:
-                if (frame is not None):
+                if frame is not None:
                     list_detections = []
 
                     if picamera:
@@ -33,21 +34,21 @@ class apriltag_resolver(control.Control):
                         gray, return_image=True)
 
                     num_detections = len(detections)
-                    if (showInfo):
+                    if showInfo:
                         print('Detected {} tags.\n'.format(num_detections))
 
                     for i, detection in enumerate(detections):
                         list_detections.append(dict(detection._asdict()))
-                        if (showInfo):
+                        if showInfo:
                             print('Detection {} of {}:'.format(i + 1, num_detections))
                             print()
                             print(detection.tostring(indent=2))
                             print()
 
-                    if (openWindow):
+                    if openWindow:
                         # Show image
                         try:
-                            window = 'AprilTag Resolver '+ str(name)
+                            window = 'AprilTag Resolver ' + str(name)
                         except Exception:
                             window = 'AprilTag Resolver'
                         cv2.namedWindow(window)
@@ -57,7 +58,7 @@ class apriltag_resolver(control.Control):
                         cv2.waitKey(1)
                     return list_detections
 
-            if (openWindow):
+            if openWindow:
                 cv2.destroyAllWindows()
         except Exception:
             pass

@@ -3,7 +3,7 @@ from misc.findrobots import findrobots
 
 
 class Application:
-    
+
     def __init__(self):
         self.window = Tk()
 
@@ -30,8 +30,8 @@ class Application:
         self.user = StringVar()
         user_box = Entry(self.window, textvariable=self.user)
         user_box.grid(row=2, column=3)
-        label2 = Label(self.window,text="Pass : ")
-        label2.grid(row=3,column=2)
+        label2 = Label(self.window, text="Pass : ")
+        label2.grid(row=3, column=2)
         self.password = StringVar()
         pass_box = Entry(self.window, textvariable=self.password)
         pass_box.grid(row=3, column=3)
@@ -43,5 +43,6 @@ class Application:
 
     def find_robots(self):
         return findrobots.Searcher().robots
+
 
 Application()

@@ -8,7 +8,7 @@ from ._client_robot import ClientRobot
 import time
 import Pyro4
 import cv2
-import urllib.request, urllib.parse, urllib.error
+from urllib import request, parse, error
 import numpy as np
 
 
@@ -26,7 +26,7 @@ def track(image):
         centroid_x = int(moments['m10'] / m00)
         centroid_y = int(moments['m01'] / m00)
     ctr = (-1, -1)
-    if centroid_x != None and centroid_y != None:
+    if centroid_x is not None and centroid_y is not None:
         ctr = (centroid_x, centroid_y)
         cv2.circle(image, ctr, 10, (255, 0, 0))
     return ctr, image
@@ -57,7 +57,7 @@ for i in range(1, 200):
     laser = bot.laser.get_laser()
     mx = max(laser)
     ind = laser.index(mx)
-    print(("laser:%s ind:%s" % (laser, ind)))
+    print("laser:%s ind:%s" % (laser, ind))
     if ind == 0:
         # bot.base.Set_Vel(300,100)
         print("izquierda")

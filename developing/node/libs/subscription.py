@@ -2,7 +2,7 @@
 
 def dict_to_class(d):
     if ("_target" in d and "_target_attr" in d and "_subscripter_attr" in d and
-        "_subscripter_password" in d):
+            "_subscripter_password" in d):
         s = Subscription(d["_target"], d["_target_attr"], d["_subscripter_attr"], d["_subscripter_password"])
         s.subscripter_uri = d["_subscripter_uri"]
         s.subscripter = d["_subscripter"]
@@ -11,6 +11,7 @@ def dict_to_class(d):
     else:
         return None
 
+
 class Subscription(object):
     """ Class designed for subscription."""
 
@@ -18,7 +19,7 @@ class Subscription(object):
         self._target = target  # Destination proxy (target)
         self._target_attr = target_attr  # Target atribute
         self._subscripter_attr = subscripter_attr if (
-            subscripter_attr is not None) else target_attr  # Susbcriber atribute
+                subscripter_attr is not None) else target_attr  # Susbcriber atribute
         self._subscripter_password = subscripter_password  # Subscriber password
         self._subscripter_uri = None  # Subscriber uri
         self._subscripter = None  # Subscriber proxy
@@ -84,11 +85,15 @@ class Subscription(object):
         self._id = value
 
     def __repr__(self):
-        return ("[ID:{}], target: {}, target_attr: {}, subscripter_attr: {}, subscripter_password: {}, subscripter_uri: {}, subscripter: {}".format(self._id, self._target, self._target_attr, self._subscripter_attr, self._subscripter_password, self._subscripter_uri, self._subscripter))
+        return "[ID:{}], target: {}, target_attr: {}, subscripter_attr: {}, subscripter_password: {}, subscripter_uri: {}, subscripter: {}".format(
+            self._id, self._target, self._target_attr, self._subscripter_attr, self._subscripter_password,
+            self._subscripter_uri, self._subscripter)
 
     def __str__(self):
-        return ("[ID:"+str(self._id)+"], target: " + str(self._target) + ", target_attr: " + str(self._target_attr) + ", subscripter_attr: " + str(self._subscripter_attr) + " , subscripter_password: " + str(self._subscripter_password)
-                +", subscripter_uri: "+str(self._subscripter_uri)+", subscripter: "+str(self._subscripter))
+        return ("[ID:" + str(self._id) + "], target: " + str(self._target) + ", target_attr: " + str(
+            self._target_attr) + ", subscripter_attr: " + str(
+            self._subscripter_attr) + " , subscripter_password: " + str(self._subscripter_password)
+                + ", subscripter_uri: " + str(self._subscripter_uri) + ", subscripter: " + str(self._subscripter))
 
 
 if __name__ == '__main__':

@@ -1,8 +1,8 @@
 import Pyro4
 import os
 import sys
-sys.path.append("../node/libs")
 import utils
+sys.path.append("../node/libs")
 
 DEFAULT_BB_PASSWORD = "PyRobot"
 
@@ -34,7 +34,7 @@ class ClientRobot(object):
             bigbrother_passw (str): Bigbrother's password.
         """
         Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
-        if ("@" in name):
+        if "@" in name:
             self.name = name[0:name.find("@")]
             self.ip = name[name.find("@") + 1:]
             self.ns = False
@@ -52,7 +52,7 @@ class ClientRobot(object):
                 proxy = utils.get_pyro4proxy(p, self.name)
                 setattr(self, con, proxy)
         except Pyro4.errors.NamingError:
-            print(("Error: Unknown name {}".format(name)))
+            print("Error: Unknown name {}".format(name))
             exit()
         except Exception:
             print("ERROR: conection")
@@ -67,7 +67,7 @@ class ClientRobot(object):
                     self.ip + ":" + str(self.port_robot)
                 self.node = utils.get_pyro4proxy(uri, self.name)
             except Exception:
-                print(("ERROR: invalid URI: %d" % uri))
+                print("ERROR: invalid URI: %d" % uri)
                 exit()
         else:
             # NameServer o BigBrother
@@ -94,13 +94,13 @@ class ClientRobot(object):
                 self.node = utils.get_pyro4proxy(robot_uri, self.name)
             except Exception:
                 self.node = None
-        if (self.node):
+        if self.node:
             try:
                 proxys = self.node.get_uris()
                 # print proxys
             except Exception:
-                print(("ERROR: Unable to obtain list of robot components: \
-                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name)))
+                print("ERROR: Unable to obtain list of robot components: \
+                      \n-->[URI]: %s \n-->[NAME]: %s" % (robot_uri, self.name))
                 raise
                 os._exit(0)
 

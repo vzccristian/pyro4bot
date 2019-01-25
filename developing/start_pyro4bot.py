@@ -36,14 +36,14 @@ if __name__ == "__main__":
             if cad.upper() == "STATUS":
                 ROB.print_process()
             if cad.upper() == "DOC":
-                for k, v in list(ROB.__docstring__().items()):
+                for k, v in ROB.__docstring__().items():
                     print(k)
-                    print(("\t" + str(v)))
+                    print("\t" + str(v))
             if cad.upper() == "SALIR":
                 salir = False
                 exit()
     except IOError:
-        print(("The file can not be found: %s" % jsonbot))
+        print("The file can not be found: %s" % jsonbot)
     except (KeyboardInterrupt, SystemExit):
         os._exit(0)
     except Exception:

@@ -30,7 +30,7 @@ class GUI:
         # self.file_menu.add_command(label="Exit", command=exit)
         # self.menu_bar.add_cascade(label='File', menu=self.file_menu)
         # self.root.config(menu=self.menu_bar)
-        #self.robot_selection = StringVar()
+        # self.robot_selection = StringVar()
         # self.robots_list = OptionMenu(self.root, self.robot_selection, *self.found_robots_list())
         # self.robots_list.config(width=10)
         # self.robots_list.grid(row=1, column=1, sticky="ew")

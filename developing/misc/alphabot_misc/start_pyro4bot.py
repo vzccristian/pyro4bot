@@ -13,6 +13,6 @@ try:
         jsonbot = "./samples/simplebot.json"
     nod = nodo.NODERB(filename=jsonbot)
 except IOError:
-    print(("The file can not be found: %s" % jsonbot))
+    print("The file can not be found: %s" % jsonbot)
 except (KeyboardInterrupt, SystemExit):
     os._exit(0)

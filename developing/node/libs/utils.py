@@ -19,12 +19,12 @@ def get_ip_address(ifname="lo"):
         try:
             interface_list = ni.interfaces()
             for x in interface_list:
-                if (x != "lo"):
+                if x != "lo":
                     return ni.ifaddresses(x)[ni.AF_INET][0]['addr']
             ip = "127.0.0.1"
         except Exception:
-            print(("ERROR: Obtaining IP from the network interface. "
-                  + colored(ifname, "red")))
+            print("ERROR: Obtaining IP from the network interface. "
+                  + colored(ifname, "red"))
             sys.exit()
     return ip
 
@@ -153,9 +153,9 @@ def format_exception(e):
 def printThread(string, color="green"):
     """Print on console the thread that executes the code and the text \
     passed by parameter."""
-    print((
+    print(
         (colored("[" + threading.current_thread().getName() + "] ", color)
-         ) + string))
+         ) + string)
 
 
 def ping(uri):
@@ -165,7 +165,7 @@ def ping(uri):
         response = os.system("ping -c 1 -w2 " + uri + " > /dev/null 2>&1")
     except Exception:
         pass
-    return (not response)
+    return not response
 
 
 def get_pyro4proxy(uri, password):

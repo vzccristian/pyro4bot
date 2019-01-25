@@ -13,9 +13,10 @@ from termcolor import colored
 import pprint
 import json
 import ast
-sys.path.append("../node/libs")
 import utils
 import myjson
+
+sys.path.append("../node/libs")
 
 DEBUGGER = False
 
@@ -78,7 +79,7 @@ class bigbrother(object):
         and the value is a list of all the robots that have this component.
         """
         error = True
-        while (error):
+        while error:
             try:
                 robots = {x: self.private_pyro4ns.list(
                 )[x] for x in self.private_pyro4ns.list() if x not in "Pyro.NameServer"}
@@ -105,12 +106,12 @@ class bigbrother(object):
                             if not (u in new_comps.get(currentComponent)):
                                 new_comps.get(currentComponent).append(u)
                 except Exception:
-                    if (DEBUGGER):
+                    if DEBUGGER:
                         print("Error connecting to:", value)
-                    if (withRemove):
+                    if withRemove:
                         self.remove(key)
 
-            # if (DEBUGGER):
+            # if DEBUGGER:
             #     print "ROBOTS:\n", self.robots
             #     print "COMPONENTS:\n", self.components
             #     print "ASYNC_WAITINGS:\n", self.async_waitings
@@ -118,7 +119,7 @@ class bigbrother(object):
         else:
             self.robots = {}
             self.components = {}
-            if (DEBUGGER):
+            if DEBUGGER:
                 print("There is no registered robot.")
         self.robots = new_robots
         self.components = new_comps
@@ -163,10 +164,10 @@ class bigbrother(object):
 
     @Pyro4.expose
     def request(self, obj, claimant):
-        if (DEBUGGER):
+        if DEBUGGER:
             print(colored("\nREQUEST FROM: {} TO --> {}".format(claimant, obj), "yellow"))
-        if (obj is not None and claimant is not None):
-            if (claimant not in self.claimant_list):
+        if obj is not None and claimant is not None:
+            if claimant not in self.claimant_list:
                 key = str(obj) + "#" + str(claimant)
                 t = threading.Thread(name="t_" + key,
                                      target=self.request_loop, args=(key,))
@@ -177,7 +178,7 @@ class bigbrother(object):
                 }
                 self.claimant_list.append(claimant)
 
-                if (DEBUGGER):
+                if DEBUGGER:
                     print(colored("Components waiting:", "green"))
                     pprint.pprint(ast.literal_eval(
                         json.dumps(self.claimant_list)))
@@ -192,16 +193,16 @@ class bigbrother(object):
         try:
             uris = []
             trys = 10
-            r_obj = key.split("#")[0] # Obj needed
-            claimant = self.async_waitings[key]["claimant"] # Robot.Comp  needs
-            c_name, c_comp = claimant.split(".") # Robot and comp needs
+            r_obj = key.split("#")[0]  # Obj needed
+            claimant = self.async_waitings[key]["claimant"]  # Robot.Comp  needs
+            c_name, c_comp = claimant.split(".")  # Robot and comp needs
 
             init_time = time.time()
 
-            while(not uris or self.async_waitings[key]["target_type"] == 3):
+            while not uris or self.async_waitings[key]["target_type"] == 3:
                 interval = (time.time() - init_time)
-                if (interval > 30): # Check exists
-                    if (self.async_waitings[key]["claimant"].split(".")[0] in self.robots.keys()):
+                if interval > 30:  # Check exists
+                    if self.async_waitings[key]["claimant"].split(".")[0] in self.robots.keys():
                         init_time = time.time()
                     else:
                         break
@@ -210,44 +211,45 @@ class bigbrother(object):
                     r_obj, target_type=True, returnAsList=True)
                 self.async_waitings[key]["target_type"] = tt
 
-                if (DEBUGGER):
-                    print("[time:{}]".format(interval), r_obj, uris, tt,("keys[{}]".format(len(self.robots)), list(self.robots.keys())))
+                if DEBUGGER:
+                    print("[time:{}]".format(interval), r_obj, uris, tt,
+                          ("keys[{}]".format(len(self.robots)), list(self.robots.keys())))
                 time.sleep(5)
 
-                if (uris):
-                    if (DEBUGGER):
+                if uris:
+                    if DEBUGGER:
                         print(
                             colored("\nURI Obtained: {} for: {}".format(uris, key), "green"))
                         print(c_name, c_comp)
                     try:
                         for robots in self.components.get(c_comp):
                             (name, _, _) = utils.uri_split(robots)
-                            if (DEBUGGER):
-                                print((colored("Robot: {} and Looking for: {}".format(
-                                    robots, name), "yellow")))
-                            if (name == self.async_waitings[key]["claimant"]):
+                            if DEBUGGER:
+                                print(colored("Robot: {} and Looking for: {}".format(
+                                    robots, name), "yellow"))
+                            if name == self.async_waitings[key]["claimant"]:
                                 if (tt == 2 or tt == 4) and (isinstance(uris, list)):
                                     uris = uris[0]
-                                while (trys > 0):
+                                while trys > 0:
                                     try:
                                         p = utils.get_pyro4proxy(
                                             robots, name.split(".")[0])
                                         p.add_resolved_remote_dep({r_obj: uris})
-                                        if (DEBUGGER):
-                                            print((
-                                                colored("\nURI SENDED: {}".format(key), "green")))
+                                        if DEBUGGER:
+                                            print(
+                                                colored("\nURI SENDED: {}".format(key), "green"))
                                         break
                                     except Exception:
-                                        if (DEBUGGER):
-                                            print((
-                                                colored("\nURI ERROR: {}".format(key), "red")))
+                                        if DEBUGGER:
+                                            print(
+                                                colored("\nURI ERROR: {}".format(key), "red"))
                                         trys -= 1
                                         time.sleep(3)
                                         raise
                     except Exception:
-                        if (DEBUGGER):
-                            print((
-                                colored("\nImposible realizar callback a {}".format(claimant), 'red')))
+                        if DEBUGGER:
+                            print(
+                                colored("\nImposible realizar callback a {}".format(claimant), 'red'))
                         else:
                             pass
 
@@ -262,15 +264,15 @@ class bigbrother(object):
     @Pyro4.expose
     def lookup(self, obj, return_metadata=False, target_type=False, returnAsList=False):
         self.update()
-        if (DEBUGGER):
-            print(("Lookup for: {}".format(obj)))
+        if DEBUGGER:
+            print("Lookup for: {}".format(obj))
         target_type_info = -1
         uris = []
         try:
             target = obj.split(".")
             if "." in obj:
                 # simplebot. o simplebot.* [list]
-                if (target[0] and (not target[1] or target[1].count("*") == 1)):
+                if target[0] and (not target[1] or target[1].count("*") == 1):
                     target_type_info = 1
                     for x in self.robots[target[0]]:
                         uris.append(x)
@@ -279,7 +281,7 @@ class bigbrother(object):
                     if target[1] in self.components:
                         uris.append(random.choice(self.components[target[1]]))
                 elif (target[0].count("*") == 1 and target[1] and
-                        target[1].count("*") == 0):  # *.component [list]
+                      target[1].count("*") == 0):  # *.component [list]
                     target_type_info = 3
                     if target[1] in self.components.keys():
                         for x in self.components[target[1]]:
@@ -288,14 +290,14 @@ class bigbrother(object):
                     target_type_info = 4
                     if target[0] in self.robots:
                         for x in self.robots[target[0]]:
-                            if (x[x.find("PYRO:") + 5:x.find("@")] in obj):
+                            if x[x.find("PYRO:") + 5:x.find("@")] in obj:
                                 uris.append(x)
                 else:
-                    if (DEBUGGER):
+                    if DEBUGGER:
                         print("\nInvalid object")
             else:
                 target_type_info = 5
-                if(returnAsList):
+                if returnAsList:
                     for x in self.robots[target[0]]:
                         uris.append(x)
                 else:
@@ -304,18 +306,16 @@ class bigbrother(object):
             print("\nError accesing to:", obj)
             return False
 
-        if (target_type):
+        if target_type:
             return uris, target_type_info
-        elif not (returnAsList):
+        elif not returnAsList:
             return uris[0]
         else:
             return uris
 
-
     @Pyro4.expose
     def ping(self):
         """ Check if nameserver is alive.
-
         Returns the result of calling the ping () method of nameserver.
         """
         return self.private_pyro4ns.ping()
@@ -334,9 +334,9 @@ class bigbrother(object):
                 overwrites the old registration.
                 If you set safe=True, the same name cannot be registered twice.
         """
-        if (DEBUGGER):
-            print((colored("Registering: {} {} {} {}".format(
-                name, uri, safe, metadata), "green")))
+        if DEBUGGER:
+            print(colored("Registering: {} {} {} {}".format(
+                name, uri, safe, metadata), "green"))
         _safe = safe
         _metadata = metadata
         self.private_pyro4ns.register(
@@ -346,12 +346,11 @@ class bigbrother(object):
     @Pyro4.expose
     def remove(self, name, prefix=None, regex=None, showInfo=False):
         """Remove robot from nameserver.
-
         Remove a nameserver robot according to its name
         """
         self.mutex.acquire()
         try:
-            if (DEBUGGER or showInfo):
+            if DEBUGGER or showInfo:
                 print("---> Removing:", name, prefix, regex)
             _name = name
             _prefix = prefix
@@ -373,7 +372,7 @@ class bigbrother(object):
     def proxy(self, obj, passw=None):
         all_proxys = []
         for x in self.lookup(obj):
-            if (passw is None):
+            if passw is None:
                 passw = obj.split(".")[0]
             all_proxys.append(utils.get_pyro4proxy(x, passw))
         return all_proxys
@@ -411,7 +410,6 @@ class nameServer(object):
             print("NameServer already working")
             sys.exit(1)
         except Exception:
-
             self.priv_ns_t = threading.Thread(
                 name="Private NameServer",
                 target=self.create_nameserver,
@@ -431,32 +429,34 @@ class nameServer(object):
             time.sleep(1)
             self.public_pyro4ns = Pyro4.locateNS(host=ip)  # Public NS
 
-    """Thread-1 loop for nameserver"""
-
     def create_nameserver(self, host="localhost", passw=False):
+        """Thread-1 loop for nameserver"""
         try:
-            if ("localhost" in host):  # Private NS
+            if "localhost" in host:  # Private NS
                 self.priv_ready = True
-                print((colored("Started private name server.", 'yellow')))
+                print(colored("Started private name server.", 'yellow'))
                 self.priv_nameserver = nm.startNSloop(
                     host=host, hmac=passw.encode())
             else:  # Public NS
-                print((colored("Started public name server.", 'yellow')))
+                print(colored("Started public name server.", 'yellow'))
                 self.pub_nameserver = nm.startNSloop(host=host)
         except Exception:
-            print(("Error al crear el nameserver %s" % host))
-
-    def get_priv_pyro4ns(self):
-        return self.private_pyro4ns
-
-    def get_pub_pyro4ns(self):
-        return self.public_pyro4ns
-
-    def is_working(self):
-        return self.priv_ready
+            print("Error al crear el nameserver %s" % host)
 
 
-class adminTool():
+def get_priv_pyro4ns(self):
+    return self.private_pyro4ns
+
+
+def get_pub_pyro4ns(self):
+    return self.public_pyro4ns
+
+
+def is_working(self):
+    return self.priv_ready
+
+
+class adminTool:
     def __init__(self, bigBrother, nameServer):
         self.bigbrother = bigBrother
         self.nameServer = nameServer
@@ -477,7 +477,7 @@ class adminTool():
         pprint.pprint(ast.literal_eval(json.dumps(self.bigbrother.components)))
 
     def printAsync(self):
-        print((colored("Components waiting:", "green")))
+        print(colored("Components waiting:", "green"))
         pprint.pprint(ast.literal_eval(
             json.dumps(self.bigbrother.claimant_list)))
         print(colored("Components that are needed:", "green"))
@@ -485,9 +485,8 @@ class adminTool():
             print("{}. Type: {}. Needed by: {}".format(
                 x, self.bigbrother.async_waitings[x]["target_type"], self.bigbrother.async_waitings[x]["claimant"]))
 
-    """Get URI for a determinate pyro4object"""
-
     def lookup(self, name):
+        """Get URI for a determinate pyro4object"""
         try:
             uri = self.nameServer.get_priv_pyro4ns().lookup(name)
             print("Looking for " + name + " : " + colored(uri, "green"))
@@ -496,9 +495,8 @@ class adminTool():
             print(name + " no encontrado.")
             name = None
 
-    """Remove a determinate pyro4object"""
-
     def remove(self, name):
+        """Remove a determinate pyro4object"""
         try:
             self.bigbrother.remove(name, showInfo=True)
         except Pyro4.errors.NamingError:
@@ -508,15 +506,13 @@ class adminTool():
             print(template.format(type(ex).__name__, ex.args))
             time.sleep(2)
 
-    """Close nameServer"""
-
     def exit(self):
+        """Close nameServer"""
         print(colored("\nSaliendo...", "red"))
         os._exit(0)
 
-    """Ctrl+z and Ctrl+c handler"""
-
     def handler(self, signum, frame):
+        """Ctrl+z and Ctrl+c handler"""
         self.exit()
 
     def test(self):
@@ -550,7 +546,7 @@ if __name__ == "__main__":
             exit(0)
 
         intfc = colored(json_file["interface"], "yellow")
-        print((colored("Starting BigBrother in : {}".format(intfc), 'green')))
+        print(colored("Starting BigBrother in : {}".format(intfc), 'green'))
 
         ns_Object = nameServer(json_file)
         bb = bigbrother(ns_Object.get_priv_pyro4ns(),
@@ -562,8 +558,8 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, admintool.handler)  # ctrl+c
 
         time.sleep(2)
-        while (True):
-            if (ns_Object.is_working()):  # NS ready for work
+        while True:
+            if ns_Object.is_working():  # NS ready for work
                 print(colored("\n----------\nAvailable commands: " +
                               "\n* robots" +
                               "\n* comps" +
@@ -577,18 +573,18 @@ if __name__ == "__main__":
                 try:
                     command = command.lower()
                     command = command.split()
-                    if (command is not None):
+                    if command is not None:
                         realCommand = admintool.execute(command[0])
-                        if (len(command) is 1):
+                        if len(command) is 1:
                             realCommand()
-                        elif (len(command) is 2):
+                        elif len(command) is 2:
                             uri = realCommand(command[1])
-                        elif (len(command) > 2):
-                            print((colored("Demasiados argumentos.", "red")))
+                        elif len(command) > 2:
+                            print(colored("Demasiados argumentos.", "red"))
                     else:
                         print("Comando no encontrado. ")
                 except Exception:
-                    print((colored("Comando erroneo", "red")))
+                    print(colored("Comando erroneo", "red"))
             time.sleep(1)
         print(printThread(color="red"), " saliendo...")
     except (KeyboardInterrupt, SystemExit):

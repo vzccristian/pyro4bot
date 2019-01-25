@@ -6,6 +6,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton
 
+
 class Mover(QtGui.QWidget):
     def __init__(self, bot):
         QtGui.QWidget.__init__(self)
@@ -50,16 +51,16 @@ class Mover(QtGui.QWidget):
         self.show()
 
     def bot_forward(self):
-        self.bot.ruedas.backward(100,100)
+        self.bot.ruedas.backward(100, 100)
 
     def bot_backward(self):
-        self.bot.ruedas.forward(100,100)
+        self.bot.ruedas.forward(100, 100)
 
     def bot_left(self):
-        self.bot.ruedas.backward(100,75)
+        self.bot.ruedas.backward(100, 75)
 
     def bot_right(self):
-        self.bot.ruedas.backward(75,100)
+        self.bot.ruedas.backward(75, 100)
 
     def bot_stop(self):
         self.bot.ruedas.stop()

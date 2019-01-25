@@ -1,13 +1,14 @@
 import time
 from ._client_robot import ClientRobot
 
-#!/usr/bin/env python
+# !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from ._client_robot import ClientRobot
 import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QPushButton
+
 
 class Mirror(QtGui.QWidget):
     def __init__(self, bot):
