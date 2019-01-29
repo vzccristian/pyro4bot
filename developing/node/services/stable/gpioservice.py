@@ -7,6 +7,8 @@
 import time
 from node.libs import control, utils
 from node.libs.gpio.GPIO import HARDWARE, GPIOCLS
+from node.libs.gpio import GPIO
+from node.libs.gpio.gpiodef import modes, BCM, gpioport, status, PUD_OFF
 import Pyro4
 
 
