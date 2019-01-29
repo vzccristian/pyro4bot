@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 
 from node.libs import control
 import Pyro4
-from . import EPDDriver
+from node.components.developing import EPDDriver
 import time
 import io as IO
 import spidev as SPI

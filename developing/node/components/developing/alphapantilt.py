@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 import time
 from node.libs import control
 import Pyro4
