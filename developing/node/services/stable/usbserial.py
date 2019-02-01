@@ -6,7 +6,7 @@
 import time
 from node.libs import control, subscription, publication
 import serial
-import json
+import simplejson as json
 import Pyro4
 
 

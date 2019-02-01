@@ -2,7 +2,7 @@ from flask import Flask
 from flask import render_template
 
 import os
-import json
+import simplejson as json
 import threading
 from _client_robot import ClientRobot
 import time

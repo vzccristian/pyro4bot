@@ -4,7 +4,7 @@ from node.libs import control, publication
 import cv2
 import numpy as np
 import io
-from picamera import Picamera
+import picamera
 import Pyro4
 
 

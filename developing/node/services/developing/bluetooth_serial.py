@@ -6,7 +6,7 @@
 import time
 from node.libs import control, utils, token
 from node.libs.bluetooth import bt_RFCOMM
-import json
+import simplejson as json
 import Pyro4
 
 

@@ -11,12 +11,11 @@ import Pyro4
 import Pyro4.naming as nm
 from termcolor import colored
 import pprint
-import json
+import simplejson as json
 import ast
+sys.path.append("../node/libs")
 import utils
 import myjson
-
-sys.path.append("../node/libs")
 
 DEBUGGER = False
 
@@ -444,16 +443,16 @@ class nameServer(object):
             print("Error al crear el nameserver %s" % host)
 
 
-def get_priv_pyro4ns(self):
-    return self.private_pyro4ns
+    def get_priv_pyro4ns(self):
+        return self.private_pyro4ns
 
 
-def get_pub_pyro4ns(self):
-    return self.public_pyro4ns
+    def get_pub_pyro4ns(self):
+        return self.public_pyro4ns
 
 
-def is_working(self):
-    return self.priv_ready
+    def is_working(self):
+        return self.priv_ready
 
 
 class adminTool:

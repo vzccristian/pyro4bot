@@ -7,7 +7,7 @@ import time
 import datetime
 from node.libs import control, utils, token
 import serial
-import json
+import simplejson as json
 import Pyro4
 
 
