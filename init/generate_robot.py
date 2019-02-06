@@ -32,9 +32,9 @@ def __create_template__(url_module, local_path):
     urllib.request.urlretrieve(file_url, file)
 
 
-def __create_json__(bot_name):
+def __create_json__(path, bot_name):
     """ It creates the json file for the robot from a template """
-    json_bot_file = bot_name + '.json'
+    json_bot_file = path + bot_name + '.json'
     json_url = __url__ + 'init/bot_template.json'
     urllib.request.urlretrieve(json_url, json_bot_file)
     try:
@@ -59,7 +59,7 @@ def create_robot(bot_name):
         if not os.path.exists(path + module):
             os.makedirs(path + module)
             __create_template__(module, path + module)
-    __create_json__(bot_name)
+    __create_json__(path, bot_name)
 
 
 if __name__ == "__main__":
