@@ -1,14 +1,14 @@
-
 import platform
 import re
 
 # Platform identification constants.
-UNKNOWN          = 0
-RASPBERRY_PI     = 1
+UNKNOWN = 0
+RASPBERRY_PI = 1
 BEAGLEBONE_BLACK = 2
-MINNOWBOARD      = 3
+MINNOWBOARD = 3
 
-Hardwares ={0:"UNKNOWN",1:"RASPBERRY_PI",2:"BEAGLEBONE_BLACK",3:"MINNOWBOARD"}
+Hardwares = {0: "UNKNOWN", 1: "RASPBERRY_PI", 2: "BEAGLEBONE_BLACK", 3: "MINNOWBOARD"}
+
 
 def platform_detect():
     """Detect if running on the Raspberry Pi or Beaglebone Black and return the
@@ -33,7 +33,7 @@ def platform_detect():
     # Assumption is that mraa is installed
     try:
         import mraa
-        if mraa.getPlatformName()=='MinnowBoard MAX':
+        if mraa.getPlatformName() == 'MinnowBoard MAX':
             return MINNOWBOARD
     except ImportError:
         pass
@@ -91,6 +91,7 @@ def pi_version():
     else:
         # Something else, not a pi.
         return None
+
 
 HARDWARE = Hardwares[platform_detect()]
 if HARDWARE == "RASPBERRY_PI":

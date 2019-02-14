@@ -3,7 +3,7 @@
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
 """
-This library inspect packages and get a modude where it defining a classes
+This library inspect packages and get a module where it defining a classes
 his goal is import just classes for  pyro4bot.
 """
 
@@ -17,12 +17,12 @@ import importlib
 def explore_package(module_name):
     """
     Get a list of modules and submodules for a given package
-    this function use a recursive algoritm.
+    this function use a recursive algorithm.
     """
     modules = []
     loader = pkgutil.get_loader(module_name)
-    for sub_module in pkgutil.walk_packages([loader.filename]):
-        a, sub_module_name, b = sub_module
+    loader.filename = loader.path[:-12] if '/__init__.py' in loader.path else loader.path
+    for a, sub_module_name, b in pkgutil.walk_packages([loader.filename]):
         qname = module_name + "." + sub_module_name
         modules.append(qname)
         if b:
@@ -30,10 +30,10 @@ def explore_package(module_name):
     return modules
 
 
-def get_clases(m):
+def get_classes(m):
     """
     Return a list of classes for a given module
-    Warning: if module has non instaled package return a empty list
+    Warning: if module has non installed package return a empty list
     """
     list_class = []
     error_class = None
@@ -49,7 +49,7 @@ def get_clases(m):
 def get_packages_not_found(m):
     """
     Return a set of packages for a given module
-    Warning: if module has non instaled any package return a empty list
+    Warning: if module has non installed any package return a empty list
     """
     list_packages = None
     try:
@@ -72,17 +72,17 @@ def get_modules(pkgs):
 def module_class(cls, modules):
     """
     Find a module or modules for a cls class
-    if has more than one module return first finded
+    if has more than one module return first found
     """
-    modules = [m for m in modules if cls in get_clases(m)]
+    modules = [m for m in modules if cls in get_classes(m)]
     return modules[0].lstrip(".node") if len(modules) > 0 else None
 
 
-def get_all_class(modules):
+def get_all_classes(modules):
     clases = {}
     errors = {}
     for m in modules:
-        cls, error = get_clases(m)
+        cls, error = get_classes(m)
         if error is not None:
             if m not in errors:
                 errors[m] = []
@@ -100,7 +100,7 @@ def import_module(module):
 
 def module_packages_not_found(modules):
     """
-    Ŕeturn all modules imported in modules that is no finded
+    Return all modules imported in modules that is no found
     """
     # return [m for m in modules if pkg in get_packages_not_found(m)]
     x = set()
@@ -109,7 +109,7 @@ def module_packages_not_found(modules):
     return x
 
 
-def not_finded_modules(modules_error):
+def not_found_modules(modules_error):
     imports = [x[1].message.split("No module named ")[1] for x
                in modules_error.items() if type(x[1]) is ImportError]
 
@@ -118,17 +118,18 @@ def not_finded_modules(modules_error):
 
 def show_warnings(modules_errors):
     if modules_errors:
-        for k, v in modules_errors.iteritems():
+        for k, v in modules_errors.items():
             print("warning: error in {} --> {}".format(k, v))
+
 
 print("INSPECTING MODULES...")
 # _modules is a list of all components and services in pyro4bot
 _modules = get_modules(("node.services", "node.components"))
-_clases, _modules_errors = get_all_class(_modules)
+_classes, _modules_errors = get_all_classes(_modules)
 
 # it is a list of all modules in system pyro4bot
 _modules_libs = get_modules(("node.libs", "node.node"))
-_clases_libs, _modules_libs_errors = get_all_class(_modules_libs)
+_classes_libs, _modules_libs_errors = get_all_classes(_modules_libs)
 
 if __name__ == "__main__":
     pass

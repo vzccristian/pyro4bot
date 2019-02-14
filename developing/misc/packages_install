@@ -1,7 +1,8 @@
-sudo pip install simplejson
-sudo pip install termcolor
-sudo pip install pyro4
-sudo pip install netifaces
-sudo apt-get install python-opencv
+sudo pip3 install simplejson
+sudo pip3 install termcolor
+sudo pip3 install pyro4
+sudo pip3 install netifaces
+...sudo apt-get install python-opencv
+sudo pip3 install opencv-python
 ... ver error
 los paquetes de cada componente....

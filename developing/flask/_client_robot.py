@@ -1,8 +1,8 @@
 import Pyro4
 import os
 import sys
-sys.path.append("../node/libs")
 import utils
+sys.path.append("../node/libs")
 
 DEFAULT_BB_PASSWORD = "PyRobot"
 
@@ -34,7 +34,7 @@ class ClientRobot(object):
             bigbrother_passw (str): Bigbrother's password.
         """
         Pyro4.config.SERIALIZERS_ACCEPTED = ["json", "marshal", "serpent", "pickle"]
-        if ("@" in name):
+        if "@" in name:
             self.name = name[0:name.find("@")]
             self.ip = name[name.find("@") + 1:]
             self.ns = False
@@ -90,7 +90,7 @@ class ClientRobot(object):
                 self.node = utils.get_pyro4proxy(robot_uri, self.name)
             except Exception:
                 self.node = None
-        if (self.node):
+        if self.node:
             try:
                 proxys = self.node.get_uris()
             except Exception:

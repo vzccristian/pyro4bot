@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 import time
 from node.libs import control
 import Pyro4
@@ -13,7 +13,7 @@ from node.libs.gpio.GPIO import *
 class alphal298n(control.Control):
     """Control L298N (Alphabot) through GPIO."""
 
-    __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA","ENB", "gpioservice"]
+    __REQUIRED = ["IN1", "IN2", "IN3", "IN4", "ENA", "ENB", "gpioservice"]
 
     def __init__(self):
         self.GPIO = GPIOCLS(self.gpioservice, self.pyro4id)
@@ -54,27 +54,29 @@ class alphal298n(control.Control):
 
     @control.flask("actuator")
     def setvel(self, DCA, DCB, forwardA=True, forwardB=True):
-        if DCA > 100: DCA = 100
-        elif DCA < 0: DCA = 0
-        if DCB > 100: DCB = 100
-        elif DCB < 0: DCB = 0
+        if DCA > 100:
+            DCA = 100
+        elif DCA < 0:
+            DCA = 0
+        if DCB > 100:
+            DCB = 100
+        elif DCB < 0:
+            DCB = 0
         self.motor_a.ChangeDutyCycle(DCA)
         self.motor_b.ChangeDutyCycle(DCB)
-        if (forwardA):
+        if forwardA:
             self.GPIO.output(self.IN1, HIGH)
             self.GPIO.output(self.IN2, LOW)
         else:
             self.GPIO.output(self.IN1, LOW)
             self.GPIO.output(self.IN2, HIGH)
 
-        if (forwardB):
+        if forwardB:
             self.GPIO.output(self.IN3, LOW)
             self.GPIO.output(self.IN4, HIGH)
         else:
             self.GPIO.output(self.IN3, HIGH)
             self.GPIO.output(self.IN4, LOW)
-
-
 
     @control.flask("actuator")
     def left(self, DC=100):

@@ -1,0 +1,12 @@
+{
+   "NODE":{
+      "name":"botname",
+      "ethernet":"ethport"
+    },
+   "services":{
+        "servicename":{"cls":"classname","required_utility":"id_of_utility"}
+   },
+   "components":{
+        "componentname":{"cls":"classname", "required_dependency":"value_of_dependencies"}
+    }
+}

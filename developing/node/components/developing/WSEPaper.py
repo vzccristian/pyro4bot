@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 
 from node.libs import control
 import Pyro4
-import EPDDriver
+from node.components.developing import EPDDriver
 import time
-import cStringIO as IO
+import io as IO
 import spidev as SPI
 from PIL import ImageFont, ImageDraw, Image
+
+
 # 3V3
 # GND
 # DIN  -> MOSI
@@ -66,7 +68,7 @@ class WSEPaper(control.Control):
 
     def transform_image(self, data, size_x=None, size_y=None):
         def center_image(im, size_x, size_y):
-            width, height = im.size   # Get dimensions
+            width, height = im.size  # Get dimensions
             left = (width - size_x) / 2
             top = (height - size_x) / 2
             right = (width + size_y) / 2
@@ -130,7 +132,7 @@ class WSEPaper(control.Control):
         self.list_val.append(val)
         self.first_val = str(len(self.list_val))
 
-    #Precondition: init_panel()
+    # Precondition: init_panel()
     def write_panel(self):
         self.font = ImageFont.truetype(self.font_link, size=130)
         img = Image.new('RGB', (200, 200), (255, 255, 255))

@@ -2,13 +2,12 @@ import spidev
 import RPi.GPIO as GPIO
 import time
 
-
-
 """ BCM GPIO """
 RST = 17
 DC = 25
 BUSY = 24
 CS = 8
+
 
 class EPDDriver:
     def __init__(self, spi, x_dot, y_dot):
@@ -26,9 +25,9 @@ class EPDDriver:
         self.spi.mode = 0b00
 
         self.x_dot = x_dot
-	self.y_dot = y_dot
+        self.y_dot = y_dot
 
-	# Register initial variable
+        # Register initial variable
         if (x_dot, y_dot) == (200, 200):
             self.type = 'EPD1X54'
             self.DELAYTIME = 1.5
@@ -81,16 +80,16 @@ class EPDDriver:
 
     def EPD_WriteCMD(self, command):
         GPIO.output(DC, GPIO.LOW)
-        #print 'send command : ' ,hex(command)
+        # print 'send command : ' ,hex(command)
         self.spi.writebytes([command])
 
     def EPD_WriteCMD_p1(self, command, para):
         self.ReadBusy()
         GPIO.output(DC, GPIO.LOW)
-        #print 'send command : ' ,hex(command)
+        # print 'send command : ' ,hex(command)
         self.spi.writebytes([command])
         GPIO.output(DC, GPIO.HIGH)
-        #print 'Sent to data : ' ,hex(para),
+        # print 'Sent to data : ' ,hex(para),
         self.spi.writebytes([para])
 
     def EPD_POWERON(self):
@@ -102,7 +101,7 @@ class EPDDriver:
         """Send command byte to display"""
         GPIO.output(DC, GPIO.LOW)
         time.sleep(0.01)
-        #print 'send command : ' ,hex(value[0])
+        # print 'send command : ' ,hex(value[0])
         # The first byte is written with the command value
         self.spi.writebytes([value[0]])
         GPIO.output(DC, GPIO.HIGH)
@@ -117,19 +116,19 @@ class EPDDriver:
         XSize = XSize / 8
         NUM = 0
         self.ReadBusy()
-        #print 'send command : ' ,hex(0x24)
+        # print 'send command : ' ,hex(0x24)
         GPIO.output(DC, GPIO.LOW)
         self.spi.writebytes([0x24])
         GPIO.output(DC, GPIO.HIGH)
-        #print 'Sent to data : ',hex(dispdata),
+        # print 'Sent to data : ',hex(dispdata),
         if isinstance(dispdata, list):
             for i in range(0, YSize):
                 for j in range(0, XSize):
                     self.spi.writebytes([dispdata[NUM]])
                     NUM += 1
-                    #print hex(dispdata[i+j]),
+                    # print hex(dispdata[i+j]),
         else:
-            #print 'send data : ' ,dispdata
+            # print 'send data : ' ,dispdata
             for i in range(0, YSize):
                 for j in range(0, XSize):
                     self.spi.writebytes([dispdata])
@@ -169,9 +168,9 @@ class EPDDriver:
         self.EPD_Write([0x01, (self.y_dot - 1) % 256, (self.y_dot - 1) /
                         256, 0x00])  # Pannel configuration, Gate selection
         self.EPD_Write([0x0c, 0xd7, 0xd6, 0x9d])  # soft start
-        self.EPD_Write([0x2c, 0xa8])           # VCOM setting
-        self.EPD_Write([0x3a, 0x1a])           # dummy line per gate
-        self.EPD_Write([0x3b, 0x08])           # Gage time setting
+        self.EPD_Write([0x2c, 0xa8])  # VCOM setting
+        self.EPD_Write([0x3a, 0x1a])  # dummy line per gate
+        self.EPD_Write([0x3b, 0x08])  # Gage time setting
         # data entry X increase, Y decrease
         self.EPD_Write([0x11, 0x01])
         self.EPD_SetRamArea(0x00, (self.x_dot - 1) / 8, (self.y_dot - 1) %
@@ -207,8 +206,8 @@ class EPDDriver:
         self.EPD_Update()
 
     def EPD_Dis_Part(self, xStart, xEnd, yStart, yEnd, DisBuffer):
-        if(xStart % 8 != 0):
-            print 'EPD_Dis_Part xStart must be divable by 8 !'
+        if xStart % 8 != 0:
+            print('EPD_Dis_Part xStart must be divable by 8 !')
         self.ReadBusy()
         self.part_display(xStart / 8, xEnd / 8, yEnd %
                           256, yEnd / 256, yStart % 256, yStart / 256)

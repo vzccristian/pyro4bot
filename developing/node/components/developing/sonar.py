@@ -3,15 +3,16 @@
 # lock().acquire()
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in you code object
+# All data defined in json configuration are attributes in you code object
 import time
 from node.libs import control
 import Pyro4
 
 
 @Pyro4.expose
-class sonar (control.Control):
+class sonar(control.Control):
     __REQUIRED = ["usbserial"]
+
     def __init__(self):
         self.start_subscription("usbserial", "US")
         self.start_worker(self.worker)

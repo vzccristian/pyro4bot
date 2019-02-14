@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 import time
 from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
+
 
 @Pyro4.expose
 class l298n(control.Control):
@@ -23,7 +24,6 @@ class l298n(control.Control):
         self.motor_a.start(100)
         self.motor_b.start(100)
         self.stop()
-
 
     @control.flask("actuator")
     def forward(self, DCA=100, DCB=100):

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
 # _________collaboration with cristian vazquez____________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 import time
 from node.libs import control
 import Pyro4
 from node.libs.gpio.GPIO import *
-#import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 
 @Pyro4.expose
@@ -59,4 +59,4 @@ class alphapantilt(control.Control):
         # self.ctilt.stop()
 
     def get_pantilt(self):
-        return (self.pan_a, self.tilt_a)
+        return self.pan_a, self.tilt_a

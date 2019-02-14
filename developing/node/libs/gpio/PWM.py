@@ -4,15 +4,16 @@
 # support three diferent moderboards
 # ____________developed by paco andres____________________
 from node.libs.gpio.GPIO import HARDWARE
-from  node.libs.gpio.gpiodef import *
+from node.libs.gpio.gpiodef import *
 
 if HARDWARE == "RASPBERRY_PI":
     import RPi.GPIO as rpi_gpio
 
+
 class RPi_PWM(object):
     """PWM implementation for the Raspberry Pi using the RPi.GPIO PWM library."""
 
-    def __init__(self, rpi_gpio,pyro4id,pin,frec):
+    def __init__(self, rpi_gpio, pyro4id, pin, frec):
         self.rpi_gpio = rpi_gpio
         self.pyro4id = pyro4id
         self.pin = pin

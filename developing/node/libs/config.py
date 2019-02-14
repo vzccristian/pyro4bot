@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
+
 import os.path
-import utils
-import myjson
-from inspection import _modules, _modules_errors, _clases, import_module
+from node.libs import utils, myjson
+from node.libs.inspection import _modules, _modules_errors, _classes, import_module
 from termcolor import colored
 import pprint
+
 
 def get_field(search_dict, field, enable=True):
     """
@@ -15,7 +16,7 @@ def get_field(search_dict, field, enable=True):
     provided.
     """
     fields_found = []
-    for key, value in search_dict.iteritems():
+    for key, value in search_dict.items():
         if key == field:
             if isinstance(value, list):
                 fields_found = fields_found + value
@@ -36,6 +37,9 @@ def get_field(search_dict, field, enable=True):
 
 class Config:
     def __init__(self, filename="", json=None):
+        self.services = None
+        self.components = None
+
         self.conf = json if (filename == "") else myjson.MyJson(
             filename, dependencies=True).json
 
@@ -55,7 +59,7 @@ class Config:
         for key in [x for x in self.conf.keys() if x != "node"]:
             for k, v in self.conf[key].items():
                 if get_field(v, "enable") == [False]:
-                    del(self.conf[key][k])
+                    del (self.conf[key][k])
 
     def fix_config(self):
         # Add default frec
@@ -100,7 +104,7 @@ class Config:
             self.conf["node"]["bigbrother-password"] = "PyRobot"
 
         # Services and components config
-        for k, v in self.components.items() + self.services.items():
+        for k, v in list(self.components.items()) + list(self.services.items()):
             if "worker_run" not in v:
                 v["worker_run"] = True
             if "mode" not in v:
@@ -115,11 +119,11 @@ class Config:
         # Services configuration
         newservices = {}
         for n in self.services:
-            if _clases.get(self.services[n]["cls"], None) is not None:
-                if len(_clases[self.services[n]["cls"]]) > 1:
+            if _classes.get(self.services[n]["cls"], None) is not None:
+                if len(_classes[self.services[n]["cls"]]) > 1:
                     print("Warning: there are many modules {} for class {}".format(
-                        _clases[self.services[n]["cls"]], self.services[n]["cls"]))
-                self.services[n]["module"] = _clases[self.services[n]["cls"]][0]
+                        _classes[self.services[n]["cls"]], self.services[n]["cls"]))
+                self.services[n]["module"] = _classes[self.services[n]["cls"]][0]
                 if "." not in n:
                     newservices[self.node["name"] + "." + n] = self.services[n]
                 else:
@@ -127,39 +131,39 @@ class Config:
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(
                     self.services[n]["cls"]), "red"))
-                for k_error, error in _modules_errors.iteritems():
+                for k_error, error in _modules_errors.items():
                     print("Module {}: {}".format(k_error, error))
                 exit()
-            if ("-->") in self.services[n]:
+            if "-->" in self.services[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.services[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.services[n]["-->"] if x.find(".") >= 0]
                 self.services[n]["-->"] = sp + cp  # esto se puede simplificar
 
-        self.services = newservices
+        self.conf["services"] = newservices
 
         for n in self.services:
-                    self.services[n]["_locals"] = []
-                    self.services[n]["_resolved_remote_deps"] = []
-                    if "-->" in self.services[n]:
-                        self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
-                            self.services, n)
+            self.services[n]["_locals"] = []
+            self.services[n]["_resolved_remote_deps"] = []
+            if "-->" in self.services[n]:
+                self.services[n]["_locals"], self.services[n]["_resolved_remote_deps"] = self.local_remote(
+                    self.services, n)
         newrobot = {}
         # Components configuration
         for n in self.components:
-            if _clases.get(self.components[n]["cls"], None) is not None:
-                if len(_clases[self.components[n]["cls"]]) > 1:
+            if _classes.get(self.components[n]["cls"], None) is not None:
+                if len(_classes[self.components[n]["cls"]]) > 1:
                     print("Warning: there are many modules {} for class {}".format(
-                        _clases[self.components[n]["cls"]], self.components[n]["cls"]))
-                self.components[n]["module"] = _clases[self.components[n]["cls"]][0]
+                        _classes[self.components[n]["cls"]], self.components[n]["cls"]))
+                self.components[n]["module"] = _classes[self.components[n]["cls"]][0]
             else:
                 print(colored("ERROR: Class {} not found or error in Modules".format(
                     self.components[n]["cls"]), "red"))
-                for k_error, error in _modules_errors.iteritems():
+                for k_error, error in _modules_errors.items():
                     print("Module {}: {}".format(k_error, error))
                 exit()
             self.components[n]["_services"] = list(self.services)
-            if ("-->") in self.components[n]:
+            if "-->" in self.components[n]:
                 sp = [self.node["name"] + "." +
                       x for x in self.components[n]["-->"] if x.find(".") < 0]
                 cp = [x for x in self.components[n]["-->"] if x.find(".") >= 0]
@@ -169,7 +173,7 @@ class Config:
             else:
                 newrobot[n] = self.components[n]
 
-        self.components = newrobot
+        self.conf["components"] = newrobot
 
         for n in self.components:
             self.components[n]["_locals"] = []
@@ -195,7 +199,7 @@ class Config:
                     condep.remove(i)
             nivel_dep += 1
         if nivel_dep == 20:
-            print "ERROR:there are unresolved dependencies", condep, "-->", dep_imcump
+            print("ERROR:there are unresolved dependencies", condep, "-->", dep_imcump)
             exit()
         return ser_order
 
@@ -207,19 +211,19 @@ class Config:
         services = [(self.services[s]["module"], self.services[s]["cls"])
                     for s in self.services_order]
         components = [(self.components[s]["module"], self.components[s]["cls"])
-                   for s in self.components_order]
+                      for s in self.components_order]
         return set(services), set(components)
 
     def whithout_deps(self, part):
         """
-         Return components or services whihout dependencies
+         Return components or services without dependencies
          part can be component or services
         """
         return [x for x in part if not get_field(part[x], "-->")]
 
     def with_deps(self, part):
         """
-         Return components or services whih dependencies.
+         Return components or services with dependencies.
          part can be component or services
         """
         return [x for x in part if get_field(part[x], "-->")]
@@ -278,3 +282,11 @@ class Config:
         rob["components_order"] = self.components_order
         rob["imports"] = self.get_imports()
         return rob
+
+    @services.setter
+    def services(self, value):
+        self._services = value
+
+    @components.setter
+    def components(self, value):
+        self._components = value

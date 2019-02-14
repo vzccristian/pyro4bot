@@ -1,15 +1,17 @@
 #!/usr/bin/python
+import cmd
 import bluetooth
 from subprocess import Popen, PIPE
 import sys
 
+
 def GetFirstMAC():
     proc = Popen(['hcitool', 'dev'], stdin=PIPE, stdout=PIPE, stderr=PIPE)
     output, error = proc.communicate()
-    if (proc.returncode == 0):
+    if proc.returncode == 0:
         lines = output.split('\r')
         for line in lines:
-            if ('hci0' in line):
+            if 'hci0' in line:
                 temp = line.split('\t')
                 temp = temp[2].strip('\n')
                 return temp
@@ -17,11 +19,13 @@ def GetFirstMAC():
     else:
         raise Exception('Command: {0} returned with error: {1}'.format(cmd, error))
 
+
 class bt_RFCOMM(object):
     def __init__(self, port=3333, receiveSize=1024):
         self.btSocket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         self._ReceiveSize = receiveSize
         self.port = port
+
     def __exit__(self):
         self.Disconnect()
 
@@ -38,8 +42,8 @@ class bt_RFCOMM(object):
             pass
 
     def Discover(self):
-        self.btDevices = bluetooth.discover_devices(lookup_names = True)
-        if (len(self.btDevices) > 0):
+        self.btDevices = bluetooth.discover_devices(lookup_names=True)
+        if len(self.btDevices) > 0:
                 return self.btDevices
         else:
             return None
@@ -65,14 +69,15 @@ class bt_RFCOMM(object):
     def GetReceiveSize(self):
         return self._ReceiveSize
 
+
 class BTClient(object):
-    def __init__(self,mac,name = None,port=3333):
+    def __init__(self, mac, name=None, port=3333):
         self.port = port
         self.mac = mac
         self.client = bt_RFCOMM(self.port)
-        self.client.Connect(mac,self.port)
+        self.client.Connect(mac, self.port)
 
-    def sendData(self,data=None):
+    def sendData(self, data=None):
         try:
             if data is not None:
                 self.client.Send(data)
@@ -84,12 +89,12 @@ class BTClient(object):
 
 
 class BTServer(object):
-    def __init__(self,port):
+    def __init__(self, port):
         self._max = 6
         self.port = port
         self.srv = bt_RFCOMM(port)
         self.mac = GetFirstMAC()
-        self.srv.BindListen(self.mac,port)
+        self.srv.BindListen(self.mac, port)
         self.clients = {}
 
     def clients_accept(self):
@@ -100,7 +105,7 @@ class BTServer(object):
             else:
                 client.close()
 
-    def get_data(self,cli):
+    def get_data(self, cli):
         try:
             return self.clients[cli].recv(self.srv.GetReceiveSize())
         except:
@@ -108,8 +113,7 @@ class BTServer(object):
             del(self.clients[cli])
             return None
 
-
-    def sendData(self,cli,data):
+    def sendData(self, cli, data):
         if cli in self.clients:
             self.clients[cli].send(data)
 
@@ -117,7 +121,7 @@ class BTServer(object):
         self.serv.Disconnect()
 
     def discover_devices(self):
-        return {name:mac for mac,name in self.srv.Discover()}
+        return {name: mac for mac, name in self.srv.Discover()}
 
     def __exit__(self):
         self.serv.Disconnect()

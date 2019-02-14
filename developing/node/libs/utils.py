@@ -19,7 +19,7 @@ def get_ip_address(ifname="lo"):
         try:
             interface_list = ni.interfaces()
             for x in interface_list:
-                if (x != "lo"):
+                if x != "lo":
                     return ni.ifaddresses(x)[ni.AF_INET][0]['addr']
             ip = "127.0.0.1"
         except Exception:
@@ -49,8 +49,8 @@ def get_all_ip_address(broadcast=False):
                 pass
     except Exception:
         print("ERROR: utils.get_all_ip_address()")
-        raise
         exit()
+        raise
     return address
 
 
@@ -108,7 +108,7 @@ def get_free_port(port, interval=1, ip="127.0.0.1"):
     _port = port
     while not free_port(_port, ip=ip):
         _port += interval
-    return (_port)
+    return _port
 
 
 def uri_split(uri):
@@ -116,7 +116,7 @@ def uri_split(uri):
     name = uri[uri.find("PYRO:") + 5:uri.find("@")]
     ip = uri[uri.find("@") + 1:uri.find(":", 7)]
     port = int(uri[uri.find(":", 7) + 1:])
-    return (name, ip, port)
+    return name, ip, port
 
 
 def get_uri(name, ip, port):
@@ -128,9 +128,11 @@ def get_uri_name(uri):
     """Return name from Pyro4 URI."""
     return uri[uri.find("PYRO:") + 5:uri.find("@")]
 
+
 def get_uri_base(uri):
     """ return base sensor from Pyro4 URI """
     return get_uri_name(uri).split(".")[1]
+
 
 def format_exception(e):
     """Representation of exceptions."""
@@ -163,13 +165,13 @@ def ping(uri):
         response = os.system("ping -c 1 -w2 " + uri + " > /dev/null 2>&1")
     except Exception:
         pass
-    return (not response)
+    return not response
 
 
 def get_pyro4proxy(uri, password):
     """Given a Pyro4 URI and a password, return the connection proxy."""
     proxy = Pyro4.Proxy(uri)
-    proxy._pyroHmacKey = bytes(password)
+    proxy._pyroHmacKey = password.encode()
     return proxy
 
 

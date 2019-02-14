@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ____________developed by paco andres____________________
-# All datas defined in json configuration are atributes in your code object
+# All data defined in json configuration are attributes in your code object
 import time
 from node.libs import control, utils
 import Pyro4
@@ -10,13 +10,14 @@ from termcolor import colored
 import threading
 import os
 import sys
+
 ROUTER_PASSWORD = "PyRobot"
 ROUTER_IP = "192.168.10.1"
 ROUTER_PORT = "6060"
 
 
 class uriresolver(control.Control):
-    #@control.load_config
+    # @control.load_config
     def __init__(self, robot, password="default"):
         # Atributes
 
@@ -52,21 +53,21 @@ class uriresolver(control.Control):
             self.port = utils.get_free_port(self.port)
             self.daemonproxy = Pyro4.Daemon(
                 host="127.0.0.1", port=self.port)  # Daemon proxy for NODE
-            self.daemonproxy._pyroHmacKey = bytes(self.password)
+            self.daemonproxy._pyroHmacKey = self.password.encode()
             self.daemonproxy.requestLoop()
         except Pyro4.errors.ConnectionClosedError:
             print("Error al conectar al proxy")
         except Exception:
             print("ERROR: creating _client_robot")
         finally:
-            if (self.uri is not None):
+            if self.uri is not None:
                 print("[%s] Shutting %s" %
                       (colored("Down", 'green'), self.uri.asString()))
             os._exit(0)
 
     def register_uriresolver(self):
         attempts = 0
-        while not (self.daemonproxy):
+        while not self.daemonproxy:
             time.sleep(0.3)
             if attempts is 10:
                 break
@@ -76,9 +77,10 @@ class uriresolver(control.Control):
             name = self.botName + ".URI_resolv"
             # Registering uriresolver
             self.uri = self.daemonproxy.register(self, objectId=name)
+
             # Getting proxy
             self.proxy = Pyro4.Proxy(self.uri)
-            self.proxy._pyroHmacKey = bytes(self.password)
+            self.proxy._pyroHmacKey = self.password.encode()
         except Exception:
             print("ERROR: register_uriresolver in uriresolver.py")
 
@@ -112,7 +114,7 @@ class uriresolver(control.Control):
             default_ns = Pyro4.config.BROADCAST_ADDRS
             # Looking for Network NameServer
             for x in utils.get_all_ip_address(broadcast=True):
-                if (self.nameserver):
+                if self.nameserver:
                     break
                 try:
                     Pyro4.config.BROADCAST_ADDRS = x
@@ -122,12 +124,12 @@ class uriresolver(control.Control):
                     printInfo("NameServer located.")
                 except Exception:
                     self.nameserver = None
-            if (self.nameserver):
+            if self.nameserver:
                 # ¿BigBrother or Random NS?
                 try:
                     ns_uri = self.nameserver.lookup("bigbrother")
                     possible_ns = utils.get_pyro4proxy(ns_uri, ROUTER_PASSWORD)
-                    if (possible_ns.ready()):
+                    if possible_ns.ready():
                         self.ns_uri = ns_uri
                         self.nameserver = possible_ns
                         printInfo("[NS_Type] BigBrother ----> %s" %
@@ -167,7 +169,7 @@ class uriresolver(control.Control):
         return self.nameserver if self.nameserver else None
 
     def ns_ready(self):
-        if (self.nameserver is None):
+        if self.nameserver is None:
             return None
         return self.nameserver.ready()
 
@@ -176,7 +178,7 @@ class uriresolver(control.Control):
         if (target[0] and target[1] and
                 target[0].count("*") == 0 and
                 target[1].count("*") == 0):
-            if (passw is None):
+            if passw is None:
                 passw = target[0]
             try:
                 Pyro4.config.BROADCAST_ADDRS = self.broadcast_ns
@@ -186,14 +188,15 @@ class uriresolver(control.Control):
                 bot_uris = proxy.get_uris()
                 for x in bot_uris:
                     (name, ip, port) = utils.uri_split(x)
-                    if (name.split(".")[1] == target[1]):
+                    if name.split(".")[1] == target[1]:
                         proxy = utils.get_pyro4proxy(x, passw)
                         return proxy
             except Exception:
                 # print "Error al resolver ", obj
                 raise
         else:
-            if (self.usingBB):
+            if self.usingBB:
+                # TODO: var ns is not initialized here
                 ns.proxy(target, passw)
             else:
                 print(colored("--- Para usar esta funcionalidad se necesita de BigBrother ---", "red"))
@@ -202,23 +205,23 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_proxy(self, obj, passw=None):
-        if isinstance(obj, basestring):
+        if isinstance(obj, str):
             obj = [obj]
-        if (self.get_ns()):
+        if self.get_ns():
             for d in obj:
                 try:
                     if (d.count('PYRO:') == 1 and d.count('@') == 1 and
                             d.count(":") == 2 and d.count(".") in range(3, 5)):
                         (name, _, _) = utils.uri_split(d)
-                        if ("." in name):
+                        if "." in name:
                             name = name.split(".")[0]
-                        if (passw is None):
+                        if passw is None:
                             passw = name
                         return utils.get_pyro4proxy(d, passw)
-                    elif (d.count(".") == 1):  # simplebot.component
-                        return (self.get_proxy_without_uri(d, passw))
+                    elif d.count(".") == 1:  # simplebot.component
+                        return self.get_proxy_without_uri(d, passw)
                     else:
-                        print "Objeto no valido"
+                        print("Objeto no valido")
                 except Exception:
                     return None
 
@@ -254,7 +257,7 @@ class uriresolver(control.Control):
 
     @Pyro4.expose
     def get_name(self, uri):
-        for k, v in self.URIS.iteritems():
+        for k, v in self.URIS.items():
             if v == uri:
                 return k
         return None
@@ -308,7 +311,7 @@ class uriresolver(control.Control):
                         bot_proxy = utils.get_pyro4proxy(bot_uri, passw)
                         if bot_proxy:
                             remoteuri, status = bot_proxy.get_name_uri(name)
-                            if (remoteuri is not None and status == "OK"):
+                            if remoteuri is not None and status == "OK":
                                 return "SYNC", remoteuri  # Remote robot OK, comp OK.
                             else:
                                 return "WAIT", None  # Remote robot OK, comp NOT OK.
@@ -329,7 +332,7 @@ class uriresolver(control.Control):
                 self.URIS[self.botName] = uri
                 print("\nROBOT AVAILABLE: %s" %
                       (colored(self.URIS[self.botName], 'green')))
-                if (self.usingBB):
+                if self.usingBB:
                     self.nameserver.register(
                         self.botName, self.URIS[self.botName])
                 else:
@@ -356,7 +359,7 @@ class uriresolver(control.Control):
 
 
 def printInfo(text, color="green"):
-    print colored("[uriresolver]:" + text, color)
+    print(colored("[uriresolver]:" + text, color))
 
 
 if __name__ == "__main__":

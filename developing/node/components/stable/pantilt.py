@@ -22,10 +22,14 @@ class pantilt(control.Control):
     @Pyro4.oneway
     @control.flask("actuator")
     def move(self, pan=40, tilt=90):
-        if pan < 10: pan = 10
-        elif pan > 120: pan = 120
-        if tilt < 15: tilt = 15
-        elif tilt > 140: tilt = 140
+        if pan < 10:
+            pan = 10
+        elif pan > 120:
+            pan = 120
+        if tilt < 15:
+            tilt = 15
+        elif tilt > 140:
+            tilt = 140
         if self.ptblock is False:
             self.usbserial.command("setpt " + str(pan) + "," + str(tilt))
             while self.PT[0] != pan and self.PT[1] != tilt:

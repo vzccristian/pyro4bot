@@ -10,6 +10,7 @@ import netifaces as ni
 PORT = 56665
 TIMEOUT = 5
 
+
 def get_all_ip_address(broadcast=False):
     """Return the list of IPs of all network interfaces.
 
@@ -35,16 +36,16 @@ def get_all_ip_address(broadcast=False):
     return address
 
 
-class Searcher():
+class Searcher:
     def __init__(self):
         self.robots = {}
         self.stop = threading.Event()
         self.socket_list = []
         try:
             interface_list = ni.interfaces()
-            interface_list.remove("lo")
-            interfaces = zip(
-                interface_list, get_all_ip_address(broadcast=True))
+            interface_list.remove("lo0")
+            interfaces = list(zip(
+                interface_list, get_all_ip_address(broadcast=True)))
             n = 0
             for interface in interfaces:
                 threading.Thread(target=self.send, args=(
@@ -64,18 +65,18 @@ class Searcher():
             socket.AF_INET, socket.SOCK_DGRAM))
         self.socket_list[n].bind(('', 0))
         self.socket_list[n].setsockopt(
-            socket.SOL_SOCKET, socket.SO_BROADCAST, interface[0] + '\0')
+            socket.SOL_SOCKET, socket.SO_BROADCAST, (interface[0] + '\0').encode())
         self.socket_list[n].settimeout(TIMEOUT + 1)
         # print('sending to: {}'.format(PORT))
-        while (not stop_event.is_set()):
+        while not stop_event.is_set():
             self.data = 'hi pyro4bot'
-            self.socket_list[n].sendto(self.data, (interface[1], PORT))
+            self.socket_list[n].sendto(self.data.encode(), (interface[1], PORT))
             time.sleep(1)
 
     def locate(self, stop_event, n):
         # print self.socket_list[n].getsockname()
         # print('listening from port: {}'.format(self.socket_list[n].getsockname()[1]))
-        while (not stop_event.is_set()):
+        while not stop_event.is_set():
             try:
                 data, wherefrom = self.socket_list[n].recvfrom(1500, 0)
                 self.robots[wherefrom] = data
@@ -85,5 +86,6 @@ class Searcher():
 
 if __name__ == '__main__':
     s = Searcher()
-    for r in s.robots.iteritems():
-        print r
+    for r in s.robots.items():
+        print(r)
+        # TODO : in python3, it prints: "(('158.49.247.121', 56665), b'pyro4bot1/hello')" with that character 'b' before the name

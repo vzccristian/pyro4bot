@@ -5,8 +5,9 @@ from node.libs import control
 import Pyro4
 import RPi.GPIO as GPIO
 
-"""RCW-0002"""
+
 class alphaultrasound(control.Control):
+    """RCW-0002"""
     __REQUIRED = []
 
     def __init__(self):

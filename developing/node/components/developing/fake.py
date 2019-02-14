@@ -5,8 +5,10 @@ from node.libs import control
 import Pyro4
 import pprint
 
+
 class fake(control.Control):
     __REQUIRED = []
+
     def __init__(self):
         self.detections = {}
         self.start_worker(self.worker)
@@ -22,5 +24,5 @@ class fake(control.Control):
         while self.worker_run:
             if hasattr(self, 'aprils'):
                 self.detections.update(self.aprils)
-            print self.detections
+            print(self.detections)
             time.sleep(10)

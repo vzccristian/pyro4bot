@@ -74,7 +74,7 @@
                         <!--li>{{ bot[e].__docstring__() }} </li>
                         <li>{{ bot[e].__exposed__() }} </li-->
                         {% for f in bot[e].__exposed__()['methods'] %}
-                                {% if f !=  '__exposed__' and f != '__docstring__' and bot[e].__docstring__()[f] != None %}
+                                {% if f !=  '__exposed__' and f != '__docstring__' and bot[e].__docstring__()[f] is not None %}
                                         <p><label>{{ f }}</label>{{ bot[e].__docstring__()[f] }}</p>
 
                                 {% endif %}

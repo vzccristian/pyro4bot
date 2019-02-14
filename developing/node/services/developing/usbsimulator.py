@@ -12,8 +12,7 @@ import Pyro4
 
 
 class usbsimulator(control.Control):
-
-    __REQUIRED = ["comPort","comPortBaud"]
+    __REQUIRED = ["comPort", "comPortBaud"]
 
     def __init__(self):
         self.buffer = publication.Publication()()
@@ -22,18 +21,17 @@ class usbsimulator(control.Control):
         self.IR = [0, 1, 1]
         self.LASER = [0, 0]
         self.start_worker(self.worker_reader)
-        self.start_publisher(self.buffer,)
+        self.start_publisher(self.buffer, )
 
     def worker_reader(self):
         while self.worker_run:
-            self.IR[0]=self.IR[0]+1
-            self.LASER[1]=self.LASER[1]+1
+            self.IR[0] = self.IR[0] + 1
+            self.LASER[1] = self.LASER[1] + 1
             time.sleep(self.frec)
-
 
     @Pyro4.oneway
     def command(self, comman="ee"):
-        print comman
+        print(comman)
         # self.serial.write(comman+"\r\n")
 
 
